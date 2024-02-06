@@ -13,7 +13,7 @@ on:
         default: latest/devel/2.8
         type: string
         required: true
-      upstream_cluster_latest_version:
+      k8s_version_to_provision:
         description: K3s upstream cluster version where to install Rancher
         default: v1.27.9+k3s1
         type: string
@@ -32,5 +32,5 @@ jobs:
       test_description: "CI/Manual - UI - Deployment test with Standard K3s"
       cluster_name: cluster-k3s
       destroy_runner: ${{ github.event_name == 'schedule' && true || inputs.destroy_runner }}
-      upstream_cluster_version: ${{ inputs.upstream_cluster_latest_version }}
+      k8s_version_to_provision: v1.27.9+k3s1
       rancher_version: ${{ inputs.rancher_version }}
