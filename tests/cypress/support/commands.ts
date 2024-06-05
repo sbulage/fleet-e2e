@@ -27,12 +27,16 @@ Cypress.Commands.add('addPathOnGitRepoCreate', (path) => {
   cy.get('input[placeholder="e.g. /directory/in/your/repo"]').type(path);
 })
 
-Cypress.Commands.add('gitRepoAuth', (gitOrHelmAuth='Git', gitAuthType, userOrPublicKey, pwdOrPrivateKey, ) => {
+Cypress.Commands.add('gitRepoAuth', (gitOrHelmAuth='Git', gitAuthType, userOrPublicKey, pwdOrPrivateKey, helmUrlRegex ) => {
   cy.contains(`${gitOrHelmAuth} Authentication`).click()
 
 
   // Select the Git auth method
   cy.get('div.option-kind-highlighted', { timeout: 15000 }).contains(gitAuthType, { matchCase: false }).should('be.visible').click();
+
+  if (helmUrlRegex) {
+    cy.typeValue('Helm Repos (URL Regex)', helmUrlRegex, false,  false );
+  }
 
   if (gitAuthType === 'http') {
     cy.typeValue('Username', userOrPublicKey, false,  false );
@@ -45,10 +49,36 @@ Cypress.Commands.add('gitRepoAuth', (gitOrHelmAuth='Git', gitAuthType, userOrPub
   }
 });
 
+Cypress.Commands.add('importYaml', ({ clusterName, yamlFilePath }) => {
+  cypressLib.burgerMenuToggle();
+  cy.get('div.cluster-name').contains(clusterName).click();
+  cy.get('header').find('button').filter(':has(i.icon-upload)').click();
+  cy.get('div.card-container').contains('Import YAML').should('be.visible');
+
+  // Insert file content into the CodeMirror editor
+  // We could use File Upload but this has benefit we may modify the content on the fly (not implemented yet)
+  cy.readFile(yamlFilePath).then((content) => {
+    cy.get('.CodeMirror').then((codeMirrorElement) => {
+      const cm = (codeMirrorElement[0] as any).CodeMirror;
+      cm.setValue(content);
+    });
+  })
+  cy.clickButton('Import');
+  cy.get('div.card-container').contains(/Applied \d+ Resources/).should('be.visible');
+
+  // Check if there is a column with age which contains a number
+  // Ideally we would need to wait for Active State for each resource but this column is not present on 2.9
+  cy.get('[data-testid^="sortable-cell-"] .live-date').each(($el) => {
+    cy.wrap($el).contains(/\d+/, { timeout: 60000 });
+  }).then(() => {
+    // All elements defined, click Close button
+    cy.clickButton('Close');
+  });
+});
 
 // Command add and edit Fleet Git Repository
 // TODO: Rename this command name to 'addEditFleetGitRepo'
-Cypress.Commands.add('addFleetGitRepo', ({ repoName, repoUrl, branch, path, gitOrHelmAuth,gitAuthType, userOrPublicKey, pwdOrPrivateKey, keepResources, correctDrift, fleetNamespace='fleet-local',editConfig=false }) => {
+Cypress.Commands.add('addFleetGitRepo', ({ repoName, repoUrl, branch, path, gitOrHelmAuth, gitAuthType, userOrPublicKey, pwdOrPrivateKey, keepResources, correctDrift, fleetNamespace='fleet-local', editConfig=false, helmUrlRegex }) => {
   cy.accesMenuSelection('Continuous Delivery', 'Git Repos');
   if (editConfig === true) {
     cy.fleetNamespaceToggle(fleetNamespace);
@@ -71,7 +101,7 @@ Cypress.Commands.add('addFleetGitRepo', ({ repoName, repoUrl, branch, path, gitO
     cy.addPathOnGitRepoCreate(path);
   }
   if (gitAuthType) {
-    cy.gitRepoAuth(gitOrHelmAuth, gitAuthType, userOrPublicKey, pwdOrPrivateKey);
+    cy.gitRepoAuth(gitOrHelmAuth, gitAuthType, userOrPublicKey, pwdOrPrivateKey, helmUrlRegex);
   }
   // Check the checkbox of keepResources if option 'yes' is given.
   // After checked check-box, `keepResources: true` is set

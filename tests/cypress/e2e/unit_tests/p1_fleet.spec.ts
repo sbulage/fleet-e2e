@@ -270,6 +270,72 @@ if (!/\/2\.7/.test(Cypress.env('rancher_version'))) {
   });
 }
 
+// RepoURLRegex is supported on v2.8 but error reporting is not working correctly there
+// Ref. https://github.com/rancher/fleet/issues/2462 but it wont be fixed in v2.8
+if (/\/2\.9/.test(Cypress.env('rancher_version'))) {
+  describe('Private Helm Repository tests (helmRepoURLRegex)', { tags: '@p1'}, () => {
+
+    const repoUrl = 'https://github.com/fleetqa/fleet-qa-examples-public.git'
+    const branch = 'main'
+    const userOrPublicKey = 'user'
+    const pwdOrPrivateKey = 'password'
+    const gitOrHelmAuth = 'Helm'
+    const gitAuthType = "http"
+    let helmUrlRegex
+
+    const privateHelmData: testData[] = [
+      { qase_id: 64,
+        repoName: "local-private-helm-repo-64",
+        path: 'helm-urlregex-repo',
+        test_explanation: 'repo',
+        helmUrlRegex_matching: '^http.*',
+      },
+      { qase_id: 65,
+        repoName: "local-private-helm-chart-65",
+        path: 'helm-urlregex-chart',
+        test_explanation: 'chart',
+        helmUrlRegex_matching: '^http.*app.*tgz$',
+      },
+    ]
+
+    // Actually just a preparation step
+    it("Prepare the private helm registry", { tags: '@preparation' }, () => {
+      cy.importYaml({ clusterName: 'local', yamlFilePath: 'assets/helm-server-with-auth-and-data.yaml' });
+      cy.nameSpaceMenuToggle('default');
+      // The check doesn't wait for Active state, only its presence
+      cy.checkApplicationStatus('nginx-helm-repo');
+      // We keep the resources in cluster forever
+    });
+
+    privateHelmData.forEach(
+      ({qase_id, repoName, path, helmUrlRegex_matching, test_explanation}) => {
+        qase(qase_id,
+          it(`Fleet-${qase_id}: Test private helm registries for \"helmRepoURLRegex\" matches with \"${test_explanation}\" URL specified in fleet.yaml file`, { tags: `@fleet-${qase_id}` }, () => {;
+            // Positive test using matching regex
+            helmUrlRegex = helmUrlRegex_matching
+            cy.fleetNamespaceToggle('fleet-local');
+            cy.addFleetGitRepo({ repoName, repoUrl, branch, path, gitOrHelmAuth, gitAuthType, userOrPublicKey, pwdOrPrivateKey, helmUrlRegex });
+            cy.clickButton('Create');
+            cy.verifyTableRow(0, 'Active', /([1-9]\d*)\/\1/);
+            cy.accesMenuSelection('local', 'Storage', 'ConfigMaps');
+            cy.nameSpaceMenuToggle('All Namespaces');
+            cy.filterInSearchBox('local-chart-configmap');
+            cy.wait(2000);
+            cy.get('.col-link-detail').contains('local-chart-configmap').should('be.visible').click({ force: true });
+            cy.get('section#data').should('contain', 'sample-cm').and('contain', 'sample-data-inside');
+            cy.deleteAllFleetRepos();
+            // Negative test using non-matching regex 1234.*
+            helmUrlRegex = '1234.*'
+            cy.fleetNamespaceToggle('fleet-local');
+            cy.addFleetGitRepo({ repoName, repoUrl, branch, path, gitOrHelmAuth, gitAuthType, userOrPublicKey, pwdOrPrivateKey, helmUrlRegex });
+            cy.clickButton('Create');
+            cy.get('.text-error', { timeout: 120000 }).should('contain', 'code: 401');
+            cy.deleteAllFleetRepos();
+          })
+        )
+      })
+  });
+}
 
   describe('Test OCI support', { tags: '@p1'}, () => {
     qase(60,
