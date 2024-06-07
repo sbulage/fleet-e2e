@@ -1,0 +1,5 @@
+apiVersion: fleet.cattle.io/v1alpha1
+kind: GitRepoRestriction
+metadata:
+  name: test-restrictions-ns-not-exists-39
+  namespace: iamnotexists

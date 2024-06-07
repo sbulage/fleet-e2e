@@ -1,0 +1,7 @@
+apiVersion: fleet.cattle.io/v1alpha1
+kind: GitRepoRestriction
+metadata:
+  name: test-restrictions-allowed-namespace-40
+  namespace: fleet-local
+allowedTargetNamespaces:
+  - allowed-namespace
