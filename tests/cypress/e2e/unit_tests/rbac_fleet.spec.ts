@@ -522,6 +522,18 @@ describe('Test Fleet access with RBAC with "CUSTOM ROLES" and "GITREPOS" using "
 });
 
 describe('Test GitRepoRestrictions scenarios for GitRepo applicaiton deployment.', { tags: '@rbac' }, () => {
+  const branch = "master"
+  const path = "qa-test-apps/nginx-app"
+  const repoUrl = "https://github.com/rancher/fleet-test-data/"
+  const appName = 'nginx-keep'
+  const allowedTargetNamespace = 'allowed-namespace'
+
+  beforeEach('Cleanup leftover GitRepo if any.', () => {
+    cy.login();
+    cy.visit('/');
+    cy.deleteAllFleetRepos();
+  })
+
   qase(39,
     it('Test "GitRepoRestrictions" on non-existent namespace throws error in the UI', { tags: '@fleet-39' }, () => {
 
@@ -542,11 +554,6 @@ describe('Test GitRepoRestrictions scenarios for GitRepo applicaiton deployment.
   qase(40,
     it('Test "GitRepoRestrictions" override "defaultNamespace" in fleet.yaml of application over "allowedTargetNamespace"', { tags: '@fleet-40' }, () => {
       const repoName = 'local-gitreporestrictions-fleet-40'
-      const branch = "master"
-      const path = "qa-test-apps/nginx-app"
-      const repoUrl = "https://github.com/rancher/fleet-test-data/"
-      const appName = 'nginx-keep'
-      const allowedTargetNamespace = 'allowed-namespace'
 
       // Create GitRepoRestrictions with allowedTargetNamespace
       cy.accesMenuSelection('Continuous Delivery', 'Advanced', 'GitRepoRestrictions');
@@ -576,13 +583,63 @@ describe('Test GitRepoRestrictions scenarios for GitRepo applicaiton deployment.
       cy.filterInSearchBox(appName);
       cy.get('.col-link-detail').contains(appName).should('be.visible');
 
+      // Deleting GitRepoRestrictions from the fleet-local namespace
+      cy.accesMenuSelection('Continuous Delivery', 'Advanced', 'GitRepoRestrictions');
+      cy.fleetNamespaceToggle('fleet-local');
+      cy.deleteAll(false);
+
       // Delete GitRepo
       cy.deleteAllFleetRepos();
+    })
+  )
+
+  qase(41,
+    it('Test "allowedTargetNamespace" from "GitRepoRestrictions" overrides "defaultNamespace" in fleet.yaml of application on existing GitRepo', { tags: '@fleet-41' }, () => {
+      const repoName = 'local-gitreporestrictions-fleet-41'
+
+      // Create GitRepoRestrictions with allowedTargetNamespace
+      cy.accesMenuSelection('Continuous Delivery', 'Advanced', 'GitRepoRestrictions');
+      cy.clickButton('Create from YAML');
+      cy.readFile('assets/git-repo-restrictions-allowed-target-ns.yaml').then((content) => {
+        cy.get('.CodeMirror').then((codeMirrorElement) => {
+          const cm = (codeMirrorElement[0] as any).CodeMirror;
+          cm.setValue(content);
+        });
+      })
+      cy.clickButton('Create');
+
+      // Add Fleet repository and create it
+      cy.fleetNamespaceToggle('fleet-local');
+      cy.addFleetGitRepo({repoName, repoUrl, branch, path});
+      cy.clickButton('Create');
+      cy.verifyTableRow(0, 'Error', repoName);
+      cy.get('td.text-error')
+        .contains("Empty targetNamespace denied, because allowedTargetNamespaces restriction is present");
+
+      // Edit GitRepo by adding allowed target namespace.
+      cy.open3dotsMenu(repoName, 'Edit Config');
+      cy.contains('Git Repo:').should('be.visible');
+      cy.clickButton('Next');
+
+      // Update Target Namespace to GitRepo.
+      cy.get('input[placeholder="Optional: Require all resources to be in this namespace"]').type(allowedTargetNamespace);
+      cy.clickButton('Save');
+      cy.verifyTableRow(0, 'Active', repoName);
+      cy.checkGitRepoStatus(repoName, '1 / 1', '1 / 1');
+
+      // Verify application is created in allowed namespace.
+      cy.accesMenuSelection('local', 'Workloads', 'Pods');
+      cy.nameSpaceMenuToggle(allowedTargetNamespace);
+      cy.filterInSearchBox(appName);
+      cy.get('.col-link-detail').contains(appName).should('be.visible');
 
       // Deleting GitRepoRestrictions from the fleet-local namespace
       cy.accesMenuSelection('Continuous Delivery', 'Advanced', 'GitRepoRestrictions');
       cy.fleetNamespaceToggle('fleet-local');
       cy.deleteAll(false);
+
+      // Delete GitRepo
+      cy.deleteAllFleetRepos();
     })
   )
 });
