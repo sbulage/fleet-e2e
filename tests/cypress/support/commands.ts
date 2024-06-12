@@ -197,7 +197,7 @@ Cypress.Commands.add('accesMenuSelection', (firstAccessMenu='Continuous Delivery
     cy.get('nav.side-nav').contains(clickOption).should('be.visible').click();
   };
   // Ensure some title exist to proof the menu is loaded
-  cy.get('div.title').eq(1).should('exist').and('not.be.empty');
+  cy.get('div.title').last().should('exist').and('not.be.empty');
 });
 
 // Fleet namespace toggle
