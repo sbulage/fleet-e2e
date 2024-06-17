@@ -442,6 +442,12 @@ if (/\/2\.9/.test(Cypress.env('rancher_version'))) {
             // But with ConfigMaps and Services it is not because they are immutable i.e.
             // They didn't reconciled when `correctDrift` is used.
             cy.deleteAllFleetRepos();
+
+            // Delete leftover resources if there are any.
+            cy.accesMenuSelection(dsClusterName, resourceLocation, resourceType);
+            cy.nameSpaceMenuToggle(resourceNamespace);
+            cy.filterInSearchBox(resourceName);
+            cy.deleteAll(false);
           })
         )
       }
