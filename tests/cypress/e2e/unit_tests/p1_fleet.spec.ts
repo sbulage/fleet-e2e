@@ -192,6 +192,7 @@ describe('Test Self-Healing of resource modification when correctDrift option us
       // Update exising GitRepo by enabling 'correctDrift'
       cy.addFleetGitRepo({ repoName, correctDrift: 'yes', editConfig: true });
       cy.clickButton('Save');
+      // This test is exception for using 'Force Update'.
       cy.open3dotsMenu(repoName, 'Force Update');
       cy.checkGitRepoStatus(repoName, '1 / 1', '1 / 1');
       cy.checkApplicationStatus(appName);
@@ -221,7 +222,6 @@ describe('Test resource behavior after deleting GitRepo using keepResources opti
       // application removal after GitRepo delete.
       cy.addFleetGitRepo({ repoName, keepResources: 'yes', editConfig: true });
       cy.clickButton('Save');
-      cy.open3dotsMenu(repoName, 'Force Update');
       cy.checkGitRepoStatus(repoName, '1 / 1', '1 / 1');
 
       // Delete GitRepo to check application removed or not.
