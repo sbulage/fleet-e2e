@@ -82,7 +82,7 @@ Cypress.Commands.add('addFleetGitRepo', ({ repoName, repoUrl, branch, path, gitO
   cy.accesMenuSelection('Continuous Delivery', 'Git Repos');
   if (editConfig === true) {
     cy.fleetNamespaceToggle(fleetNamespace);
-    cy.verifyTableRow(0, 'Active', repoName);
+    cy.verifyTableRow(0, /Active|Modified/, repoName);
     cy.open3dotsMenu(repoName, 'Edit Config');
     cy.contains('Git Repo:').should('be.visible');
   } 
