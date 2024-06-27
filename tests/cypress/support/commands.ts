@@ -353,6 +353,23 @@ Cypress.Commands.add('deleteUser', (userName) => {
   cy.deleteAll(false);
 })
 
+// Delete all users. Admin user will stay
+Cypress.Commands.add('deleteAllUsers', (userName) => {
+  // Delete all users (Admin one will stay as cannot be deleted)
+  cy.accesMenuSelection('Users & Authentication');
+  cy.contains('.title', 'Users').should('be.visible');
+  cy.get('div.fixed-header-actions > div > button').then(($button) => {
+    if ($button.text().match('Delete')) {
+      cy.wait(250) // Add small wait to give time for things to settle
+      cy.get('[width="30"] > .checkbox-outer-container.check', { timeout: 50000 }).click();
+      cy.get('.btn').contains('Delete').click({ctrlKey: true});
+    }
+    else {
+      cy.log('No users to delete');
+    }
+  });
+});
+
 // Delete created role
 Cypress.Commands.add('deleteRole', (roleName, roleTypeTemplate) => {
   cy.accesMenuSelection('Users & Authentication', 'Role Templates');
@@ -364,9 +381,9 @@ Cypress.Commands.add('deleteRole', (roleName, roleTypeTemplate) => {
     // Check all filtered rows
     cy.get(' th:nth-child(1)').should('be.visible').click();
     // Delete role
-    cy.clickButton('Delete');    
+    cy.get('.btn').contains('Delete').click({ctrlKey: true});
   })
-  // Confirm deletion on window popup
-  cy.confirmDelete();
+
+  // Verify that there are no rows
   cy.contains('There are no rows which match your search query.', { timeout: 2000 }).should('be.visible');
 })
