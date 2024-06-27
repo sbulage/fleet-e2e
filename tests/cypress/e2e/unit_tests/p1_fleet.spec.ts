@@ -121,7 +121,7 @@ describe('Test resource behavior after deleting GitRepo using keepResources opti
           cy.fleetNamespaceToggle('fleet-local')
           cy.addFleetGitRepo({ repoName, repoUrl, branch, path, keepResources });
           cy.clickButton('Create');
-          cy.checkGitRepoStatus(repoName, '1 / 1', '1 / 1');
+          cy.checkGitRepoStatus(repoName, '1 / 1');
           cy.checkApplicationStatus(appName);
           cy.deleteAllFleetRepos();
           if (keepResources === 'yes') {
@@ -153,7 +153,7 @@ describe('Test Self-Healing of resource modification when correctDrift option us
           cy.fleetNamespaceToggle('fleet-local')
           cy.addFleetGitRepo({ repoName, repoUrl, branch, path, correctDrift });
           cy.clickButton('Create');
-          cy.checkGitRepoStatus(repoName, '1 / 1', '1 / 1');
+          cy.checkGitRepoStatus(repoName, '1 / 1');
           cy.checkApplicationStatus(appName);
 
           // Modify deployment count of application
@@ -180,7 +180,7 @@ describe('Test Self-Healing of resource modification when correctDrift option us
       cy.fleetNamespaceToggle('fleet-local')
       cy.addFleetGitRepo({ repoName, repoUrl, branch, path });
       cy.clickButton('Create');
-      cy.checkGitRepoStatus(repoName, '1 / 1', '1 / 1');
+      cy.checkGitRepoStatus(repoName, '1 / 1');
       cy.checkApplicationStatus(appName);
 
       // Modify deployment count of application
@@ -194,7 +194,7 @@ describe('Test Self-Healing of resource modification when correctDrift option us
       cy.clickButton('Save');
       // This test is exception for using 'Force Update'.
       cy.open3dotsMenu(repoName, 'Force Update');
-      cy.checkGitRepoStatus(repoName, '1 / 1', '1 / 1');
+      cy.checkGitRepoStatus(repoName, '1 / 1');
       cy.checkApplicationStatus(appName);
 
       // Modify deployment count of application
@@ -215,14 +215,14 @@ describe('Test resource behavior after deleting GitRepo using keepResources opti
       cy.fleetNamespaceToggle('fleet-local')
       cy.addFleetGitRepo({ repoName, repoUrl, branch, path });
       cy.clickButton('Create');
-      cy.checkGitRepoStatus(repoName, '1 / 1', '1 / 1');
+      cy.checkGitRepoStatus(repoName, '1 / 1');
       cy.checkApplicationStatus(appName);
 
       // Edit existing GitRepo with 'keepResource: true' to prevent
       // application removal after GitRepo delete.
       cy.addFleetGitRepo({ repoName, keepResources: 'yes', editConfig: true });
       cy.clickButton('Save');
-      cy.checkGitRepoStatus(repoName, '1 / 1', '1 / 1');
+      cy.checkGitRepoStatus(repoName, '1 / 1');
 
       // Delete GitRepo to check application removed or not.
       cy.deleteAllFleetRepos();
@@ -413,7 +413,7 @@ if (/\/2\.9/.test(Cypress.env('rancher_version'))) {
             cy.fleetNamespaceToggle('fleet-default')
             cy.addFleetGitRepo({ repoName, repoUrl, branch, path, correctDrift: 'yes' });
             cy.clickButton('Create');
-            cy.checkGitRepoStatus(repoName, '2 / 2', '2 / 2');
+            cy.checkGitRepoStatus(repoName, '2 / 2');
             cy.accesMenuSelection(dsClusterName, resourceLocation, resourceType);
             cy.nameSpaceMenuToggle(resourceNamespace);
             cy.filterInSearchBox(resourceName);

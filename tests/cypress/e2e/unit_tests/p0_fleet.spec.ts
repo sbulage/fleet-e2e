@@ -40,7 +40,7 @@ describe('Test Fleet deployment on PUBLIC repos',  { tags: '@p0' }, () => {
       cy.fleetNamespaceToggle('fleet-local');
       cy.addFleetGitRepo({ repoName, repoUrl, branch, path });
       cy.clickButton('Create');
-      cy.checkGitRepoStatus(repoName, '1 / 1', '6 / 6');
+      cy.checkGitRepoStatus(repoName, '1 / 1');
       cy.verifyTableRow(1, 'Service', 'frontend');
       cy.verifyTableRow(3, 'Service', 'redis-master');
       cy.verifyTableRow(5, 'Service', 'redis-slave');
@@ -70,7 +70,7 @@ describe('Test Fleet deployment on PRIVATE repos with HTTP auth', { tags: '@p0' 
         cy.fleetNamespaceToggle('fleet-default')
         cy.addFleetGitRepo({ repoName, repoUrl, branch, path, gitAuthType, userOrPublicKey, pwdOrPrivateKey });
         cy.clickButton('Create');
-        cy.checkGitRepoStatus(repoName, '1 / 1', '1 / 1');
+        cy.checkGitRepoStatus(repoName, '1 / 1');
         cy.checkApplicationStatus(appName, clusterName);
         cy.deleteAllFleetRepos();
       })
@@ -99,12 +99,10 @@ describe('Test Fleet deployment on PRIVATE repos with SSH auth', { tags: '@p0' }
         cy.fleetNamespaceToggle('fleet-default')
         cy.addFleetGitRepo({ repoName, repoUrl, branch, path, gitAuthType, userOrPublicKey, pwdOrPrivateKey });
         cy.clickButton('Create');
-        cy.checkGitRepoStatus(repoName, '1 / 1', '1 / 1');
+        cy.checkGitRepoStatus(repoName, '1 / 1');
         cy.checkApplicationStatus(appName, clusterName);
         cy.deleteAllFleetRepos();
       })
     );
   });
 });
-
-

@@ -242,16 +242,18 @@ Cypress.Commands.add('deleteAllFleetRepos', () => {
 });
 
 // Check Git repo deployment status
-Cypress.Commands.add('checkGitRepoStatus', (repoName, bundles, resources) => {
+Cypress.Commands.add('checkGitRepoStatus', (repoName, bundles) => {
   cy.verifyTableRow(0, 'Active', repoName);
   cy.contains(repoName).click()
   cy.get('.primaryheader > h1').contains(repoName).should('be.visible')
-  cy.log(`Checking ${bundles} Bundles and ${resources} Resources`)
+  cy.log(`Checking ${bundles} Bundles and Resources`)
   if (bundles) {
     cy.get('div.fleet-status', { timeout: 30000 }).eq(0).contains(` ${bundles} Bundles ready `, { timeout: 30000 }).should('be.visible')
-  }
-  if (resources) {
-    cy.get('div.fleet-status', { timeout: 30000 }).eq(1).contains(` ${resources} Resources ready `, { timeout: 30000 }).should('be.visible')
+    // Since v2.9 the Resources are multiplied by the number of clusters
+    // So we always check Resources presence and if both numbers match (like 2 / 2 Resources ready)
+    cy.get('div.fleet-status', { timeout: 30000 }).eq(1).invoke('text')
+    .then((text) => text.replace(/\s+/g, ' ')) // Replace all whitespaces by a space
+    .should('match', /.*([1-9]\d*) \/ \1 Resources ready/);
   }
 });
 
