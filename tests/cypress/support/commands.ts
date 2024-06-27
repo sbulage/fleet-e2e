@@ -251,9 +251,12 @@ Cypress.Commands.add('checkGitRepoStatus', (repoName, bundles) => {
     cy.get('div.fleet-status', { timeout: 30000 }).eq(0).contains(` ${bundles} Bundles ready `, { timeout: 30000 }).should('be.visible')
     // Since v2.9 the Resources are multiplied by the number of clusters
     // So we always check Resources presence and if both numbers match (like 2 / 2 Resources ready)
-    cy.get('div.fleet-status', { timeout: 30000 }).eq(1).invoke('text')
-    .then((text) => text.replace(/\s+/g, ' ')) // Replace all whitespaces by a space
-    .should('match', /.*([1-9]\d*) \/ \1 Resources ready/);
+    cy.get('div.fleet-status', { timeout: 30000 }).eq(1).should(($div) => {
+      // Replace whitespaces by a space and trim the string
+      const text = $div.text().replace(/\s+/g, ' ').trim();
+      // Perform the match check within .should callback as .then breaks retry ability
+      expect(text).to.match(/.*([1-9]\d*) \/ \1 Resources ready/);
+    });
   }
 });
 
