@@ -31,6 +31,9 @@ export const customRoleName_1 = "gitrepo-list-fleetworkspaces-bundles-all-role"
 export const customRoleName_2 = "gitrepo-list-create-fleetworkspaces-bundles-all-role"
 export const customRoleName_3 = "gitrepo-list-create-update-get-fleetworkspaces-bundles-all-role"
 export const customRoleName_4 = "gitrepo-list-delete-fleetworkspaces-bundles-all-role"
+export const customRoleName_5 = "fleetworkspace-list-create-gitrepo-bundles-all-role"
+export const customRoleName_6 = "fleetworkspace-all-except-delete-gitrepo-bundles-all-role"
+export const customRoleName_7 = "fleetworkspace-list-delete-gitrepo-bundles-all-role"
   
 
 beforeEach(() => {
@@ -688,6 +691,133 @@ describe('Test Fleet access with RBAC with "CUSTOM ROLES" and "GITREPOS" using "
     })
   )
 });
+
+describe('Test Fleet access with RBAC with "CUSTOM ROLES" and "GITREPOS" using "USER-BASE" user', { tags: '@rbac' }, () => {
+
+  qase(10,
+    it('Fleet-10: Test "Base-user" | Custom Role | Fleetworkspaces = [List, Create] | Bundles, Gitrepos = [ALL]', { tags: '@fleet-10' }, () => {
+      
+      const baseUser = "base-user-10"     
+      
+      // Create "Base User"
+      cypressLib.burgerMenuToggle();
+      cypressLib.createUser(baseUser, uiPassword, "User-Base", true);
+
+      cy.createRoleTemplate({
+        roleType: roleTypeTemplate,
+        roleName: customRoleName_5,
+        rules: [
+          { resource: "fleetworkspaces", verbs: ["list", "create"]},
+          { resource: "gitrepos", verbs: ["create", "delete", "get", "list", "patch", "update", "watch"]},
+          { resource: "bundles", verbs: ["create", "delete", "get", "list", "patch", "update", "watch"]},
+        ]
+      });
+
+      // Assign role to the created user
+      cy.assignRoleToUser(baseUser, customRoleName_5)
+
+      // Logout as admin and login as other user
+      cypressLib.logout();
+      cy.login(baseUser, uiPassword);
+
+      // Ensuring the user IS able to "go to Continuous Delivery",
+      //"go to Bundles" and "list" and "create" workspaces.
+      cy.accesMenuSelection('Continuous Delivery', 'Git Repos');
+      cy.wait(500)
+      cy.accesMenuSelection('Continuous Delivery', 'Advanced', 'Bundles');
+      cy.accesMenuSelection('Continuous Delivery', 'Advanced', 'Workspaces');
+      cy.verifyTableRow(0, 'Active', 'fleet-default');
+      cy.verifyTableRow(1, 'Active', 'fleet-local');
+      cy.get('a.btn.role-primary').contains('Create').should('be.visible');
+      
+      // Ensuring the user is not able to "edit" or "delete" workspaces.
+      cy.open3dotsMenu('fleet-default', 'Delete', true);
+      cy.open3dotsMenu('fleet-default', 'Edit Config', true);
+    })
+  )
+
+  qase(11,
+    it('Fleet-11: Test "Base-user" | Custom Role | Fleetworkspaces = [All except Delete] | Bundles, Gitrepos = [ALL]', { tags: '@fleet-11' }, () => {
+      
+      const baseUser = "base-user-11"     
+      
+      // Create "Base User"
+      cypressLib.burgerMenuToggle();
+      cypressLib.createUser(baseUser, uiPassword, "User-Base", true);
+
+      cy.createRoleTemplate({
+        roleType: roleTypeTemplate,
+        roleName: customRoleName_6,
+        rules: [
+          { resource: "fleetworkspaces", verbs: ["create", "get", "list", "patch", "update", "watch"]},
+          { resource: "gitrepos", verbs: ["create", "delete", "get", "list", "patch", "update", "watch"]},
+          { resource: "bundles", verbs: ["create", "delete", "get", "list", "patch", "update", "watch"]},
+        ]
+      });
+
+      // Assign role to the created user
+      cy.assignRoleToUser(baseUser, customRoleName_6)
+
+      // Logout as admin and login as other user
+      cypressLib.logout();
+      cy.login(baseUser, uiPassword);
+
+      // Ensuring the user IS able  to "list", "edit" and "create" workspaces.
+      cy.accesMenuSelection('Continuous Delivery', 'Git Repos');
+      cy.wait(1000)
+      cy.accesMenuSelection('Continuous Delivery', 'Advanced', 'Bundles');
+      cy.accesMenuSelection('Continuous Delivery', 'Advanced', 'Workspace');
+      cy.get('a.btn.role-primary').contains('Create').should('be.visible');
+      cy.verifyTableRow(0, 'Active', 'fleet-default');
+      cy.verifyTableRow(1, 'Active', 'fleet-local');
+      cy.open3dotsMenu('fleet-default', 'Edit Config');
+      cy.contains('allowedTargetNamespaces').should('be.visible');
+      
+      // Ensuring the user is not able to "delete" workspaces. 
+      cy.accesMenuSelection('Continuous Delivery', 'Advanced', 'Workspace');
+      cy.open3dotsMenu('fleet-default', 'Delete', true);
+    })
+  )
+
+  qase(12,
+    it('Fleet-12: Test "Base-user" | Custom Role | Fleetworkspaces = [List, Delete] | Bundles, Gitrepos = [ALL]', { tags: '@fleet-12' }, () => {
+      
+      const baseUser = "base-user-12"
+      
+      // Create "Base User"
+      cypressLib.burgerMenuToggle();
+      cypressLib.createUser(baseUser, uiPassword, "User-Base", true);
+
+      cy.createRoleTemplate({
+        roleType: roleTypeTemplate,
+        roleName: customRoleName_7,
+        rules: [
+          { resource: "fleetworkspaces", verbs: ["list", "delete"]},
+          { resource: "gitrepos", verbs: ["create", "delete", "get", "list", "patch", "update", "watch"]},
+          { resource: "bundles", verbs: ["create", "delete", "get", "list", "patch", "update", "watch"]},
+        ]
+      });
+
+      // // Assign role to the created user
+      cy.assignRoleToUser(baseUser, customRoleName_7)
+      
+      // Logout as admin and login as other user
+      cypressLib.logout();
+      cy.login(baseUser, uiPassword);
+
+      // Ensuring the user IS able to "go to Continuous Delivery", "list" and "delete" workspaces.
+      cy.accesMenuSelection('Continuous Delivery', 'Advanced', 'Workspace');
+      cy.verifyTableRow(0, 'Active', 'fleet-default');
+      cy.verifyTableRow(1, 'Active', 'fleet-local');
+      cy.contains('Delete').should('be.visible');
+    
+      // Ensuring the user is NOT able to "edit" workspaces. 
+      cy.accesMenuSelection('Continuous Delivery', 'Advanced', 'Workspace');
+      cy.open3dotsMenu('fleet-default', 'Edit Config', true);
+    })
+  )
+});
+
 
 describe('Test GitRepoRestrictions scenarios for GitRepo applicaiton deployment.', { tags: '@rbac' }, () => {
   const branch = "master"
