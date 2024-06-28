@@ -270,7 +270,7 @@ describe('Test Fleet access with RBAC with custom roles using Standard User', { 
       cy.fleetNamespaceToggle('fleet-local');
       cy.addFleetGitRepo({ repoName, repoUrl, branch, path });
       cy.clickButton('Create');
-      cy.checkGitRepoStatus(repoName, '1 / 1');
+      cy.checkGitRepoStatus(repoName, '1 / 1', '1 / 1');
   
       cy.accesMenuSelection('Continuous Delivery', 'Git Repos');
       cy.fleetNamespaceToggle('fleet-default');
@@ -493,7 +493,7 @@ describe('Test Fleet access with RBAC with "CUSTOM ROLES" and "GITREPOS" using "
     cy.fleetNamespaceToggle('fleet-default');
     cy.addFleetGitRepo({ repoName: repoNameDefault, repoUrl, branch, path: pathDefault });
     cy.clickButton('Create');
-    cy.checkGitRepoStatus(repoNameDefault, '1 / 1', '1 / 1');
+    cy.checkGitRepoStatus(repoNameDefault, '1 / 1');
   })
 
   qase(13,
@@ -873,7 +873,7 @@ describe('Test GitRepoRestrictions scenarios for GitRepo applicaiton deployment.
       cy.get('input[placeholder="Optional: Require all resources to be in this namespace"]').type(allowedTargetNamespace);
       cy.clickButton('Create');
       cy.verifyTableRow(0, 'Active', repoName);
-      cy.checkGitRepoStatus(repoName, '1 / 1');
+      cy.checkGitRepoStatus(repoName, '1 / 1', '1 / 1');
 
       // Verify application is created in allowed namespace.
       cy.accesMenuSelection('local', 'Workloads', 'Pods');
@@ -923,7 +923,7 @@ describe('Test GitRepoRestrictions scenarios for GitRepo applicaiton deployment.
       cy.get('input[placeholder="Optional: Require all resources to be in this namespace"]').type(allowedTargetNamespace);
       cy.clickButton('Save');
       cy.verifyTableRow(0, 'Active', repoName);
-      cy.checkGitRepoStatus(repoName, '1 / 1');
+      cy.checkGitRepoStatus(repoName, '1 / 1', '1 / 1');
 
       // Verify application is created in allowed namespace.
       cy.accesMenuSelection('local', 'Workloads', 'Pods');
