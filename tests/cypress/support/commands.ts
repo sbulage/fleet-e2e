@@ -242,15 +242,21 @@ Cypress.Commands.add('deleteAllFleetRepos', () => {
 });
 
 // Check Git repo deployment status
-Cypress.Commands.add('checkGitRepoStatus', (repoName, bundles) => {
+Cypress.Commands.add('checkGitRepoStatus', (repoName, bundles, resources) => {
   cy.verifyTableRow(0, 'Active', repoName);
   cy.contains(repoName).click()
   cy.get('.primaryheader > h1').contains(repoName).should('be.visible')
   cy.log(`Checking ${bundles} Bundles and Resources`)
   if (bundles) {
     cy.get('div.fleet-status', { timeout: 30000 }).eq(0).contains(` ${bundles} Bundles ready `, { timeout: 30000 }).should('be.visible')
-    // Since v2.9 the Resources are multiplied by the number of clusters
-    // So we always check Resources presence and if both numbers match (like 2 / 2 Resources ready)
+  }
+  // Ensure this check is performed only for tests in 'fleet-local' namespace.
+  if (resources) {
+      cy.get('div.fleet-status', { timeout: 30000 }).eq(1).contains(` ${resources} Resources ready `, { timeout: 30000 }).should('be.visible')
+  } else {
+    // On downstream clusters (v2.9+), resources are affected by cluster count.
+    // Avoid specifying 'resources' for tests in 'fleet-default' to allow automatic verification.
+    // This checks for the presence of a matching "X / X Resources ready" pattern.
     cy.get('div.fleet-status', { timeout: 30000 }).eq(1).should(($div) => {
       // Replace whitespaces by a space and trim the string
       const text = $div.text().replace(/\s+/g, ' ').trim();
