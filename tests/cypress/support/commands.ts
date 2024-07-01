@@ -350,8 +350,8 @@ Cypress.Commands.add('assignRoleToUser', (userName, roleName) => {
   cy.clickButton('Save');
   // Sortering by Age so first row is the desired user
   cy.contains('Age').should('be.visible').click();
-  // Since v2.7.14-rc3 and v2.8.5-rc3 the State is Enabled instead of Active in v2.X-head
-  cy.verifyTableRow(0, /Active|Enabled/ , userName);
+  // Verifying name only given in 2.9 there is only icon
+  cy.verifyTableRow(0, userName, '');
 })
 
 // Delete created user
