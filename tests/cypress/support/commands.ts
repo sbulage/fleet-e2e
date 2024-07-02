@@ -149,32 +149,24 @@ Cypress.Commands.add('verifyTableRow', (rowNumber, expectedText1, expectedText2)
   cy.wait(1000)
   // Ensure table is loaded and visible
   cy.contains('tr.main-row[data-testid="sortable-table-0-row"]').should('not.be.empty', { timeout: 25000 });
-  cy.get(`table > tbody > tr.main-row[data-testid="sortable-table-${rowNumber}-row"]`)
-    .children({ timeout: 60000 })
-    .then(() => {
-    // Check if expectedText1 is a regular expression or a string
+  cy.get(`table > tbody > tr.main-row[data-testid="sortable-table-${rowNumber}-row"]`, { timeout: 60000 }).should(($row) => {
+    // Replace whitespaces by a space and trim the string for both expected texts
+    const text = $row.text().replace(/\s+/g, ' ').trim();
+
+    // Check if expectedText1 is a regular expression or a string and perform the assertion
     if (expectedText1 instanceof RegExp) {
-      cy.get(`table > tbody > tr.main-row[data-testid="sortable-table-${rowNumber}-row"]`)
-        .children({ timeout: 60000 })
-        .invoke('text')
-        .should('match', expectedText1);
+      expect(text).to.match(expectedText1);
     } else {
-      cy.get(`table > tbody > tr.main-row[data-testid="sortable-table-${rowNumber}-row"]`)
-        .children({ timeout: 60000 })
-        .should('contain', expectedText1);
+      expect(text).to.include(expectedText1);
     }
-    // Check if expectedText2 is a regular expression or a string
+
+    // Check if expectedText2 is a regular expression or a string and perform the assertion
     if (expectedText2 instanceof RegExp) {
-      cy.get(`table > tbody > tr.main-row[data-testid="sortable-table-${rowNumber}-row"]`)
-        .children({ timeout: 60000 })
-        .invoke('text')
-        .should('match', expectedText2);
+      expect(text).to.match(expectedText2);
     } else {
-      cy.get(`table > tbody > tr.main-row[data-testid="sortable-table-${rowNumber}-row"]`)
-        .children({ timeout: 60000 })
-        .should('contain', expectedText2);
+      expect(text).to.include(expectedText2);
     }
-   });
+  });
 });
 
 // Namespace Toggle
