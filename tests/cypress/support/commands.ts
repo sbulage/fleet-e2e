@@ -153,18 +153,23 @@ Cypress.Commands.add('verifyTableRow', (rowNumber, expectedText1, expectedText2)
     // Replace whitespaces by a space and trim the string for both expected texts
     const text = $row.text().replace(/\s+/g, ' ').trim();
 
-    // Check if expectedText1 is a regular expression or a string and perform the assertion
-    if (expectedText1 instanceof RegExp) {
-      expect(text).to.match(expectedText1);
-    } else {
-      expect(text).to.include(expectedText1);
+    // Check if expectedTextX is a regular expression or a string and perform the assertion
+    if (expectedText1) {
+      // If expectedText1 is provided, perform the check
+      if (expectedText1 instanceof RegExp) {
+        expect(text).to.match(expectedText1);
+      } else {
+        expect(text).to.include(expectedText1);
+      }
     }
 
-    // Check if expectedText2 is a regular expression or a string and perform the assertion
-    if (expectedText2 instanceof RegExp) {
-      expect(text).to.match(expectedText2);
-    } else {
-      expect(text).to.include(expectedText2);
+    if (expectedText2) {
+      // If expectedText2 is provided, perform the check
+      if (expectedText2 instanceof RegExp) {
+        expect(text).to.match(expectedText2);
+      } else {
+        expect(text).to.include(expectedText2);
+      }
     }
   });
 });
