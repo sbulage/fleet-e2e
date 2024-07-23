@@ -23,7 +23,7 @@ declare global {
       open3dotsMenu(name: string, selection?: string, checkNotInMenu?: boolean): Chainable<Element>;
       addPathOnGitRepoCreate(path: string): Chainable<Element>;
       gitRepoAuth(AuthType: string, userOrPublicKey?: string, pwdOrPrivateKey?: string, gitOrHelmAuth?: string, helmUrlRegex?: string): Chainable<Element>;
-      addFleetGitRepo(repoName: string, repoUrl?: string, branch?: string, path?: string, fleetNamespace?: string): Chainable<Element>;
+      addFleetGitRepo(repoName: string, repoUrl?: string, branch?: string, path?: string, fleetNamespace?: string, editConfig?: boolean, helmUrlRegex?: string, deployToTarget?: string): Chainable<Element>;
       fleetNamespaceToggle(toggleOption: string): Chainable<Element>;
       verifyTableRow(rowNumber: number, expectedText1?: string|RegExp, expectedText2?: string|RegExp): Chainable<Element>;
       nameSpaceMenuToggle(namespaceName: string): Chainable<Element>;
@@ -32,7 +32,7 @@ declare global {
       deleteAll(fleetCheck?: boolean): Chainable<Element>;
       deleteAllFleetRepos(): Chainable<Element>;
       checkGitRepoStatus(repoName: string, bundles?: string, resources?: string): Chainable<Element>;
-      checkApplicationStatus(appName: string, clusterName?: string): Chainable<Element>;
+      checkApplicationStatus(appName: string, clusterName?: string, appNamespace?: string): Chainable<Element>;
       deleteApplicationDeployment(clusterName?: string): Chainable<Element>;
       modifyDeployedApplication(appName: string, clusterName?: string): Chainable<Element>;
       createRoleTemplate(roleType: string, roleName: string, newUserDefault?: string['yes'|'no'], rules?: string[]): Chainable<Element>;
@@ -41,6 +41,11 @@ declare global {
       deleteAllUsers(): Chainable<Element>;
       deleteRole(roleName: string, roleTypeTemplate: string): Chainable<Element>;
       importYaml(clusterName: string, yamlFilePath: string): Chainable<Element>;
+      assignClusterLabel(clusterName: string, key: string, value: string): Chainable<Element>;
+      createClusterGroup(clusterGroupName: string, key: string, value: string, bannerMessageToAssert: string): Chainable<Element>;
+      deleteClusterGroups(): Chainable<Element>;
+      deployToClusterOrClusterGroup(deployToTarget: string): Chainable<Element>;
+      removeClusterLabels(clusterName: string, key: string, value: string): Chainable<Element>;
     }
   }
 }

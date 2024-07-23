@@ -78,7 +78,7 @@ Cypress.Commands.add('importYaml', ({ clusterName, yamlFilePath }) => {
 
 // Command add and edit Fleet Git Repository
 // TODO: Rename this command name to 'addEditFleetGitRepo'
-Cypress.Commands.add('addFleetGitRepo', ({ repoName, repoUrl, branch, path, gitOrHelmAuth, gitAuthType, userOrPublicKey, pwdOrPrivateKey, keepResources, correctDrift, fleetNamespace='fleet-local', editConfig=false, helmUrlRegex }) => {
+Cypress.Commands.add('addFleetGitRepo', ({ repoName, repoUrl, branch, path, gitOrHelmAuth, gitAuthType, userOrPublicKey, pwdOrPrivateKey, keepResources, correctDrift, fleetNamespace='fleet-local', editConfig=false, helmUrlRegex, deployToTarget }) => {
   cy.accesMenuSelection('Continuous Delivery', 'Git Repos');
   if (editConfig === true) {
     cy.fleetNamespaceToggle(fleetNamespace);
@@ -111,6 +111,17 @@ Cypress.Commands.add('addFleetGitRepo', ({ repoName, repoUrl, branch, path, gitO
   }
   cy.clickButton('Next');
   cy.get('button.btn').contains('Previous').should('be.visible');
+  // Target to any cluster or group or no cluster.
+  if (deployToTarget) {
+    cy.deployToClusterOrClusterGroup(deployToTarget);
+  }
+});
+
+// Deploy To target functionality used in addGitRepo
+Cypress.Commands.add('deployToClusterOrClusterGroup', (deployToTarget) => {
+  cy.get('div.labeled-select.create.hoverable').should('be.visible');
+  cy.get('div.labeled-select.create.hoverable').click({ force: true });
+  cy.get('ul.vs__dropdown-menu > li').contains(deployToTarget).should("exist").click();
 });
 
 // 3 dots menu selection
@@ -185,16 +196,24 @@ Cypress.Commands.add('nameSpaceMenuToggle', (namespaceName) => {
 
 // Command to filter text in searchbox
 Cypress.Commands.add('filterInSearchBox', (filterText) => {
-  cy.get('input.input-sm.search-box').should('be.visible').clear().type(filterText)
+  cy.get('input.input-sm.search-box').should('be.visible');
+  // Added 5 seconds of wait, as element is hidden after it gets visible.
+  cy.wait(500);
+  cy.get('input.input-sm.search-box').clear().type(filterText);
 });
 
 // Go to specific Sub Menu from Access Menu
 Cypress.Commands.add('accesMenuSelection', (firstAccessMenu='Continuous Delivery',secondAccessMenu, clickOption) => {
+  // added wait of 500ms to make time for CSS transitions to resolve (addresses tests flakiness)
+  // unfortunately there's no "easy" way of waiting for transitions and 500ms is quick and does the trick
   cypressLib.burgerMenuToggle( {animationDistanceThreshold: 10} );
-  cy.contains(firstAccessMenu).should('be.visible')
+  cy.wait(500);
+  cy.get('[data-testid="side-menu"]').should('have.class', 'menu-open');
+
+  cy.contains(firstAccessMenu).should('be.visible');
   cypressLib.accesMenu(firstAccessMenu);
   if (secondAccessMenu) {
-    cy.contains(secondAccessMenu).should('be.visible')
+    cy.contains(secondAccessMenu).should('be.visible');
     cypressLib.accesMenu(secondAccessMenu);
   };
   if (clickOption) {
@@ -264,10 +283,12 @@ Cypress.Commands.add('checkGitRepoStatus', (repoName, bundles, resources) => {
 });
 
 // Check deployed application status (present or not)
-Cypress.Commands.add('checkApplicationStatus', (appName, clusterName='local') => {
+Cypress.Commands.add('checkApplicationStatus', (appName, clusterName='local', appNamespace='Only User Namespaces') => {
   cypressLib.burgerMenuToggle();
   cypressLib.accesMenu(clusterName);
   cy.clickNavMenu(['Workloads', 'Pods']);
+  cy.nameSpaceMenuToggle(appNamespace);
+  cy.filterInSearchBox(appName);
   cy.contains('tr.main-row[data-testid="sortable-table-0-row"]').should('not.be.empty', { timeout: 25000 });
   cy.get(`table > tbody > tr.main-row[data-testid="sortable-table-0-row"]`)
     .children({ timeout: 60000 })
@@ -394,4 +415,69 @@ Cypress.Commands.add('deleteRole', (roleName, roleTypeTemplate) => {
 
   // Verify that there are no rows
   cy.contains('There are no rows which match your search query.', { timeout: 2000 }).should('be.visible');
+})
+
+// Add label to the imported cluster(s)
+Cypress.Commands.add('assignClusterLabel', (clusterName, key, value) => {
+  cy.filterInSearchBox(clusterName);
+  cy.open3dotsMenu(clusterName, 'Edit Config');
+  cy.clickButton('Add Label');
+  cy.get('div[class="row"] div[class="key-value"] input[placeholder="e.g. foo"]').last().type(key);
+  cy.get('div[class="row"] div[class="key-value"] textarea[placeholder="e.g. bar"]').last().type(value);
+  cy.wait(500);
+  cy.clickButton('Save');
+  cy.contains('Save').should('not.exist');
+})
+
+// Create clusterGroup based on label assigned to the cluster
+Cypress.Commands.add('createClusterGroup', (clusterGroupName, key, value, bannerMessageToAssert) => {
+  cy.fleetNamespaceToggle('fleet-default');
+  cy.clickButton('Create');
+  cy.get('input[placeholder="A unique name"]').type(clusterGroupName);
+  cy.clickButton('Add Rule');
+  cy.get('[data-testid="input-match-expression-key-control-0"]').focus().type(key);
+  cy.get('[data-testid="input-match-expression-values-control-0"]').type(value);
+  cy.get('[data-testid="banner-content"]').should(($banner) => {
+    const bannerContent = $banner.text();
+    expect(bannerContent).contain(bannerMessageToAssert)
+  });
+  cy.clickButton('Create');
+  cy.verifyTableRow(0, 'Active', clusterGroupName);
+})
+
+// Delete Cluster Group
+Cypress.Commands.add('deleteClusterGroups', () => {
+  cy.accesMenuSelection('Continuous Delivery', 'Cluster Groups');
+  cy.fleetNamespaceToggle('fleet-default');
+  cy.deleteAll(false);
+})
+
+// Remove added labels from the cluster(s)
+Cypress.Commands.add('removeClusterLabels', (clusterName, key, value) => {
+  // Navigate to Clusters page when other navigation is present.
+  cy.get('body').then((body) => {
+    if (body.find('.title').text().includes('Clusters')) {
+      return true
+    }
+    else {
+      cy.accesMenuSelection('Continuous Delivery', 'Clusters');
+    }
+  })
+
+  cy.contains('.title', 'Clusters').should('be.visible');
+  cy.filterInSearchBox(clusterName);
+  cy.open3dotsMenu(clusterName, 'Edit Config');
+  cy.get('div[class="row"] div[class="key-value"] button.role-link').first().click();
+  cy.wait(500);
+  cy.clickButton('Save');
+  cy.contains('Save').should('not.exist');
+
+  // Ensure label is removed.
+  cy.contains('.title', 'Clusters').should('be.visible');
+  cy.filterInSearchBox(clusterName);
+  cy.get('td.col-link-detail > span').contains(clusterName).click();
+  cy.get('div.tags > span').should("not.contain", `${key} : ${value}`);
+
+  // Navigate back to all clusters page.
+  cy.clickNavMenu(['Clusters']);
 })

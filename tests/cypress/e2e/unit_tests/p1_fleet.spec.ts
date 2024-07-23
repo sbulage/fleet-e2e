@@ -475,3 +475,60 @@ describe('Test Self-Healing on IMMUTABLE resources when correctDrift is enabled'
     }
   )
 });
+
+describe('Test application deployment based on clusterGroup', { tags: '@p1'}, () => {
+  const dsClusterList = ["imported-0", "imported-1"]
+  const key = 'key_env'
+  const value = 'value_prod'
+  const clusterGroupName = 'cluster-group-env-prod'
+  const bannerMessageToAssert = 'Matches 2 of 3 existing clusters, including "imported-0"'
+
+  beforeEach('Cleanup leftover GitRepo if any.', () => {
+    cy.login();
+    cy.visit('/');
+    cy.deleteClusterGroups();
+    cy.deleteAllFleetRepos();
+  })
+
+  qase(25,
+    it("Fleet-25: Test install single application to the all defined clusters in the 'clusterGroup'", { tags: '@fleet-25' }, () => {
+      const repoName = 'default-single-app-cluster-group-25'
+
+      cy.accesMenuSelection('Continuous Delivery', 'Clusters');
+      cy.contains('.title', 'Clusters').should('be.visible');
+
+      // Assign label to the clusters 
+      dsClusterList.forEach(
+        (dsClusterName) => {
+          cy.assignClusterLabel(dsClusterName, key, value);
+        }
+      )
+
+      // Create group of cluster consists of same label.
+      cy.clickNavMenu(['Cluster Groups']);
+      cy.contains('.title', 'Cluster Groups').should('be.visible');
+      cy.createClusterGroup(clusterGroupName, key, value, bannerMessageToAssert);
+
+      // Create a GitRepo targeting cluster group created.
+      cy.addFleetGitRepo({ repoName, repoUrl, branch, path, deployToTarget: clusterGroupName });
+      cy.clickButton('Create');
+      cy.checkGitRepoStatus(repoName, '1 / 1');
+
+      // Check application status on both clusters.
+      dsClusterList.forEach(
+        (dsClusterName) => {
+          cy.checkApplicationStatus(appName, dsClusterName, 'All Namespaces');
+        }
+      )
+
+      // Remove labels from the clusters.
+      dsClusterList.forEach(
+        (dsClusterName) => {
+          // Adding wait to load page correctly to avoid interference with hamburger-menu.
+          cy.wait(500);
+          cy.removeClusterLabels(dsClusterName, key, value);
+        }
+      )
+    })
+  )
+});
