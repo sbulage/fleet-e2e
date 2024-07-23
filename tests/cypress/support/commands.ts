@@ -417,6 +417,45 @@ Cypress.Commands.add('deleteRole', (roleName, roleTypeTemplate) => {
   cy.contains('There are no rows which match your search query.', { timeout: 2000 }).should('be.visible');
 })
 
+// Allow to select pre-release versions
+Cypress.Commands.add('allowRancherPreReleaseVersions', () => {
+  // Using visit here instead of clicking in prefs to avoid issues in CI
+  cy.visit('/prefs')
+  cy.contains('Include Prerelease Versions', {timeout: 15000}).should('exist').click({ force: true });
+  cy.screenshot('Screenshot Pre-release versions activated');
+  cy.wait(500);
+  cy.visit('/c/local/explorer')
+  cy.wait(500);
+  cy.get('h6').contains('Cluster').should('be.visible')
+});
+
+// Upgrade Fleet to latest version when is not set to default in UI.
+Cypress.Commands.add('upgradeFleet', () => {
+
+  // Refresh the Rancher repository
+  cy.visit('c/local/apps/catalog.cattle.io.clusterrepo');
+  cy.get('h1', { timeout: 20000 }).contains('Repositories').should('be.visible');
+  cy.verifyTableRow(1, 'Active', 'Rancher');
+  cy.open3dotsMenu('Rancher', 'Refresh');
+  cy.verifyTableRow(1, 'Active', 'Rancher');
+  
+  // Update Fleet
+  cy.visit('c/local/apps/catalog.cattle.io.app');
+  cy.get('h1', { timeout: 20000 }).contains('Installed Apps').should('be.visible')
+  cy.nameSpaceMenuToggle('cattle-fleet-system');
+  cy.verifyTableRow(0, 'Deployed', 'fleet');
+  cy.filterInSearchBox('fleet');
+  cy.open3dotsMenu('fleet', 'Edit/Upgrade');
+  cy.contains('Loading...', { timeout: 20000 }).should('not.exist');
+  cy.get('#vs1__combobox').click();
+  cy.wait(250);
+  cy.get('ul.vs__dropdown-menu > li').first().click();
+  cy.clickButton('Next');
+  cy.clickButton(/Upgrade|Update/);
+  cy.contains('Updating...', { timeout: 20000 }).should('not.exist');
+  cy.contains('SUCCESS: helm upgrade', { timeout: 60000 }).should('be.visible');
+  cy.screenshot('Screenshot Fleet upgraded');
+});
 // Add label to the imported cluster(s)
 Cypress.Commands.add('assignClusterLabel', (clusterName, key, value) => {
   cy.filterInSearchBox(clusterName);

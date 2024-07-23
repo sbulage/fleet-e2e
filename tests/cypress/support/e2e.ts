@@ -41,6 +41,8 @@ declare global {
       deleteAllUsers(): Chainable<Element>;
       deleteRole(roleName: string, roleTypeTemplate: string): Chainable<Element>;
       importYaml(clusterName: string, yamlFilePath: string): Chainable<Element>;
+      allowRancherPreReleaseVersions(): Chainable<Element>;
+      upgradeFleet(): Chainable<Element>;
       assignClusterLabel(clusterName: string, key: string, value: string): Chainable<Element>;
       createClusterGroup(clusterGroupName: string, key: string, value: string, bannerMessageToAssert: string): Chainable<Element>;
       deleteClusterGroups(): Chainable<Element>;
