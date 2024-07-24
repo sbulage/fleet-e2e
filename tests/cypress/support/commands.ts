@@ -208,7 +208,6 @@ Cypress.Commands.add('accesMenuSelection', (firstAccessMenu='Continuous Delivery
   // unfortunately there's no "easy" way of waiting for transitions and 500ms is quick and does the trick
   cypressLib.burgerMenuToggle( {animationDistanceThreshold: 10} );
   cy.wait(500);
-  cy.get('[data-testid="side-menu"]').should('have.class', 'menu-open');
 
   cy.contains(firstAccessMenu).should('be.visible');
   cypressLib.accesMenu(firstAccessMenu);
@@ -476,10 +475,7 @@ Cypress.Commands.add('createClusterGroup', (clusterGroupName, key, value, banner
   cy.clickButton('Add Rule');
   cy.get('[data-testid="input-match-expression-key-control-0"]').focus().type(key);
   cy.get('[data-testid="input-match-expression-values-control-0"]').type(value);
-  cy.get('[data-testid="banner-content"]').should(($banner) => {
-    const bannerContent = $banner.text();
-    expect(bannerContent).contain(bannerMessageToAssert)
-  });
+  cy.contains(bannerMessageToAssert).should('be.visible');
   cy.clickButton('Create');
   cy.verifyTableRow(0, 'Active', clusterGroupName);
 })

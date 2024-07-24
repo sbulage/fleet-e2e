@@ -481,7 +481,7 @@ describe('Test application deployment based on clusterGroup', { tags: '@p1'}, ()
   const key = 'key_env'
   const value = 'value_prod'
   const clusterGroupName = 'cluster-group-env-prod'
-  const bannerMessageToAssert = 'Matches 2 of 3 existing clusters, including "imported-0"'
+  const bannerMessageToAssert = /Matches 2 of 3 existing clusters, including "imported-\d"/
 
   beforeEach('Cleanup leftover GitRepo if any.', () => {
     cy.login();

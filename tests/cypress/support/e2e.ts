@@ -44,7 +44,7 @@ declare global {
       allowRancherPreReleaseVersions(): Chainable<Element>;
       upgradeFleet(): Chainable<Element>;
       assignClusterLabel(clusterName: string, key: string, value: string): Chainable<Element>;
-      createClusterGroup(clusterGroupName: string, key: string, value: string, bannerMessageToAssert: string): Chainable<Element>;
+      createClusterGroup(clusterGroupName: string, key: string, value: string, bannerMessageToAssert: string|RegExp): Chainable<Element>;
       deleteClusterGroups(): Chainable<Element>;
       deployToClusterOrClusterGroup(deployToTarget: string): Chainable<Element>;
       removeClusterLabels(clusterName: string, key: string, value: string): Chainable<Element>;
