@@ -446,13 +446,13 @@ describe('Test Self-Healing on IMMUTABLE resources when correctDrift is enabled'
           cy.verifyTableRow(0, 'Active', repoName);
 
           // Check All clusters are in healthy state after performing any modification to the resources.
-          dsClusterList.forEach((dsClusterName) => {
+          dsClusterList.forEach((dsCluster) => {
             // Adding wait to load page correctly to avoid interference with hamburger-menu.
             cy.wait(500);
             cy.accesMenuSelection('Continuous Delivery', 'Clusters');
             cy.contains('.title', 'Clusters').should('be.visible');
-            cy.filterInSearchBox(dsClusterName);
-            cy.verifyTableRow(0, 'Active', dsClusterName);
+            cy.filterInSearchBox(dsCluster);
+            cy.verifyTableRow(0, 'Active', dsCluster);
           })
 
           // Any mutable resource will reconcile to it's original state immediately
@@ -462,10 +462,10 @@ describe('Test Self-Healing on IMMUTABLE resources when correctDrift is enabled'
 
           // Delete leftover resources if there are any on each downstream cluster.
           // Currently, service is getting deleted from cluster, hence adding check for it.
-          dsClusterList.forEach((dsClusterName) => {
+          dsClusterList.forEach((dsCluster) => {
             // Adding wait to load page correctly to avoid interference with hamburger-menu.
             cy.wait(500);
-            cy.accesMenuSelection(dsClusterName, "Service Discovery", "Services");
+            cy.accesMenuSelection(dsCluster, "Service Discovery", "Services");
             cy.nameSpaceMenuToggle(resourceNamespace);
             cy.filterInSearchBox(resourceName);
             cy.deleteAll(false);
@@ -499,8 +499,8 @@ describe('Test application deployment based on clusterGroup', { tags: '@p1'}, ()
 
       // Assign label to the clusters 
       dsClusterList.forEach(
-        (dsClusterName) => {
-          cy.assignClusterLabel(dsClusterName, key, value);
+        (dsCluster) => {
+          cy.assignClusterLabel(dsCluster, key, value);
         }
       )
 
@@ -516,17 +516,68 @@ describe('Test application deployment based on clusterGroup', { tags: '@p1'}, ()
 
       // Check application status on both clusters.
       dsClusterList.forEach(
-        (dsClusterName) => {
-          cy.checkApplicationStatus(appName, dsClusterName, 'All Namespaces');
+        (dsCluster) => {
+          cy.checkApplicationStatus(appName, dsCluster, 'All Namespaces');
         }
       )
 
       // Remove labels from the clusters.
       dsClusterList.forEach(
-        (dsClusterName) => {
+        (dsCluster) => {
           // Adding wait to load page correctly to avoid interference with hamburger-menu.
           cy.wait(500);
-          cy.removeClusterLabels(dsClusterName, key, value);
+          cy.removeClusterLabels(dsCluster, key, value);
+        }
+      )
+    })
+  )
+
+  qase(26,
+    it("Fleet-26: Test install multiple applications to the all defined clusters in the 'clusterGroup'", { tags: '@fleet-26' }, () => {
+      const repoName = 'default-single-app-cluster-group-26'
+      const path2 = 'multiple-paths/config'
+
+      cy.accesMenuSelection('Continuous Delivery', 'Clusters');
+      cy.contains('.title', 'Clusters').should('be.visible');
+
+      // Assign label to the clusters 
+      dsClusterList.forEach(
+        (dsCluster) => {
+          cy.assignClusterLabel(dsCluster, key, value);
+        }
+      )
+
+      // Create group of cluster consists of same label.
+      cy.clickNavMenu(['Cluster Groups']);
+      cy.contains('.title', 'Cluster Groups').should('be.visible');
+      cy.createClusterGroup(clusterGroupName, key, value, bannerMessageToAssert);
+
+      // Create a GitRepo targeting cluster group created.
+      cy.addFleetGitRepo({ repoName, repoUrl, branch, path, path2, deployToTarget: clusterGroupName });
+      cy.clickButton('Create');
+      cy.checkGitRepoStatus(repoName, '2 / 2');
+
+      // Check first application status on both clusters.
+      dsClusterList.forEach((dsCluster) => {
+        cy.checkApplicationStatus(appName, dsCluster, 'All Namespaces');
+      })
+
+      dsClusterList.forEach((dsCluster) => {
+        // Check second application status on both clusters.
+        // Adding wait to load page correctly to avoid interference with hamburger-menu.
+        cy.wait(500);
+        cy.accesMenuSelection(dsCluster, "Storage", "ConfigMaps");
+        cy.nameSpaceMenuToggle("test-fleet-mp-config");
+        cy.filterInSearchBox("mp-app-config");
+        cy.get('td.col-link-detail > span').contains("mp-app-config").click();
+      })
+
+      // Remove labels from the clusters.
+      dsClusterList.forEach(
+        (dsCluster) => {
+          // Adding wait to load page correctly to avoid interference with hamburger-menu.
+          cy.wait(500);
+          cy.removeClusterLabels(dsCluster, key, value);
         }
       )
     })

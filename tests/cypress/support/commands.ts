@@ -22,9 +22,10 @@ import * as cypressLib from '@rancher-ecp-qa/cypress-library';
 // Fleet commands
 
 // Add path on "Git Repo:Create"
-Cypress.Commands.add('addPathOnGitRepoCreate', (path) => {
+Cypress.Commands.add('addPathOnGitRepoCreate', (path, index=0) => {
+  //Index defaulting to 0, for first input box.
   cy.clickButton('Add Path');
-  cy.get('input[placeholder="e.g. /directory/in/your/repo"]').type(path);
+  cy.get(`[data-testid="array-list-box${ index }"] input[placeholder="e.g. /directory/in/your/repo"]`).type(path);
 })
 
 Cypress.Commands.add('gitRepoAuth', (gitOrHelmAuth='Git', gitAuthType, userOrPublicKey, pwdOrPrivateKey, helmUrlRegex ) => {
@@ -78,7 +79,7 @@ Cypress.Commands.add('importYaml', ({ clusterName, yamlFilePath }) => {
 
 // Command add and edit Fleet Git Repository
 // TODO: Rename this command name to 'addEditFleetGitRepo'
-Cypress.Commands.add('addFleetGitRepo', ({ repoName, repoUrl, branch, path, gitOrHelmAuth, gitAuthType, userOrPublicKey, pwdOrPrivateKey, keepResources, correctDrift, fleetNamespace='fleet-local', editConfig=false, helmUrlRegex, deployToTarget }) => {
+Cypress.Commands.add('addFleetGitRepo', ({ repoName, repoUrl, branch, path, path2, gitOrHelmAuth, gitAuthType, userOrPublicKey, pwdOrPrivateKey, keepResources, correctDrift, fleetNamespace='fleet-local', editConfig=false, helmUrlRegex, deployToTarget }) => {
   cy.accesMenuSelection('Continuous Delivery', 'Git Repos');
   if (editConfig === true) {
     cy.fleetNamespaceToggle(fleetNamespace);
@@ -96,6 +97,9 @@ Cypress.Commands.add('addFleetGitRepo', ({ repoName, repoUrl, branch, path, gitO
   // Path is not required when git repo contains 1 application folder only.
   if (path) {
     cy.addPathOnGitRepoCreate(path);
+  }
+  if (path2) {
+    cy.addPathOnGitRepoCreate(path2, 1);
   }
   if (gitAuthType) {
     cy.gitRepoAuth(gitOrHelmAuth, gitAuthType, userOrPublicKey, pwdOrPrivateKey, helmUrlRegex);
@@ -283,9 +287,7 @@ Cypress.Commands.add('checkGitRepoStatus', (repoName, bundles, resources) => {
 
 // Check deployed application status (present or not)
 Cypress.Commands.add('checkApplicationStatus', (appName, clusterName='local', appNamespace='Only User Namespaces') => {
-  cypressLib.burgerMenuToggle();
-  cypressLib.accesMenu(clusterName);
-  cy.clickNavMenu(['Workloads', 'Pods']);
+  cy.accesMenuSelection(clusterName, 'Workloads', 'Pods');
   cy.nameSpaceMenuToggle(appNamespace);
   cy.filterInSearchBox(appName);
   cy.contains('tr.main-row[data-testid="sortable-table-0-row"]').should('not.be.empty', { timeout: 25000 });
