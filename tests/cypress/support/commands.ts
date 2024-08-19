@@ -482,6 +482,23 @@ Cypress.Commands.add('createClusterGroup', (clusterGroupName, key, value, banner
   cy.verifyTableRow(0, 'Active', clusterGroupName);
 })
 
+// Show cluster count in the clusterGroup
+Cypress.Commands.add('clusterCountClusterGroup', (clusterGroupName, clusterCount) => {
+    // Navigate to Clusters page when other navigation is present.
+    cy.get('body').then((body) => {
+      if (body.find('.title').text().includes('Cluster Groups')) {
+        return true
+      }
+      else {
+        cy.accesMenuSelection('Continuous Delivery', 'Cluster Groups');
+      }
+    })
+  cy.contains('.title', 'Cluster Groups').should('be.visible');
+  cy.fleetNamespaceToggle('fleet-default');
+  cy.get('td.col-link-detail > span').contains(clusterGroupName).click();
+  cy.get('.details').contains(`Clusters Ready: ${clusterCount} of ${clusterCount}`);
+})
+
 // Delete Cluster Group
 Cypress.Commands.add('deleteClusterGroups', () => {
   cy.accesMenuSelection('Continuous Delivery', 'Cluster Groups');

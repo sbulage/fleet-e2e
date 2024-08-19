@@ -48,6 +48,7 @@ declare global {
       deleteClusterGroups(): Chainable<Element>;
       deployToClusterOrClusterGroup(deployToTarget: string): Chainable<Element>;
       removeClusterLabels(clusterName: string, key: string, value: string): Chainable<Element>;
+      clusterCountClusterGroup(clusterGroupName: string, clusterCount: number): Chainable<Element>;
     }
   }
 }
