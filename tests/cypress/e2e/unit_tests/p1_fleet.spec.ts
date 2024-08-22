@@ -21,6 +21,7 @@ export const branch = "master"
 export const path = "qa-test-apps/nginx-app"
 export const repoUrl = "https://github.com/rancher/fleet-test-data/"
 export const dsClusterName = 'imported-0'
+export const dsClusterList = ["imported-0", "imported-1"]
 
 beforeEach(() => {
   cy.login();
@@ -477,7 +478,6 @@ describe('Test Self-Healing on IMMUTABLE resources when correctDrift is enabled'
 });
 
 describe('Test application deployment based on clusterGroup', { tags: '@p1'}, () => {
-  const dsClusterList = ["imported-0", "imported-1"]
   const dsThirdCluster = "imported-2"
   const key = 'key_env'
   const value = 'value_prod'
@@ -617,4 +617,103 @@ describe('Test application deployment based on clusterGroup', { tags: '@p1'}, ()
       )
     })
   )
+});
+
+describe("Test Application deployment based on 'clusterSelector'", { tags: '@p1'}, () => {
+  const key = 'key_env'
+  const value = 'value_testing'
+  let gitRepoFile
+
+  beforeEach('Cleanup leftover GitRepo if any.', () => {
+    cy.login();
+    cy.visit('/');
+    cy.deleteAllFleetRepos();
+  })
+
+  const clusterSelector: testData[] = [
+    {
+      qase_id: 9,
+      app: "single-app",
+      bundle_count: '1 / 1',
+    },
+    {
+      qase_id: 18,
+      app: "multiple-apps",
+      bundle_count: '2 / 2',
+    },
+  ]
+
+  clusterSelector.forEach(({ qase_id, app, bundle_count }) => {
+    qase(qase_id,
+      it(`Test install ${app} to the 2 clusters using clusterSelector(matchLabels) in GitRepo`, { tags: `@fleet-${qase_id}` }, () => {
+
+        cy.accesMenuSelection('Continuous Delivery', 'Clusters');
+        cy.contains('.title', 'Clusters').should('be.visible');
+  
+        // Assign label to the clusters 
+        dsClusterList.forEach(
+          (dsCluster) => {
+            cy.assignClusterLabel(dsCluster, key, value);
+          }
+        )
+
+        // Get GitRepo YAML file according to test.
+        if (qase_id === 9) {
+          gitRepoFile = 'assets/git-repo-single-app-cluster-selector.yaml'
+        }
+        else if (qase_id === 18){
+          gitRepoFile = 'assets/git-repo-multiple-app-cluster-selector.yaml'
+        }
+        else {
+          throw Error("There is not GitRepo file present for given test case.")
+        }
+
+        // Create a GitRepo targeting cluster group created from YAML.
+        cy.clickNavMenu(['Git Repos']);
+        cy.wait(500);
+        cy.clickButton('Add Repository');
+        cy.contains('Git Repo:').should('be.visible');
+        cy.clickButton('Edit as YAML');
+        cy.readFile(gitRepoFile).then((content) => {
+          cy.get('.CodeMirror').then((codeMirrorElement) => {
+            const cm = (codeMirrorElement[0] as any).CodeMirror;
+            cm.setValue(content);
+          });
+        })
+        cy.clickButton('Create');
+        cy.checkGitRepoStatus(`default-${app}-cluster-selector-${qase_id}`, `${bundle_count}`);
+  
+        // Check application status on both clusters.
+        dsClusterList.forEach(
+          (dsCluster) => {
+            cy.checkApplicationStatus(appName, dsCluster, 'All Namespaces');
+          }
+        )
+  
+        // Check another application on each cluster.
+        // This check is valid for deploy muilple application
+        // on cluster selector test only.
+        if (qase_id === 18) {
+          dsClusterList.forEach((dsCluster) => {
+            // Check second application status on both clusters.
+            // Adding wait to load page correctly to avoid interference with hamburger-menu.
+            cy.wait(500);
+            cy.accesMenuSelection(dsCluster, "Storage", "ConfigMaps");
+            cy.nameSpaceMenuToggle("test-fleet-mp-config");
+            cy.filterInSearchBox("mp-app-config");
+            cy.get('td.col-link-detail > span').contains("mp-app-config").click();
+          })
+        }
+  
+        // Remove labels from the clusters.
+        dsClusterList.forEach(
+          (dsCluster) => {
+            // Adding wait to load page correctly to avoid interference with hamburger-menu.
+            cy.wait(500);
+            cy.removeClusterLabels(dsCluster, key, value);
+          }
+        )
+      })
+    )
+  })
 });

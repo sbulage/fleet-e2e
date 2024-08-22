@@ -1,0 +1,15 @@
+apiVersion: fleet.cattle.io/v1alpha1
+kind: GitRepo
+metadata:
+  name: default-multiple-apps-cluster-selector-18
+  namespace: fleet-default
+spec:
+  branch: master
+  paths:
+    - qa-test-apps/nginx-app
+    - multiple-paths/config
+  repo: https://github.com/rancher/fleet-test-data/
+  targets:
+    - clusterSelector:
+        matchLabels:
+          key_env: value_testing
