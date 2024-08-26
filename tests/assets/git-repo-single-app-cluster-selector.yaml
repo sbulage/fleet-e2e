@@ -1,7 +1,7 @@
 apiVersion: fleet.cattle.io/v1alpha1
 kind: GitRepo
 metadata:
-  name: default-single-app-cluster-selector-9
+  name: default-single-app-cluster-selector
   namespace: fleet-default
 spec:
   branch: master

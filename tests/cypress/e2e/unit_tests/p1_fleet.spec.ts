@@ -22,6 +22,7 @@ export const path = "qa-test-apps/nginx-app"
 export const repoUrl = "https://github.com/rancher/fleet-test-data/"
 export const dsClusterName = 'imported-0'
 export const dsClusterList = ["imported-0", "imported-1"]
+export const dsThirdClusterName = 'imported-2'
 
 beforeEach(() => {
   cy.login();
@@ -478,7 +479,6 @@ describe('Test Self-Healing on IMMUTABLE resources when correctDrift is enabled'
 });
 
 describe('Test application deployment based on clusterGroup', { tags: '@p1'}, () => {
-  const dsThirdCluster = "imported-2"
   const key = 'key_env'
   const value = 'value_prod'
   const clusterGroupName = 'cluster-group-env-prod'
@@ -540,18 +540,18 @@ describe('Test application deployment based on clusterGroup', { tags: '@p1'}, ()
             cy.contains('.title', 'Clusters').should('be.visible');
 
             // Add label to the third cluster
-            cy.assignClusterLabel(dsThirdCluster, key, value);
+            cy.assignClusterLabel(dsThirdClusterName, key, value);
 
             // TODO: Uncomment below line once issue: https://github.com/rancher/fleet/issues/2699 is fixed.
             // Check existing clusterGroup for third cluster present or not
             // cy.clusterCountClusterGroup(clusterGroupName, 3);
 
             // Check application is deployed on third cluster
-            cy.checkApplicationStatus(appName, dsThirdCluster, 'All Namespaces');
+            cy.checkApplicationStatus(appName, dsThirdClusterName, 'All Namespaces');
 
             // Remove label from the third cluster.
             cy.wait(500);
-            cy.removeClusterLabels(dsThirdCluster, key, value);
+            cy.removeClusterLabels(dsThirdClusterName, key, value);
           }
 
           // Remove labels from the clusters.
@@ -633,19 +633,27 @@ describe("Test Application deployment based on 'clusterSelector'", { tags: '@p1'
   const clusterSelector: testData[] = [
     {
       qase_id: 9,
-      app: "single-app",
+      app: 'single-app',
+      test_explanation: "single-app to the 2 clusters",
       bundle_count: '1 / 1',
     },
     {
       qase_id: 18,
-      app: "multiple-apps",
+      app: 'multiple-apps',
+      test_explanation: "multiple-apps to the 2 clusters",
       bundle_count: '2 / 2',
+    },
+    {
+      qase_id: 20,
+      app: 'single-app',
+      test_explanation: "single-app to the third cluster",
+      bundle_count: '1 / 1',
     },
   ]
 
-  clusterSelector.forEach(({ qase_id, app, bundle_count }) => {
+  clusterSelector.forEach(({ qase_id, app, test_explanation, bundle_count }) => {
     qase(qase_id,
-      it(`Test install ${app} to the 2 clusters using clusterSelector(matchLabels) in GitRepo`, { tags: `@fleet-${qase_id}` }, () => {
+      it(`Test install ${test_explanation} to the 2 clusters using clusterSelector(matchLabels) in GitRepo`, { tags: `@fleet-${qase_id}` }, () => {
 
         cy.accesMenuSelection('Continuous Delivery', 'Clusters');
         cy.contains('.title', 'Clusters').should('be.visible');
@@ -658,7 +666,7 @@ describe("Test Application deployment based on 'clusterSelector'", { tags: '@p1'
         )
 
         // Get GitRepo YAML file according to test.
-        if (qase_id === 9) {
+        if (qase_id === 9 || qase_id === 20) {
           gitRepoFile = 'assets/git-repo-single-app-cluster-selector.yaml'
         }
         else if (qase_id === 18){
@@ -681,15 +689,32 @@ describe("Test Application deployment based on 'clusterSelector'", { tags: '@p1'
           });
         })
         cy.clickButton('Create');
-        cy.checkGitRepoStatus(`default-${app}-cluster-selector-${qase_id}`, `${bundle_count}`);
-  
+        cy.checkGitRepoStatus(`default-${app}-cluster-selector`, `${bundle_count}`);
+
         // Check application status on both clusters.
         dsClusterList.forEach(
           (dsCluster) => {
             cy.checkApplicationStatus(appName, dsCluster, 'All Namespaces');
           }
         )
-  
+
+        // Add same label on third cluster
+        if (qase_id === 20) {
+          cy.accesMenuSelection('Continuous Delivery', 'Clusters');
+          cy.contains('.title', 'Clusters').should('be.visible');
+
+          // Add label to the third cluster
+          cy.assignClusterLabel(dsThirdClusterName, key, value);
+
+          // Check application deployed to third cluster
+          cy.wait(500);
+          cy.checkApplicationStatus(appName, dsThirdClusterName, 'All Namespaces');
+
+          // Remove label from the third cluster.
+          cy.wait(500);
+          cy.removeClusterLabels(dsThirdClusterName, key, value);
+        }
+
         // Check another application on each cluster.
         // This check is valid for deploy muilple application
         // on cluster selector test only.
@@ -704,7 +729,7 @@ describe("Test Application deployment based on 'clusterSelector'", { tags: '@p1'
             cy.get('td.col-link-detail > span').contains("mp-app-config").click();
           })
         }
-  
+
         // Remove labels from the clusters.
         dsClusterList.forEach(
           (dsCluster) => {
