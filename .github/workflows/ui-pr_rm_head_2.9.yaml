@@ -1,5 +1,5 @@
 # This workflow calls the master E2E workflow with custom variables
-name: UI-Pull-Request_RM_head_2.8
+name: UI-Pull-Request_RM_head_2.9
 
 on:
   pull_request:
@@ -35,8 +35,8 @@ jobs:
       cluster_name: cluster-k3s
       # WARNING, VALUES BELOW ARE HARDCODED FOR RUNS SCHEDULED BY PULL_REQUEST EVENT
       destroy_runner: true
-      upstream_cluster_version: 'v1.28.8+k3s1'
-      rancher_version: 'latest/devel/2.8'
+      upstream_cluster_version: 'v1.30.3+k3s1'
+      rancher_version: 'latest/devel/2.9'
       # If qase_run_id is none the run is getting deleted in QASE
       qase_run_id: 'none'
       grep_test_by_tag: '@login @p0 @p1 @rbac'
