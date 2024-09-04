@@ -1,0 +1,22 @@
+apiVersion: fleet.cattle.io/v1alpha1
+kind: GitRepo
+metadata:
+  name: test-disable-polling
+  namespace: fleet-local
+spec:
+  branch: main
+  correctDrift:
+    enabled: false
+  insecureSkipTLSVerify: false
+  paths:
+    - disable-polling
+  repo: https://github.com/fleetqa/fleet-qa-examples-public
+  disablePolling: true
+  targets:
+    - clusterSelector:
+        matchExpressions:
+          - key: provider.cattle.io
+            operator: NotIn
+            values:
+              - harvester
+__clone: true

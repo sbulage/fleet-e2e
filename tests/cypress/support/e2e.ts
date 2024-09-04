@@ -49,6 +49,7 @@ declare global {
       deployToClusterOrClusterGroup(deployToTarget: string): Chainable<Element>;
       removeClusterLabels(clusterName: string, key: string, value: string): Chainable<Element>;
       clusterCountClusterGroup(clusterGroupName: string, clusterCount: number): Chainable<Element>;
+      addYamlFile(yamlFilePath: string): Chainable<Element>;
     }
   }
 }

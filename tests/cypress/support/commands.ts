@@ -535,3 +535,13 @@ Cypress.Commands.add('removeClusterLabels', (clusterName, key, value) => {
   // Navigate back to all clusters page.
   cy.clickNavMenu(['Clusters']);
 })
+
+// Insert file content into the CodeMirror editor
+Cypress.Commands.add('addYamlFile', (yamlFilePath) => {
+  cy.readFile(yamlFilePath).then((content) => {
+    cy.get('.CodeMirror').then((codeMirrorElement) => {
+      const cm = (codeMirrorElement[0]).CodeMirror;
+      cm.setValue(content);
+    });
+  })
+})
