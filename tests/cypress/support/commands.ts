@@ -470,7 +470,7 @@ Cypress.Commands.add('assignClusterLabel', (clusterName, key, value) => {
 })
 
 // Create clusterGroup based on label assigned to the cluster
-Cypress.Commands.add('createClusterGroup', (clusterGroupName, key, value, bannerMessageToAssert) => {
+Cypress.Commands.add('createClusterGroup', (clusterGroupName, key, value, bannerMessageToAssert, assignClusterGroupLabel=false, clusterGroupLabelKey, clusterGroupLabelValue) => {
   cy.fleetNamespaceToggle('fleet-default');
   cy.clickButton('Create');
   cy.get('input[placeholder="A unique name"]').type(clusterGroupName);
@@ -478,6 +478,12 @@ Cypress.Commands.add('createClusterGroup', (clusterGroupName, key, value, banner
   cy.get('[data-testid="input-match-expression-key-control-0"]').focus().type(key);
   cy.get('[data-testid="input-match-expression-values-control-0"]').type(value);
   cy.contains(bannerMessageToAssert).should('be.visible');
+  if (assignClusterGroupLabel === true) {
+    cy.clickButton('Add Label');
+    cy.get('[data-testid="input-kv-item-key-0"]').focus().type(clusterGroupLabelKey);
+    cy.get('[data-testid="value-multiline"]').type(clusterGroupLabelValue);
+    cy.wait(500);
+  }
   cy.clickButton('Create');
   cy.verifyTableRow(0, 'Active', clusterGroupName);
 })

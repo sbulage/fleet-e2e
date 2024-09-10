@@ -562,6 +562,7 @@ describe('Test application deployment based on clusterGroup', { tags: '@p1'}, ()
               cy.removeClusterLabels(dsCluster, key, value);
             }
           )
+          cy.deleteClusterGroups();
         })
       )
     }
@@ -784,3 +785,109 @@ if (/\/2\.9/.test(Cypress.env('rancher_version'))) {
     )
   })
 }
+
+describe("Test Application deployment based on 'clusterGroupSelector'", { tags: '@p1'}, () => {
+  const bannerMessageToAssert = /Matches 2 of 3 existing clusters, including "imported-\d"/
+  const clusterGroupName = 'cluster-group-env-prod'
+  const key = 'key_env'
+  const value = 'value_testing'
+  const clusterGroupLabelKey = 'cluster_group_selector_env'
+  const clusterGroupLabelValue = 'cluster_group_selector_test'
+  let clusterGroupSelectorFile
+
+  beforeEach('Cleanup leftover GitRepo if any.', () => {
+    cy.login();
+    cy.visit('/');
+    cy.deleteClusterGroups();
+    cy.deleteAllFleetRepos();
+  })
+
+  const clusterSelector: testData[] = [
+    {
+      qase_id: 30,
+      app: 'single-app',
+      test_explanation: "single-app",
+      bundle_count: '1 / 1',
+    },
+    {
+      qase_id: 31,
+      app: 'multi-apps',
+      test_explanation: "multiple-apps",
+      bundle_count: '2 / 2',
+    },
+  ]
+
+  clusterSelector.forEach(({ qase_id, app, test_explanation, bundle_count }) => {
+    qase(qase_id,
+      it(`Test install ${test_explanation} to the multiple cluster using "clusterGroupSelector"`, { tags: `@fleet-${qase_id}` }, () => {
+
+        cy.accesMenuSelection('Continuous Delivery', 'Clusters');
+        cy.contains('.title', 'Clusters').should('be.visible');
+
+        // Assign label to the clusters 
+        dsClusterList.forEach(
+          (dsCluster) => {
+            cy.assignClusterLabel(dsCluster, key, value);
+          }
+        )
+
+        // Create group of cluster consists of same label.
+        cy.clickNavMenu(['Cluster Groups']);
+        cy.contains('.title', 'Cluster Groups').should('be.visible');
+        cy.createClusterGroup(clusterGroupName, key, value, bannerMessageToAssert, true, clusterGroupLabelKey, clusterGroupLabelValue);
+
+        // Get GitRepo YAML file according to test.
+        if (qase_id === 30) {
+          clusterGroupSelectorFile = 'assets/gitrepo-single-app-cluster-group-selector.yaml'
+        }
+        else if (qase_id === 31){
+          clusterGroupSelectorFile = 'assets/gitrepo-multi-app-cluster-group-selector.yaml'
+        }
+        else {
+          throw Error("There is not GitRepo file present for given test case.")
+        }
+
+        // Create a GitRepo targeting cluster group created from YAML.
+        cy.clickNavMenu(['Git Repos']);
+        cy.wait(500);
+        cy.clickButton('Add Repository');
+        cy.contains('Git Repo:').should('be.visible');
+        cy.clickButton('Edit as YAML');
+        cy.addYamlFile(clusterGroupSelectorFile);
+        cy.clickButton('Create');
+        cy.checkGitRepoStatus(`default-${app}-cluster-group-selector`, `${bundle_count}`);
+
+        // Check application status on both clusters.
+        dsClusterList.forEach(
+          (dsCluster) => {
+            cy.checkApplicationStatus(appName, dsCluster, 'All Namespaces');
+          }
+        )
+
+        // Check another application on each cluster.
+        // This check is valid for deploy muilple application
+        // on cluster selector test only.
+        if (qase_id === 31) {
+          dsClusterList.forEach((dsCluster) => {
+            // Check second application status on both clusters.
+            // Adding wait to load page correctly to avoid interference with hamburger-menu.
+            cy.wait(500);
+            cy.accesMenuSelection(dsCluster, "Storage", "ConfigMaps");
+            cy.nameSpaceMenuToggle("test-fleet-mp-config");
+            cy.filterInSearchBox("mp-app-config");
+            cy.get('td.col-link-detail > span').contains("mp-app-config").click();
+          })
+        }
+
+        // Remove labels from the clusters.
+        dsClusterList.forEach(
+          (dsCluster) => {
+            // Adding wait to load page correctly to avoid interference with hamburger-menu.
+            cy.wait(500);
+            cy.removeClusterLabels(dsCluster, key, value);
+          }
+        )
+      })
+    )
+  })
+});

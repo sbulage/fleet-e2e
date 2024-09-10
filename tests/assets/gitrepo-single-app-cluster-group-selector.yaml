@@ -1,0 +1,14 @@
+apiVersion: fleet.cattle.io/v1alpha1
+kind: GitRepo
+metadata:
+  name: default-single-app-cluster-group-selector
+  namespace: fleet-default
+spec:
+  branch: master
+  paths:
+    - qa-test-apps/nginx-app
+  repo: https://github.com/rancher/fleet-test-data/
+  targets:
+    - clusterGroupSelector:
+        matchLabels:
+          cluster_group_selector_env: cluster_group_selector_test
