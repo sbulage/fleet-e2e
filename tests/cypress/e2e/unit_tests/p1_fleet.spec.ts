@@ -478,6 +478,100 @@ describe('Test Self-Healing on IMMUTABLE resources when correctDrift is enabled'
   )
 });
 
+if (/\/2\.9/.test(Cypress.env('rancher_version'))) {
+  describe('Tests with disablePolling', { tags: '@p1' }, () => {
+    const gh_private_pwd = Cypress.env('gh_private_pwd');
+    const repoName = 'test-disable-polling';
+
+    beforeEach('Ensuring Github repo has desired amount of replicas (2)', () => {
+      cy.exec('bash assets/disable_polling_reset_2_replicas.sh', { env: { gh_private_pwd } }).then((result) => {
+        cy.log(result.stdout, result.stderr);
+      });
+
+      cy.fleetNamespaceToggle('fleet-local');
+      cy.clickButton('Add Repository');
+
+      // Pass YAML file (no previous additions of Name, urls or paths)
+      cy.clickButton('Edit as YAML');
+      cy.addYamlFile('assets/disable_polling.yaml');
+      cy.clickButton('Create');
+      cy.checkGitRepoStatus('test-disable-polling', '1 / 1', '1 / 1');
+
+      // Change replicas to 5
+      cy.exec('bash assets/disable_polling_setting_5_replicas.sh').then((result) => {
+        cy.log(result.stdout, result.stderr);
+      });
+    });
+
+    qase(
+      124,
+      it(
+        'Fleet-124: Test when `disablePolling=true` Gitrepo will not sync latest changes from Github',
+        { tags: '@fleet-124' },
+        () => {
+          // Forcing 15 seconds of wait to check if changes occur after this time.
+          cy.wait(15000);
+
+          // Verify deployment is 2 despite having changed to 5 in original repo
+          cy.accesMenuSelection('local', 'Workloads', 'Deployments');
+          cy.filterInSearchBox('nginx-test-polling');
+          cy.verifyTableRow(0, 'Active', '2/2');
+        }
+      )
+    );
+
+    qase(
+      125,
+      it(
+        'Fleet-125: Test when `disablePolling=true` and pausing / unpausing Gitrepo will sync latest changes from Github',
+        { tags: '@fleet-125' },
+        () => {
+          cy.accesMenuSelection('Continuous Delivery', 'Git Repos');
+          cy.fleetNamespaceToggle('fleet-local');
+          cy.open3dotsMenu(repoName, 'Pause');
+          cy.verifyTableRow(0, 'Paused');
+          cy.wait(2000); // Wait to let time for pause to take effect.
+          cy.open3dotsMenu(repoName, 'Unpause');
+          cy.verifyTableRow(0, 'Active');
+          // Verify deployment changes to 5?
+          cy.accesMenuSelection('local', 'Workloads', 'Deployments');
+          cy.filterInSearchBox('nginx-test-polling');
+          cy.verifyTableRow(0, 'Active', '5/5');
+        }
+      )
+    );
+
+    qase(
+      126,
+      it(
+        'Fleet-126: Test when `disablePolling=true` and forcing update Gitrepo will sync latest changes from Github',
+        { tags: '@fleet-126' },
+        () => {
+          // Forcing 15 seconds of wait to check if changes occur after this time.
+          cy.wait(15000);
+
+          // Verify deployment is 2 despite having changed to 5 in original repo
+          cy.accesMenuSelection('local', 'Workloads', 'Deployments');
+          cy.filterInSearchBox('nginx-test-polling');
+          cy.verifyTableRow(0, 'Active', '2/2');
+
+          // Force update
+          cy.accesMenuSelection('Continuous Delivery', 'Git Repos');
+          cy.fleetNamespaceToggle('fleet-local');
+          cy.open3dotsMenu(repoName, 'Force Update');
+          cy.wait(2000); // Wait to let time for Update to take effect.
+          cy.verifyTableRow(0, 'Active');
+
+          // Verify deployment changes to 5
+          cy.accesMenuSelection('local', 'Workloads', 'Deployments');
+          cy.filterInSearchBox('nginx-test-polling');
+          cy.verifyTableRow(0, 'Active', '5/5');
+        }
+      )
+    );
+  });
+}
+
 describe('Test application deployment based on clusterGroup', { tags: '@p1'}, () => {
   const key = 'key_env'
   const value = 'value_prod'
@@ -743,48 +837,6 @@ describe("Test Application deployment based on 'clusterSelector'", { tags: '@p1'
     )
   })
 });
-
-if (/\/2\.9/.test(Cypress.env('rancher_version'))) {
-  describe('Test with disablePolling', { tags: '@p1'}, () => {
-  
-  const gh_private_pwd = Cypress.env("gh_private_pwd")
-  
-  beforeEach("Ensuring Github repo has desired amount of replicas (2)", () => {
-  
-    cy.exec('bash assets/disable_polling_reset_2_replicas.sh', { env: { gh_private_pwd }}).then((result) => {
-      cy.log(result.stdout, result.stderr);
-      }
-    );
-  });
-  
-  qase(124,
-    it("Fleet-124: Test when `disablePolling=true` Gitrepo will not sync latest changes from Github", { tags: '@fleet-124' }, () => {
-  
-      cy.fleetNamespaceToggle('fleet-local')
-      cy.clickButton('Add Repository');
-      // Pass YAML file (no previous additions of Name, urls or paths)
-      cy.clickButton('Edit as YAML');
-      cy.addYamlFile('assets/disable_polling.yaml');
-      cy.clickButton('Create');
-      cy.checkGitRepoStatus('test-disable-polling', '1 / 1', '1 / 1');
-
-      // Change replicas to 5
-      cy.exec('bash assets/disable_polling_setting_5_replicas.sh'
-      ).then((result) => {
-        cy.log(result.stdout, result.stderr);
-      });
-
-      // Forcing 15 seconds of wait to check if changes occur after this time.
-      cy.wait(15000);
-    
-      // Verify deployment is 2 despite having changed to 5 in original repo
-      cy.accesMenuSelection('local', 'Workloads', 'Deployments');
-      cy.filterInSearchBox('nginx-test-polling');
-      cy.verifyTableRow(0, 'Active', '2/2');
-    })
-    )
-  })
-}
 
 describe("Test Application deployment based on 'clusterGroupSelector'", { tags: '@p1'}, () => {
   const bannerMessageToAssert = /Matches 2 of 3 existing clusters, including "imported-\d"/
