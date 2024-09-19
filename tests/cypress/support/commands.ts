@@ -457,6 +457,7 @@ Cypress.Commands.add('upgradeFleet', () => {
   cy.contains('SUCCESS: helm upgrade', { timeout: 60000 }).should('be.visible');
   cy.screenshot('Screenshot Fleet upgraded');
 });
+
 // Add label to the imported cluster(s)
 Cypress.Commands.add('assignClusterLabel', (clusterName, key, value) => {
   cy.filterInSearchBox(clusterName);
@@ -467,6 +468,8 @@ Cypress.Commands.add('assignClusterLabel', (clusterName, key, value) => {
   cy.wait(500);
   cy.clickButton('Save');
   cy.contains('Save').should('not.exist');
+  // Navigate back to all clusters page.
+  cy.clickNavMenu(['Clusters']);
 })
 
 // Create clusterGroup based on label assigned to the cluster
@@ -490,19 +493,22 @@ Cypress.Commands.add('createClusterGroup', (clusterGroupName, key, value, banner
 
 // Show cluster count in the clusterGroup
 Cypress.Commands.add('clusterCountClusterGroup', (clusterGroupName, clusterCount) => {
-    // Navigate to Clusters page when other navigation is present.
-    cy.get('body').then((body) => {
-      if (body.find('.title').text().includes('Cluster Groups')) {
-        return true
-      }
-      else {
-        cy.accesMenuSelection('Continuous Delivery', 'Cluster Groups');
-      }
-    })
-  cy.contains('.title', 'Cluster Groups').should('be.visible');
-  cy.fleetNamespaceToggle('fleet-default');
-  cy.get('td.col-link-detail > span').contains(clusterGroupName).click();
-  cy.get('.details').contains(`Clusters Ready: ${clusterCount} of ${clusterCount}`);
+  // Navigate to Clusters page when other navigation is present.
+  cy.get('body').then((body) => {
+    if (body.find('.title').text().includes('Cluster Groups')) {
+      return true
+    }
+    else {
+      cy.accesMenuSelection('Continuous Delivery', 'Cluster Groups');
+    }
+  })
+cy.contains('.title', 'Cluster Groups').should('be.visible');
+cy.fleetNamespaceToggle('fleet-default');
+cy.get('td.col-link-detail > span').contains(clusterGroupName).click();
+cy.get('.details').contains(`Clusters Ready: ${clusterCount} of ${clusterCount}`);
+
+// Navigate back to all clusters page.
+cy.clickNavMenu(['Clusters']);
 })
 
 // Delete Cluster Group

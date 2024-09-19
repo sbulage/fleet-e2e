@@ -20,9 +20,14 @@ export const appName = "nginx-keep"
 export const branch = "master"
 export const path = "qa-test-apps/nginx-app"
 export const repoUrl = "https://github.com/rancher/fleet-test-data/"
-export const dsClusterName = 'imported-0'
-export const dsClusterList = ["imported-0", "imported-1"]
-export const dsThirdClusterName = 'imported-2'
+export const bannerMessageToAssert = /Matches 2 of 3 existing clusters, including "imported-\d"/
+export const key = 'key_env'
+export const value = 'value_testing'
+export const clusterGroupName = 'cluster-group-env-prod'
+export const dsAllClusterList = ['imported-0', 'imported-1', 'imported-2']
+export const dsFirstClusterName = dsAllClusterList[0]
+export const dsFirstTwoClusterList = dsAllClusterList.slice(0, 2)
+export const dsThirdClusterName = dsAllClusterList[2]
 
 beforeEach(() => {
   cy.login();
@@ -351,7 +356,7 @@ if (/\/2\.9/.test(Cypress.env('rancher_version'))) {
         cy.addFleetGitRepo({ repoName, repoUrl, branch, path });
         cy.clickButton('Create');
         cy.verifyTableRow(0, 'Active', /([1-9]\d*)\/\1/);
-        cy.accesMenuSelection(dsClusterName, 'Storage', 'ConfigMaps');
+        cy.accesMenuSelection(dsFirstClusterName, 'Storage', 'ConfigMaps');
         cy.nameSpaceMenuToggle('All Namespaces');
         cy.filterInSearchBox('fleet-test-configmap');
         cy.get('.col-link-detail').contains('fleet-test-configmap').should('be.visible').click({ force: true });
@@ -375,7 +380,7 @@ if (/\/2\.9/.test(Cypress.env('rancher_version'))) {
         cy.addFleetGitRepo({ repoName, repoUrl, branch, path, gitOrHelmAuth, gitAuthType, userOrPublicKey, pwdOrPrivateKey});
         cy.clickButton('Create');
         cy.verifyTableRow(0, 'Active', /([1-9]\d*)\/\1/);
-        cy.accesMenuSelection(dsClusterName, 'Storage', 'ConfigMaps');
+        cy.accesMenuSelection(dsFirstClusterName, 'Storage', 'ConfigMaps');
         cy.nameSpaceMenuToggle('All Namespaces');
         cy.filterInSearchBox('fleet-test-configmap');
         cy.get('.col-link-detail').contains('fleet-test-configmap').should('be.visible').click({ force: true });
@@ -410,14 +415,13 @@ describe('Test Self-Healing on IMMUTABLE resources when correctDrift is enabled'
       qase(qase_id,
         it(`Fleet-${qase_id}: Test IMMUTABLE resource "${resourceType}" will NOT be self-healed when correctDrift is set to true.`, { tags: `@fleet-${qase_id}` }, () => {
           const path = "multiple-paths"
-          const dsClusterList = ["imported-0", "imported-1", "imported-2"]
 
           // Add GitRepo by enabling 'correctDrift'
           cy.fleetNamespaceToggle('fleet-default')
           cy.addFleetGitRepo({ repoName, repoUrl, branch, path, correctDrift: 'yes' });
           cy.clickButton('Create');
           cy.checkGitRepoStatus(repoName, '2 / 2');
-          cy.accesMenuSelection(dsClusterName, resourceLocation, resourceType);
+          cy.accesMenuSelection(dsFirstClusterName, resourceLocation, resourceType);
           cy.nameSpaceMenuToggle(resourceNamespace);
           cy.filterInSearchBox(resourceName);
           cy.get('.col-link-detail').contains(resourceName).should('be.visible');
@@ -448,7 +452,7 @@ describe('Test Self-Healing on IMMUTABLE resources when correctDrift is enabled'
           cy.verifyTableRow(0, 'Active', repoName);
 
           // Check All clusters are in healthy state after performing any modification to the resources.
-          dsClusterList.forEach((dsCluster) => {
+          dsAllClusterList.forEach((dsCluster) => {
             // Adding wait to load page correctly to avoid interference with hamburger-menu.
             cy.wait(500);
             cy.accesMenuSelection('Continuous Delivery', 'Clusters');
@@ -464,7 +468,7 @@ describe('Test Self-Healing on IMMUTABLE resources when correctDrift is enabled'
 
           // Delete leftover resources if there are any on each downstream cluster.
           // Currently, service is getting deleted from cluster, hence adding check for it.
-          dsClusterList.forEach((dsCluster) => {
+          dsAllClusterList.forEach((dsCluster) => {
             // Adding wait to load page correctly to avoid interference with hamburger-menu.
             cy.wait(500);
             cy.accesMenuSelection(dsCluster, "Service Discovery", "Services");
@@ -573,12 +577,10 @@ if (/\/2\.9/.test(Cypress.env('rancher_version'))) {
 }
 
 describe('Test application deployment based on clusterGroup', { tags: '@p1'}, () => {
-  const key = 'key_env'
   const value = 'value_prod'
-  const clusterGroupName = 'cluster-group-env-prod'
-  const bannerMessageToAssert = /Matches 2 of 3 existing clusters, including "imported-\d"/
 
-  beforeEach('Cleanup leftover GitRepo if any.', () => {
+
+  beforeEach('Cleanup leftover GitRepo, ClusterGroup or label etc. if any.', () => {
     cy.login();
     cy.visit('/');
     cy.deleteClusterGroups();
@@ -596,7 +598,7 @@ describe('Test application deployment based on clusterGroup', { tags: '@p1'}, ()
     },
   ]
 
-  clusterGroup.forEach(({ qase_id, test_explanation, clusterCount }) => {
+  clusterGroup.forEach(({ qase_id, test_explanation }) => {
       qase(qase_id,
         it(`Fleet-${qase_id}: Test ${test_explanation}`, { tags: `@fleet-${qase_id}` }, () => {
           const repoName = `default-single-app-cluster-group-${qase_id}`
@@ -605,7 +607,7 @@ describe('Test application deployment based on clusterGroup', { tags: '@p1'}, ()
           cy.contains('.title', 'Clusters').should('be.visible');
 
           // Assign label to the clusters 
-          dsClusterList.forEach(
+          dsFirstTwoClusterList.forEach(
             (dsCluster) => {
               cy.assignClusterLabel(dsCluster, key, value);
             }
@@ -615,7 +617,7 @@ describe('Test application deployment based on clusterGroup', { tags: '@p1'}, ()
           cy.clickNavMenu(['Cluster Groups']);
           cy.contains('.title', 'Cluster Groups').should('be.visible');
           cy.createClusterGroup(clusterGroupName, key, value, bannerMessageToAssert);
-          // cy.clusterCountClusterGroup(clusterGroupName, 2);
+          cy.clusterCountClusterGroup(clusterGroupName, 2);
 
           // Create a GitRepo targeting cluster group created.
           cy.addFleetGitRepo({ repoName, repoUrl, branch, path, deployToTarget: clusterGroupName });
@@ -623,7 +625,7 @@ describe('Test application deployment based on clusterGroup', { tags: '@p1'}, ()
           cy.checkGitRepoStatus(repoName, '1 / 1');
 
           // Check application status on both clusters.
-          dsClusterList.forEach(
+          dsFirstTwoClusterList.forEach(
             (dsCluster) => {
               cy.checkApplicationStatus(appName, dsCluster, 'All Namespaces');
             }
@@ -636,9 +638,8 @@ describe('Test application deployment based on clusterGroup', { tags: '@p1'}, ()
             // Add label to the third cluster
             cy.assignClusterLabel(dsThirdClusterName, key, value);
 
-            // TODO: Uncomment below line once issue: https://github.com/rancher/fleet/issues/2699 is fixed.
             // Check existing clusterGroup for third cluster present or not
-            // cy.clusterCountClusterGroup(clusterGroupName, 3);
+            cy.clusterCountClusterGroup(clusterGroupName, 3);
 
             // Check application is deployed on third cluster
             cy.checkApplicationStatus(appName, dsThirdClusterName, 'All Namespaces');
@@ -649,7 +650,7 @@ describe('Test application deployment based on clusterGroup', { tags: '@p1'}, ()
           }
 
           // Remove labels from the clusters.
-          dsClusterList.forEach(
+          dsFirstTwoClusterList.forEach(
             (dsCluster) => {
               // Adding wait to load page correctly to avoid interference with hamburger-menu.
               cy.wait(500);
@@ -671,7 +672,7 @@ describe('Test application deployment based on clusterGroup', { tags: '@p1'}, ()
       cy.contains('.title', 'Clusters').should('be.visible');
 
       // Assign label to the clusters 
-      dsClusterList.forEach(
+      dsFirstTwoClusterList.forEach(
         (dsCluster) => {
           cy.assignClusterLabel(dsCluster, key, value);
         }
@@ -688,11 +689,11 @@ describe('Test application deployment based on clusterGroup', { tags: '@p1'}, ()
       cy.checkGitRepoStatus(repoName, '2 / 2');
 
       // Check first application status on both clusters.
-      dsClusterList.forEach((dsCluster) => {
+      dsFirstTwoClusterList.forEach((dsCluster) => {
         cy.checkApplicationStatus(appName, dsCluster, 'All Namespaces');
       })
 
-      dsClusterList.forEach((dsCluster) => {
+      dsFirstTwoClusterList.forEach((dsCluster) => {
         // Check second application status on both clusters.
         // Adding wait to load page correctly to avoid interference with hamburger-menu.
         cy.wait(500);
@@ -703,7 +704,7 @@ describe('Test application deployment based on clusterGroup', { tags: '@p1'}, ()
       })
 
       // Remove labels from the clusters.
-      dsClusterList.forEach(
+      dsFirstTwoClusterList.forEach(
         (dsCluster) => {
           // Adding wait to load page correctly to avoid interference with hamburger-menu.
           cy.wait(500);
@@ -754,7 +755,7 @@ describe("Test Application deployment based on 'clusterSelector'", { tags: '@p1'
         cy.contains('.title', 'Clusters').should('be.visible');
   
         // Assign label to the clusters 
-        dsClusterList.forEach(
+        dsFirstTwoClusterList.forEach(
           (dsCluster) => {
             cy.assignClusterLabel(dsCluster, key, value);
           }
@@ -777,17 +778,12 @@ describe("Test Application deployment based on 'clusterSelector'", { tags: '@p1'
         cy.clickButton('Add Repository');
         cy.contains('Git Repo:').should('be.visible');
         cy.clickButton('Edit as YAML');
-        cy.readFile(gitRepoFile).then((content) => {
-          cy.get('.CodeMirror').then((codeMirrorElement) => {
-            const cm = (codeMirrorElement[0] as any).CodeMirror;
-            cm.setValue(content);
-          });
-        })
+        cy.addYamlFile(gitRepoFile);
         cy.clickButton('Create');
         cy.checkGitRepoStatus(`default-${app}-cluster-selector`, `${bundle_count}`);
 
         // Check application status on both clusters.
-        dsClusterList.forEach(
+        dsFirstTwoClusterList.forEach(
           (dsCluster) => {
             cy.checkApplicationStatus(appName, dsCluster, 'All Namespaces');
           }
@@ -814,7 +810,7 @@ describe("Test Application deployment based on 'clusterSelector'", { tags: '@p1'
         // This check is valid for deploy muilple application
         // on cluster selector test only.
         if (qase_id === 18) {
-          dsClusterList.forEach((dsCluster) => {
+          dsFirstTwoClusterList.forEach((dsCluster) => {
             // Check second application status on both clusters.
             // Adding wait to load page correctly to avoid interference with hamburger-menu.
             cy.wait(500);
@@ -826,7 +822,7 @@ describe("Test Application deployment based on 'clusterSelector'", { tags: '@p1'
         }
 
         // Remove labels from the clusters.
-        dsClusterList.forEach(
+        dsFirstTwoClusterList.forEach(
           (dsCluster) => {
             // Adding wait to load page correctly to avoid interference with hamburger-menu.
             cy.wait(500);
@@ -839,10 +835,6 @@ describe("Test Application deployment based on 'clusterSelector'", { tags: '@p1'
 });
 
 describe("Test Application deployment based on 'clusterGroupSelector'", { tags: '@p1'}, () => {
-  const bannerMessageToAssert = /Matches 2 of 3 existing clusters, including "imported-\d"/
-  const clusterGroupName = 'cluster-group-env-prod'
-  const key = 'key_env'
-  const value = 'value_testing'
   const clusterGroupLabelKey = 'cluster_group_selector_env'
   const clusterGroupLabelValue = 'cluster_group_selector_test'
   let clusterGroupSelectorFile
@@ -877,7 +869,7 @@ describe("Test Application deployment based on 'clusterGroupSelector'", { tags: 
         cy.contains('.title', 'Clusters').should('be.visible');
 
         // Assign label to the clusters 
-        dsClusterList.forEach(
+        dsFirstTwoClusterList.forEach(
           (dsCluster) => {
             cy.assignClusterLabel(dsCluster, key, value);
           }
@@ -910,7 +902,7 @@ describe("Test Application deployment based on 'clusterGroupSelector'", { tags: 
         cy.checkGitRepoStatus(`default-${app}-cluster-group-selector`, `${bundle_count}`);
 
         // Check application status on both clusters.
-        dsClusterList.forEach(
+        dsFirstTwoClusterList.forEach(
           (dsCluster) => {
             cy.checkApplicationStatus(appName, dsCluster, 'All Namespaces');
           }
@@ -920,7 +912,7 @@ describe("Test Application deployment based on 'clusterGroupSelector'", { tags: 
         // This check is valid for deploy muilple application
         // on cluster selector test only.
         if (qase_id === 31) {
-          dsClusterList.forEach((dsCluster) => {
+          dsFirstTwoClusterList.forEach((dsCluster) => {
             // Check second application status on both clusters.
             // Adding wait to load page correctly to avoid interference with hamburger-menu.
             cy.wait(500);
@@ -932,7 +924,7 @@ describe("Test Application deployment based on 'clusterGroupSelector'", { tags: 
         }
 
         // Remove labels from the clusters.
-        dsClusterList.forEach(
+        dsFirstTwoClusterList.forEach(
           (dsCluster) => {
             // Adding wait to load page correctly to avoid interference with hamburger-menu.
             cy.wait(500);
