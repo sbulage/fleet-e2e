@@ -31,10 +31,9 @@ Cypress.Commands.add('addPathOnGitRepoCreate', (path, index=0) => {
 Cypress.Commands.add('gitRepoAuth', (gitOrHelmAuth='Git', gitAuthType, userOrPublicKey, pwdOrPrivateKey, helmUrlRegex ) => {
   cy.contains(`${gitOrHelmAuth} Authentication`).click()
 
-
   // Select the Git auth method
-  cy.get('div.option-kind-highlighted', { timeout: 15000 }).contains(gitAuthType, { matchCase: false }).should('be.visible').click();
-
+  cy.get('ul.vs__dropdown-menu > li > div', { timeout: 15000 }).contains(gitAuthType, { matchCase: false }).should('be.visible').click();
+  
   if (helmUrlRegex) {
     cy.typeValue('Helm Repos (URL Regex)', helmUrlRegex, false,  false );
   }
@@ -43,11 +42,16 @@ Cypress.Commands.add('gitRepoAuth', (gitOrHelmAuth='Git', gitAuthType, userOrPub
     cy.typeValue('Username', userOrPublicKey, false,  false );
     cy.typeValue('Password', pwdOrPrivateKey, false,  false );
   }
+  
   else if (gitAuthType === 'ssh') {
     // Ugly implementation needed because 'typeValue' does not work here
     cy.get('textarea.no-resize.no-ease').eq(0).focus().clear().type(userOrPublicKey, {log: false}).blur();
     cy.get('textarea.no-resize.no-ease').eq(1).focus().clear().type(pwdOrPrivateKey, {log: false}).blur();
   }
+
+  else if (gitAuthType && gitAuthType !== 'http' && gitAuthType !== 'ssh') {    
+      cy.contains(gitAuthType).should('be.visible').click();
+    }    
 });
 
 Cypress.Commands.add('importYaml', ({ clusterName, yamlFilePath }) => {
