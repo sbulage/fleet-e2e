@@ -111,7 +111,6 @@ describe('Test Fleet deployment on PRIVATE repos with SSH auth', { tags: '@p0' }
 });
 
 describe('Test Fleet deployment on PRIVATE repos using KNOWN HOSTS', { tags: '@p0' }, () => {
-
   const repoUrl = 'git@github.com:fleetqa/fleet-qa-examples.git';
   const secretKnownHostsKeys = ['assets/known-host.yaml', 'assets/known-host-missmatch.yaml'];
 
@@ -135,31 +134,64 @@ describe('Test Fleet deployment on PRIVATE repos using KNOWN HOSTS', { tags: '@p
     });
   });
 
-  it('FLEET-141  Test to install "NGINX" app using "KNOWN HOSTS" auth on PRIVATE repository', { tags: '@fleet-141' }, () => {
+  qase(141,
+    it('FLEET-141  Test to install "NGINX" app using "KNOWN HOSTS" auth on PRIVATE repository', { tags: '@fleet-141' }, () => {
+      const repoName = 'local-cluster-fleet-141';
+      const gitAuthType = 'ssh-key-knownhost';
 
-    const repoName = 'local-cluster-fleet-141';
-    const gitAuthType = 'ssh-key-knownhost';
-   
-    // Create private repo using known host
-    cy.fleetNamespaceToggle('fleet-local')
-    cy.addFleetGitRepo({ repoName, repoUrl, gitAuthType, branch, path });
-    cy.clickButton('Create');
-    cy.checkGitRepoStatus(repoName, '1 / 1');
-  });
+      // Create private repo using known host
+      cy.fleetNamespaceToggle('fleet-local');
+      cy.addFleetGitRepo({ repoName, repoUrl, gitAuthType, branch, path });
+      cy.clickButton('Create');
+      cy.checkGitRepoStatus(repoName, '1 / 1');
+    })
+  );
 
-  it('FLEET-143  Test apps cannot be installed when using missmatched "KNOWN HOSTS" auth on PRIVATE repository', { tags: '@fleet-143' }, () => {
+  qase(143,
+    it('FLEET-143  Test apps cannot be installed when using missmatched "KNOWN HOSTS" auth on PRIVATE repository',
+      { tags: '@fleet-143' }, () => {
+        const repoName = 'local-cluster-fleet-143';
+        const gitAuthType = 'ssh-key-knownhost-missmatch';
 
-    const repoName = 'local-cluster-fleet-143';
-    const gitAuthType = 'ssh-key-knownhost-missmatch';
+        // Create private repo using known host
+        cy.fleetNamespaceToggle('fleet-local');
+        cy.addFleetGitRepo({ repoName, repoUrl, gitAuthType, branch, path });
+        cy.clickButton('Create');
 
-    // Create private repo using known host
-    cy.fleetNamespaceToggle('fleet-local')
-    cy.addFleetGitRepo({ repoName, repoUrl, gitAuthType, branch, path });
-    cy.clickButton('Create');
+        // Enrure that apps cannot be installed && error appears
+        cy.verifyTableRow(0, 'Error', '0/0');
+        cy.contains('Ssh: handshake failed: knownhosts: key mismatch').should('be.visible');
+    })
+  );
+});
 
-    // Enrure that apps cannot be installed && error appears
-    cy.verifyTableRow(0, 'Error', '0/0');
-    cy.contains('Ssh: handshake failed: knownhosts: key mismatch').should('be.visible');
-  });
+describe('Test gitrepos with cabundle', { tags: '@p0' }, () => {
+  qase(142,
+    it("Fleet-142: Test Fleet can create cabundle secrets", { tags: '@fleet-142' }, () => {;
+      
+      const repoName = 'local-142-test-bundle-secrets'
+      const repoUrl = 'https://github.com/rancher/fleet-examples'
+      const branch = 'master'
+      const path = 'simple'
+      const tlsOption = "Specify additional certificates to be accepted"
+      const tlsCertificate = "assets/cabundle-file.pem"
+  
+      cy.fleetNamespaceToggle('fleet-local');
+      cy.addFleetGitRepo({ repoName, repoUrl, branch, path, tlsOption, tlsCertificate });
+      cy.clickButton('Create');
+      cy.verifyTableRow(0, 'Active', '1/1');
+      cy.accesMenuSelection('local', 'Storage', 'Secrets');
+  
+      // Confirm cabundle secret is created
+      cy.nameSpaceMenuToggle('All Namespaces');
+      cy.filterInSearchBox(repoName+'-cabundle');
+      cy.verifyTableRow(0, 'Active', repoName+'-cabundle');
+  
+      // Delete repo and confirm secret is deleted
+      cy.deleteAllFleetRepos();
+      cy.accesMenuSelection('local', 'Storage', 'Secrets');
+      cy.contains('-cabundle').should('not.exist');
+    })
+  );  
 });
 
