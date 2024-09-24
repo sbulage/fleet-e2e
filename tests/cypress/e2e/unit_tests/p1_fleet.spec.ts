@@ -557,6 +557,10 @@ if (/\/2\.9/.test(Cypress.env('rancher_version'))) {
           // Verify deployment is 2 despite having changed to 5 in original repo
           cy.accesMenuSelection('local', 'Workloads', 'Deployments');
           cy.filterInSearchBox('nginx-test-polling');
+          cy.log('HERE WE SHOULD SEE 2/2')
+          cy.screenshot('Screenshot BEFORE reloading should be 2/2');
+          cy.reload();
+          cy.screenshot('Screenshot AFTER reloading should be 2/2');
           cy.verifyTableRow(0, 'Active', '2/2');
 
           // Force update
