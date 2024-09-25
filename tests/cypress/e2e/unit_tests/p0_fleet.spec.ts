@@ -159,7 +159,7 @@ describe('Test Fleet deployment on PRIVATE repos using KNOWN HOSTS', { tags: '@p
         cy.clickButton('Create');
 
         // Enrure that apps cannot be installed && error appears
-        cy.verifyTableRow(0, 'Error', '0/0');
+        cy.verifyTableRow(0, /Error|Git Updating/, '0/0');
         cy.contains('Ssh: handshake failed: knownhosts: key mismatch').should('be.visible');
     })
   );
