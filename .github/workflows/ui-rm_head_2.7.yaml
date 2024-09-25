@@ -28,8 +28,6 @@ on:
         required: false
         type: string
         default: '@login @p0 @p1 @rbac'
-  schedule:
-    - cron: '0 4 * * *'
 
 jobs:
   ui:
