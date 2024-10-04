@@ -507,8 +507,40 @@ if (/\/2\.9/.test(Cypress.env('rancher_version'))) {
       });
     });
 
-    qase(
-      124,
+    qase(126,
+      it(
+        'Fleet-126: Test when `disablePolling=true` and forcing update Gitrepo will sync latest changes from Github',
+        { tags: '@fleet-126' },
+        () => {
+          // Forcing 15 seconds of wait to check if changes occur after this time.
+          cy.wait(15000);
+
+          // Verify deployment is 2 despite having changed to 5 in original repo
+          cy.accesMenuSelection('local', 'Workloads', 'Deployments');
+          cy.filterInSearchBox('nginx-test-polling');
+          cy.wait(500);
+          cy.log('HERE WE SHOULD SEE 2/2');
+          cy.contains('tr.main-row', 'nginx-test-polling', { timeout: 20000 }).should('be.visible');
+          cy.screenshot('Screenshot BEFORE reloading should be 2/2');
+          cy.contains('tr.main-row', 'nginx-test-polling', { timeout: 20000 }).should('be.visible');
+          cy.screenshot('Screenshot AFTER reloading should be 2/2');
+          cy.verifyTableRow(0, 'Active', '2/2');
+
+          cy.accesMenuSelection('Continuous Delivery', 'Git Repos');
+          cy.fleetNamespaceToggle('fleet-local');
+          cy.open3dotsMenu('test-disable-polling', 'Force Update');
+          cy.wait(2000); // Wait to let time for Update to take effect.
+          cy.checkGitRepoStatus('test-disable-polling', '1 / 1', '1 / 1');
+
+          // Verify deployment changes to 5
+          cy.accesMenuSelection('local', 'Workloads', 'Deployments');
+          cy.filterInSearchBox('nginx-test-polling');
+          cy.verifyTableRow(0, 'Active', '5/5');
+        }
+      )
+    );
+
+    qase(124,
       it(
         'Fleet-124: Test when `disablePolling=true` Gitrepo will not sync latest changes from Github',
         { tags: '@fleet-124' },
@@ -524,8 +556,7 @@ if (/\/2\.9/.test(Cypress.env('rancher_version'))) {
       )
     );
 
-    qase(
-      125,
+    qase(125,
       it(
         'Fleet-125: Test when `disablePolling=true` and pausing / unpausing Gitrepo will sync latest changes from Github',
         { tags: '@fleet-125' },
@@ -538,39 +569,6 @@ if (/\/2\.9/.test(Cypress.env('rancher_version'))) {
           cy.open3dotsMenu(repoName, 'Unpause');
           cy.verifyTableRow(0, 'Active');
           // Verify deployment changes to 5?
-          cy.accesMenuSelection('local', 'Workloads', 'Deployments');
-          cy.filterInSearchBox('nginx-test-polling');
-          cy.verifyTableRow(0, 'Active', '5/5');
-        }
-      )
-    );
-
-    qase(
-      126,
-      it(
-        'Fleet-126: Test when `disablePolling=true` and forcing update Gitrepo will sync latest changes from Github',
-        { tags: '@fleet-126' },
-        () => {
-          // Forcing 15 seconds of wait to check if changes occur after this time.
-          cy.wait(15000);
-
-          // Verify deployment is 2 despite having changed to 5 in original repo
-          cy.accesMenuSelection('local', 'Workloads', 'Deployments');
-          cy.filterInSearchBox('nginx-test-polling');
-          cy.log('HERE WE SHOULD SEE 2/2')
-          cy.screenshot('Screenshot BEFORE reloading should be 2/2');
-          cy.reload();
-          cy.screenshot('Screenshot AFTER reloading should be 2/2');
-          cy.verifyTableRow(0, 'Active', '2/2');
-
-          // Force update
-          cy.accesMenuSelection('Continuous Delivery', 'Git Repos');
-          cy.fleetNamespaceToggle('fleet-local');
-          cy.open3dotsMenu(repoName, 'Force Update');
-          cy.wait(2000); // Wait to let time for Update to take effect.
-          cy.verifyTableRow(0, 'Active');
-
-          // Verify deployment changes to 5
           cy.accesMenuSelection('local', 'Workloads', 'Deployments');
           cy.filterInSearchBox('nginx-test-polling');
           cy.verifyTableRow(0, 'Active', '5/5');
