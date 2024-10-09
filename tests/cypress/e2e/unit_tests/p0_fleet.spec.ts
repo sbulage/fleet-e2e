@@ -193,5 +193,27 @@ describe('Test gitrepos with cabundle', { tags: '@p0' }, () => {
       cy.contains('-cabundle').should('not.exist');
     })
   );  
+
+  qase(144,
+    it("Fleet-144 Test cabundle secrets are not created without TLS certificate", { tags: '@fleet-144' }, () => {;
+      
+      const repoName = 'local-144-test-cabundle-secrets-not-created'
+      const repoUrl = 'https://github.com/rancher/fleet-examples'
+      const branch = 'master'
+      const path = 'simple'
+  
+      cy.fleetNamespaceToggle('fleet-local');
+      cy.addFleetGitRepo({ repoName, repoUrl, branch, path });
+      cy.clickButton('Create');
+      cy.verifyTableRow(0, 'Active', '1/1');
+      cy.accesMenuSelection('local', 'Storage', 'Secrets');
+  
+      // Confirm cabundle secret is NOT created for the specified gitrepo
+      cy.nameSpaceMenuToggle('All Namespaces');
+      cy.filterInSearchBox(repoName+'-cabundle');
+      cy.contains('There are no rows which match your search query.', { timeout: 2000 }).should('be.visible');
+    })
+  );  
+
 });
 
