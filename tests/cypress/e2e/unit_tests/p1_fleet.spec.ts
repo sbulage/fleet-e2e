@@ -109,6 +109,31 @@ describe('Test GitRepo Bundle name validation and max character trimming behavio
   )
 });
 
+describe('Test resource behavior after deleting GitRepo using keepResources option using YAML', { tags: '@p1' }, () => {
+  qase(68, 
+    it('Fleet-68: Test RESOURCES will be KEPT and NOT be DELETED after GitRepo is deleted when keepResources: true used in the GitRepo yaml file.', { tags: '@fleet-68' }, () => {
+      cy.accesMenuSelection('Continuous Delivery', 'Git Repos');
+      cy.fleetNamespaceToggle('fleet-local')
+      cy.clickButton('Add Repository');
+      cy.contains('Git Repo:').should('be.visible');
+      cy.clickButton('Edit as YAML');
+      cy.addYamlFile('assets/git-repo-keep-resources-true.yaml');
+      cy.clickButton('Create');
+      cy.checkGitRepoStatus('local-cluster-fleet-68', '1 / 1');
+
+      // Check application gets installed on the local cluster.
+      cy.checkApplicationStatus(appName);
+
+      // Delete GitRepo
+      cy.deleteAllFleetRepos();
+
+      // Check application is present after deleting GitRepo (keepResource option)
+      cy.checkApplicationStatus(appName);
+      cy.deleteApplicationDeployment();
+    })
+  )
+})
+
 describe('Test resource behavior after deleting GitRepo using keepResources option', { tags: '@p1'}, () => {
   const keepResourceData: testData[] = [
     { qase_id: 69,

@@ -318,9 +318,7 @@ Cypress.Commands.add('checkApplicationStatus', (appName, clusterName='local', ap
 
 // Delete the leftover applications
 Cypress.Commands.add('deleteApplicationDeployment', (clusterName='local') => {
-  cypressLib.burgerMenuToggle();
-  cypressLib.accesMenu(clusterName);
-  cy.clickNavMenu(['Workloads', 'Deployments']);
+  cy.accesMenuSelection(clusterName, 'Workloads', 'Deployments');
   cy.wait(500);
   cy.nameSpaceMenuToggle("Only User Namespaces");
   cy.wait(500);

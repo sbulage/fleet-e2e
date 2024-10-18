@@ -1,0 +1,18 @@
+apiVersion: fleet.cattle.io/v1alpha1
+kind: GitRepo
+metadata:
+  name: local-cluster-fleet-68
+  namespace: fleet-local
+spec:
+  branch: master
+  keepResources: true
+  paths:
+    - qa-test-apps/nginx-app
+  repo: https://github.com/rancher/fleet-test-data/
+  targets:
+    - clusterSelector:
+        matchExpressions:
+          - key: provider.cattle.io
+            operator: NotIn
+            values:
+              - harvester
