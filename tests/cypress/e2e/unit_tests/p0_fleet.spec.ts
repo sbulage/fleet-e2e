@@ -26,7 +26,6 @@ beforeEach(() => {
   cy.deleteAllFleetRepos();
 });
 
-
 Cypress.config();
 describe('Test Fleet deployment on PUBLIC repos',  { tags: '@p0' }, () => {
   qase(62,
@@ -211,9 +210,40 @@ describe('Test gitrepos with cabundle', { tags: '@p0' }, () => {
       // Confirm cabundle secret is NOT created for the specified gitrepo
       cy.nameSpaceMenuToggle('All Namespaces');
       cy.filterInSearchBox(repoName+'-cabundle');
-      cy.contains('There are no rows which match your search query.', { timeout: 2000 }).should('be.visible');
+      cy.contains('There are no rows which match your search query.').should('be.visible');
     })
   );  
 
 });
 
+if (/\/2\.9/.test(Cypress.env('rancher_version'))) {
+  // New tests for jobs cleanup
+  describe('Test Fleet job cleanup', { tags: '@p0' }, () => {
+    qase(
+      145,
+      it('Fleet-145: Test Fleet job cleanup', { tags: '@fleet-145' }, () => {
+
+        const repoName = 'local-145-test-job-cleanup';
+        const repoUrl = 'https://github.com/rancher/fleet-test-data/';
+        const branch = 'master';
+        const path = 'qa-test-apps/nginx-app';
+
+        cy.fleetNamespaceToggle('fleet-local');
+        cy.addFleetGitRepo({ repoName, repoUrl, branch, path });
+        cy.clickButton('Create');
+        cy.verifyTableRow(0, 'Active', '1/1');
+
+        // Check jobs on recent events tab
+        cy.checkGitRepoStatus(repoName, '1 / 1', '1 / 1');
+        cy.get('ul[role="tablist"]').contains('Recent Events').click();
+        cy.get('section#events').contains('job deletion triggered because job succeeded', { timeout: 20000 }).should('be.visible');
+
+        // Confirm job disappears
+        cy.accesMenuSelection('local', 'Workloads', 'Jobs');
+        cy.nameSpaceMenuToggle('All Namespaces');
+        cy.filterInSearchBox(repoName);
+        cy.get('table > tbody > tr').contains('There are no rows which match your search query.').should('be.visible');
+      })
+    );
+  });
+}

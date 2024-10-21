@@ -240,7 +240,9 @@ Cypress.Commands.add('accesMenuSelection', (firstAccessMenu='Continuous Delivery
     cypressLib.accesMenu(secondAccessMenu);
   };
   if (clickOption) {
-    cy.get('nav.side-nav').contains(clickOption).should('be.visible').click();
+    // Regexp added for exact match,
+    // (to avoid problems CronJobs vs Jobs for insatance)
+    cy.get('nav.side-nav').contains(new RegExp("^" + clickOption + "$", "g")).should('be.visible').click();
   };
   // Ensure some title exist to proof the menu is loaded
   cy.get('div.title').last().should('exist').and('not.be.empty');

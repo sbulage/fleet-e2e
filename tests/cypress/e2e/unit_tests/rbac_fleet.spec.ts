@@ -163,7 +163,7 @@ describe('Test Fleet access with RBAC with custom roles using Standard User', { 
       cy.accesMenuSelection('Continuous Delivery', 'Git Repos');
       cy.wait(1000)
       cy.accesMenuSelection('Continuous Delivery', 'Advanced', 'Bundles');
-      cy.accesMenuSelection('Continuous Delivery', 'Advanced', 'Workspace');
+      cy.accesMenuSelection('Continuous Delivery', 'Advanced', 'Workspaces');
       cy.get('a.btn.role-primary').contains('Create').should('be.visible');
       cy.verifyTableRow(0, 'Active', 'fleet-default');
       cy.verifyTableRow(1, 'Active', 'fleet-local');
@@ -171,7 +171,7 @@ describe('Test Fleet access with RBAC with custom roles using Standard User', { 
       cy.contains('allowedTargetNamespaces').should('be.visible');
       
       // Ensuring the user is not able to "delete" workspaces. 
-      cy.accesMenuSelection('Continuous Delivery', 'Advanced', 'Workspace');
+      cy.accesMenuSelection('Continuous Delivery', 'Advanced', 'Workspaces');
       cy.open3dotsMenu('fleet-default', 'Delete', true);
     })
   )
@@ -204,13 +204,13 @@ describe('Test Fleet access with RBAC with custom roles using Standard User', { 
       cy.login(stduser, uiPassword);
 
       // Ensuring the user IS able to "go to Continuous Delivery", "list" and "delete" workspaces.
-      cy.accesMenuSelection('Continuous Delivery', 'Advanced', 'Workspace');
+      cy.accesMenuSelection('Continuous Delivery', 'Advanced', 'Workspaces');
       cy.verifyTableRow(0, 'Active', 'fleet-default');
       cy.verifyTableRow(1, 'Active', 'fleet-local');
       cy.contains('Delete').should('be.visible');
     
       // Ensuring the user is NOT able to "edit" workspaces. 
-      cy.accesMenuSelection('Continuous Delivery', 'Advanced', 'Workspace');
+      cy.accesMenuSelection('Continuous Delivery', 'Advanced', 'Workspaces');
       cy.open3dotsMenu('fleet-default', 'Edit Config', true);
     })
   )
@@ -766,7 +766,7 @@ describe('Test Fleet access with RBAC with "CUSTOM ROLES" and "GITREPOS" using "
       cy.accesMenuSelection('Continuous Delivery', 'Git Repos');
       cy.wait(1000)
       cy.accesMenuSelection('Continuous Delivery', 'Advanced', 'Bundles');
-      cy.accesMenuSelection('Continuous Delivery', 'Advanced', 'Workspace');
+      cy.accesMenuSelection('Continuous Delivery', 'Advanced', 'Workspaces');
       cy.get('a.btn.role-primary').contains('Create').should('be.visible');
       cy.verifyTableRow(0, 'Active', 'fleet-default');
       cy.verifyTableRow(1, 'Active', 'fleet-local');
@@ -774,7 +774,7 @@ describe('Test Fleet access with RBAC with "CUSTOM ROLES" and "GITREPOS" using "
       cy.contains('allowedTargetNamespaces').should('be.visible');
       
       // Ensuring the user is not able to "delete" workspaces. 
-      cy.accesMenuSelection('Continuous Delivery', 'Advanced', 'Workspace');
+      cy.accesMenuSelection('Continuous Delivery', 'Advanced', 'Workspaces');
       cy.open3dotsMenu('fleet-default', 'Delete', true);
     })
   )
@@ -806,13 +806,13 @@ describe('Test Fleet access with RBAC with "CUSTOM ROLES" and "GITREPOS" using "
       cy.login(baseUser, uiPassword);
 
       // Ensuring the user IS able to "go to Continuous Delivery", "list" and "delete" workspaces.
-      cy.accesMenuSelection('Continuous Delivery', 'Advanced', 'Workspace');
+      cy.accesMenuSelection('Continuous Delivery', 'Advanced', 'Workspaces');
       cy.verifyTableRow(0, 'Active', 'fleet-default');
       cy.verifyTableRow(1, 'Active', 'fleet-local');
       cy.contains('Delete').should('be.visible');
     
       // Ensuring the user is NOT able to "edit" workspaces. 
-      cy.accesMenuSelection('Continuous Delivery', 'Advanced', 'Workspace');
+      cy.accesMenuSelection('Continuous Delivery', 'Advanced', 'Workspaces');
       cy.open3dotsMenu('fleet-default', 'Edit Config', true);
     })
   )
