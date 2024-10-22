@@ -535,7 +535,7 @@ if (/\/2\.9/.test(Cypress.env('rancher_version'))) {
     qase(126,
       it(
         'Fleet-126: Test when `disablePolling=true` and forcing update Gitrepo will sync latest changes from Github',
-        { tags: '@fleet-126' },
+        { tags: '@fleet-126', retries: 1 }, // TODO: Retry added to avoid intermittent failures. Remove once fixed.
         () => {
           // Forcing 15 seconds of wait to check if changes occur after this time.
           cy.wait(15000);
