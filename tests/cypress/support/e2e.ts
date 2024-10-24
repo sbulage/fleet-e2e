@@ -50,6 +50,7 @@ declare global {
       removeClusterLabels(clusterName: string, key: string, value: string): Chainable<Element>;
       clusterCountClusterGroup(clusterGroupName: string, clusterCount: number): Chainable<Element>;
       addYamlFile(yamlFilePath: string): Chainable<Element>;
+      verifyJobDeleted(repoName: string, verifyJobDeletedEvent?: boolean ): Chainable<Element>;
     }
   }
 }

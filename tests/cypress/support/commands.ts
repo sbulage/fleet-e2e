@@ -577,3 +577,22 @@ Cypress.Commands.add('addYamlFile', (yamlFilePath) => {
     });
   })
 })
+
+// Command to ensure job is deleted
+Cypress.Commands.add('verifyJobDeleted', (repoName, verifyJobDeletedEvent = true) => {
+  // Optional. This is to t verify event on Repo status page
+  // To be executed there or after cy.checkGitRepoStatus() function;
+  if (verifyJobDeletedEvent) {
+    cy.get('ul[role="tablist"]').contains('Recent Events').click();
+    cy.get('section#events > div > table > tbody > tr.main-row')
+      .eq(0)
+      .contains('job deletion triggered because job succeeded', { timeout: 20000 })
+      .should('be.visible');
+  };
+
+  // Confirm job disappears
+  cy.accesMenuSelection('local', 'Workloads', 'Jobs');
+  cy.nameSpaceMenuToggle('All Namespaces');
+  cy.filterInSearchBox(repoName);
+  cy.get('table > tbody > tr').contains('There are no rows which match your search query.').should('be.visible');
+});

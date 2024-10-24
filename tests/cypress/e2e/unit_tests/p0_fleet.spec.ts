@@ -219,15 +219,16 @@ describe('Test gitrepos with cabundle', { tags: '@p0' }, () => {
 if (/\/2\.9/.test(Cypress.env('rancher_version'))) {
   // New tests for jobs cleanup
   describe('Test Fleet job cleanup', { tags: '@p0' }, () => {
-    qase(
-      145,
+    
+    const repoUrl = 'https://github.com/rancher/fleet-test-data/';
+    const branch = 'master';
+    const path = 'qa-test-apps/nginx-app';
+
+    qase(145,
       it('Fleet-145: Test Fleet job cleanup', { tags: '@fleet-145' }, () => {
 
         const repoName = 'local-145-test-job-cleanup';
-        const repoUrl = 'https://github.com/rancher/fleet-test-data/';
-        const branch = 'master';
-        const path = 'qa-test-apps/nginx-app';
-
+  
         cy.fleetNamespaceToggle('fleet-local');
         cy.addFleetGitRepo({ repoName, repoUrl, branch, path });
         cy.clickButton('Create');
@@ -235,15 +236,88 @@ if (/\/2\.9/.test(Cypress.env('rancher_version'))) {
 
         // Check jobs on recent events tab
         cy.checkGitRepoStatus(repoName, '1 / 1', '1 / 1');
-        cy.get('ul[role="tablist"]').contains('Recent Events').click();
-        cy.get('section#events').contains('job deletion triggered because job succeeded', { timeout: 20000 }).should('be.visible');
-
-        // Confirm job disappears
-        cy.accesMenuSelection('local', 'Workloads', 'Jobs');
-        cy.nameSpaceMenuToggle('All Namespaces');
-        cy.filterInSearchBox(repoName);
-        cy.get('table > tbody > tr').contains('There are no rows which match your search query.').should('be.visible');
+        cy.verifyJobDeleted(repoName); 
       })
     );
-  });
-}
+
+  qase(146,
+    it('Fleet-146: Test Fleet job clean-up works with Force Update', { tags: '@fleet-146' }, () => {
+
+      const repoName = 'local-146-test-job-cleanup';
+
+      cy.fleetNamespaceToggle('fleet-local');
+      cy.addFleetGitRepo({ repoName, repoUrl, branch, path });
+      cy.clickButton('Create');
+      cy.verifyTableRow(0, 'Active', '1/1');
+
+      // Force update
+      cy.open3dotsMenu(repoName, 'Force Update');
+      cy.verifyTableRow(0, 'Active', '1/1');
+      cy.wait(2000); // Wait to let time for Update to take effect.
+    
+      // Check job deletion on recent events tab
+      cy.checkGitRepoStatus(repoName, '1 / 1', '1 / 1');
+      cy.verifyJobDeleted(repoName);
+
+    })
+  );
+
+  qase(147,
+    it('Fleet-147: Test Fleet job clean-up works upon commit change', { tags: '@fleet-147' }, () => {
+
+      const gh_private_pwd = Cypress.env('gh_private_pwd');
+      const repoName = 'test-disable-polling';
+
+      cy.exec('bash assets/disable_polling_reset_2_replicas.sh', { env: { gh_private_pwd } }).then((result) => {
+        cy.log(result.stdout, result.stderr);
+      });
+
+      // Gitrepo adddition via YAML
+      cy.fleetNamespaceToggle('fleet-local');
+      cy.clickButton('Add Repository');
+      cy.clickButton('Edit as YAML');
+      cy.addYamlFile('assets/disable_polling.yaml');
+      cy.clickButton('Create');
+      cy.checkGitRepoStatus(repoName, '1 / 1', '1 / 1');
+
+      // Verify event deletion on recent events tab and job deletion 
+      cy.verifyJobDeleted(repoName);    
+
+      // Change replicas to 5
+      cy.exec('bash assets/disable_polling_setting_5_replicas.sh').then((result) => {
+        cy.log(result.stdout, result.stderr);
+      });
+      cy.accesMenuSelection('Continuous Delivery', 'Git Repos');
+      cy.fleetNamespaceToggle('fleet-local');
+      cy.checkGitRepoStatus(repoName, '1 / 1', '1 / 1');
+
+      // Verify event deletion on recent events tab and job deletion
+      cy.verifyJobDeleted(repoName);
+    })
+  );
+
+  qase(148,
+    it('Fleet-148: Test Fleet job clean-up with unsuccessful job is not deleted', { tags: '@fleet-148' }, () => {
+  
+      const repoName = 'local-148-test-unsuscessful-job-is-not-deleted';
+      const path = 'qa-test-apps/nginx-app-bad-path';
+  
+      cy.fleetNamespaceToggle('fleet-local');
+      cy.addFleetGitRepo({ repoName, repoUrl, branch, path });
+      cy.clickButton('Create');
+      cy.verifyTableRow(0, /Git Updating|Error/, '0/0');
+      
+      cy.contains(repoName).click();
+      cy.get('ul[role="tablist"]').contains('Recent Events').click();
+      cy.get('section#events > div > table > tbody > tr.main-row').eq(0).contains('GotNewCommit', { timeout: 20000 }).should('be.visible');
+
+      // Check job exists and it is NOT deleted
+      // Confirm job disappears
+      cy.accesMenuSelection('local', 'Workloads', 'Jobs');
+      cy.nameSpaceMenuToggle('All Namespaces');
+      cy.filterInSearchBox(repoName);
+      cy.get('table > tbody > tr').contains(repoName).should('be.visible');
+    })
+  )});
+};
+
