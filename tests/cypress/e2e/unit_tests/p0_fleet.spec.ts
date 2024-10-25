@@ -14,6 +14,7 @@ limitations under the License.
 
 import 'cypress/support/commands';
 import { qase } from 'cypress-qase-reporter/dist/mocha';
+import { contains } from 'cypress/types/jquery';
 
 export const appName = "nginx-keep";
 export const clusterName = "imported-0";
@@ -309,6 +310,12 @@ if (/\/2\.9/.test(Cypress.env('rancher_version'))) {
       
       cy.contains(repoName).click();
       cy.get('ul[role="tablist"]').contains('Recent Events').click();
+      cy.get('section#events > div > table > tbody > tr.main-row').should('have.length', 2).then(() => {
+         cy.contains('GotNewCommit', { timeout: 20000 }).should('be.visible');
+         cy.contains('GitJob was created', { timeout: 20000 }).should('be.visible');
+         cy.contains('job deletion triggered because job succeeded', { timeout: 20000 }).should('not.exist');
+      });
+      
       cy.get('section#events > div > table > tbody > tr.main-row').eq(0).contains('GotNewCommit', { timeout: 20000 }).should('be.visible');
 
       // Check job exists and it is NOT deleted
