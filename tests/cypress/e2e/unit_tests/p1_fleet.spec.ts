@@ -304,7 +304,7 @@ if (!/\/2\.7/.test(Cypress.env('rancher_version'))) {
 
 // RepoURLRegex is supported on v2.8 but error reporting is not working correctly there
 // Ref. https://github.com/rancher/fleet/issues/2462 but it wont be fixed in v2.8
-if (/\/2\.9/.test(Cypress.env('rancher_version'))) {
+if (!/\/2\.7/.test(Cypress.env('rancher_version')) && !/\/2\.8/.test(Cypress.env('rancher_version'))) {
   describe('Private Helm Repository tests (helmRepoURLRegex)', { tags: '@p1'}, () => {
 
     const repoUrl = 'https://github.com/fleetqa/fleet-qa-examples-public.git'
@@ -507,7 +507,7 @@ describe('Test Self-Healing on IMMUTABLE resources when correctDrift is enabled'
   )
 });
 
-if (/\/2\.9/.test(Cypress.env('rancher_version'))) {
+if (!/\/2\.7/.test(Cypress.env('rancher_version')) && !/\/2\.8/.test(Cypress.env('rancher_version'))) {
   describe('Tests with disablePolling', { tags: '@p1' }, () => {
     const gh_private_pwd = Cypress.env('gh_private_pwd');
     const repoName = 'test-disable-polling';

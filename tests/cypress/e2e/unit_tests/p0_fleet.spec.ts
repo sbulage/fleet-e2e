@@ -217,7 +217,7 @@ describe('Test gitrepos with cabundle', { tags: '@p0' }, () => {
 
 });
 
-if (/\/2\.9/.test(Cypress.env('rancher_version'))) {
+if (!/\/2\.7/.test(Cypress.env('rancher_version')) && !/\/2\.8/.test(Cypress.env('rancher_version'))) {
   // New tests for jobs cleanup
   describe('Test Fleet job cleanup', { tags: '@p0' }, () => {
     
