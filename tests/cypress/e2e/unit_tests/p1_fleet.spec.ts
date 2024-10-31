@@ -65,11 +65,16 @@ describe('Test GitRepo Bundle name validation and max character trimming behavio
             cy.addFleetGitRepo({repoName, repoUrl, branch, path});
             cy.clickButton('Create');
 
+            // Skipping this in 2.10 until this bug is resolved:
+            // https://github.com/rancher/dashboard/issues/12444
+            // TODO: decide what to do with this upon bug resolution
+            if (!/\/2\.10/.test(Cypress.env('rancher_version'))) {
             // Assert errorMessage exists
             cy.get('[data-testid="banner-content"] > span')
               .should('contain', repoName)
               .should('contain', 'RFC 1123')
-
+            }
+            
             // Navigate back to GitRepo page
             cy.clickButton('Cancel')
             cy.contains('No repositories have been added').should('be.visible')
