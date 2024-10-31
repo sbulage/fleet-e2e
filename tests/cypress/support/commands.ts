@@ -212,7 +212,16 @@ Cypress.Commands.add('verifyTableRow', (rowNumber, expectedText1, expectedText2)
 // Namespace Toggle
 Cypress.Commands.add('nameSpaceMenuToggle', (namespaceName) => {
   cy.get('.top > .ns-filter').should('be.visible');
-  cy.get('.top > .ns-filter').click({ force: true });
+
+  // For some reason I don't understand, click force doesn't work
+  // in 2.10, but it is mandatory for earlier versions
+  // TODO: this is a workaround. Please improve it.
+  if (/\/2\.10/.test(Cypress.env('rancher_version'))) {
+    cy.get('.top > .ns-filter').click();  
+  }
+  else {
+    cy.get('.top > .ns-filter').click({ force: true });
+  }
   cy.get('div.ns-item').contains(namespaceName).scrollIntoView()
   cy.get('div.ns-item').contains(namespaceName).click()
   cy.get('div.ns-dropdown.ns-open > i.icon.icon-chevron-up').click({ force: true });
