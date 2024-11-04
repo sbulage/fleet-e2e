@@ -5,9 +5,9 @@ Automation Repository for Fleet i.e. Rancher Continuous Delivery.
 
 # CI status
 
-|Lint| Rancher v2.9-Head | Rancher v2.8-head |
-|---|---|---|
-|TBA|[![Rancher-2.9-head_CI](https://github.com/rancher/fleet-e2e/actions/workflows/ui-rm_head_2.9.yaml/badge.svg?branch=main)](https://github.com/rancher/fleet-e2e/actions/workflows/ui-rm_head_2.9.yaml) |[![Rancher-2.8-head_CI](https://github.com/rancher/fleet-e2e/actions/workflows/ui-rm_head_2.8.yaml/badge.svg?branch=main)](https://github.com/rancher/fleet-e2e/actions/workflows/ui-rm_head_2.8.yaml)
+|Lint| Rancher v2.10-Head | Rancher v2.9-Head | Rancher v2.8-head |
+|---|---|---|---|
+|TBA|[![Rancher-2.10-head_CI](https://github.com/rancher/fleet-e2e/actions/workflows/ui-rm_head_2.10.yaml/badge.svg?branch=main)](https://github.com/rancher/fleet-e2e/actions/workflows/ui-rm_head_2.10.yaml)|[![Rancher-2.9-head_CI](https://github.com/rancher/fleet-e2e/actions/workflows/ui-rm_head_2.9.yaml/badge.svg?branch=main)](https://github.com/rancher/fleet-e2e/actions/workflows/ui-rm_head_2.9.yaml) |[![Rancher-2.8-head_CI](https://github.com/rancher/fleet-e2e/actions/workflows/ui-rm_head_2.8.yaml/badge.svg?branch=main)](https://github.com/rancher/fleet-e2e/actions/workflows/ui-rm_head_2.8.yaml)
 ---
 # What is Fleet?
 
