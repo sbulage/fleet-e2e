@@ -611,10 +611,17 @@ if (!/\/2\.7/.test(Cypress.env('rancher_version')) && !/\/2\.8/.test(Cypress.env
 describe('Test application deployment based on clusterGroup', { tags: '@p1'}, () => {
   const value = 'value_prod'
 
-
   beforeEach('Cleanup leftover GitRepo, ClusterGroup or label etc. if any.', () => {
     cy.login();
     cy.visit('/');
+    // Remove labels from the clusters.
+    dsAllClusterList.forEach(
+      (dsCluster) => {
+        // Adding wait to load page correctly to avoid interference with hamburger-menu.
+        cy.wait(500);
+        cy.removeClusterLabels(dsCluster, key, value);
+      }
+    )
     cy.deleteClusterGroups();
     cy.deleteAllFleetRepos();
   })
@@ -635,7 +642,8 @@ describe('Test application deployment based on clusterGroup', { tags: '@p1'}, ()
         it(`Fleet-${qase_id}: Test ${test_explanation}`, { tags: `@fleet-${qase_id}` }, () => {
           const repoName = `default-single-app-cluster-group-${qase_id}`
 
-          cy.accesMenuSelection('Continuous Delivery', 'Clusters');
+          cy.accesMenuSelection('Continuous Delivery', 'Git Repos');
+          cy.clickNavMenu(['Clusters']);
           cy.contains('.title', 'Clusters').should('be.visible');
 
           // Assign label to the clusters 
@@ -682,7 +690,7 @@ describe('Test application deployment based on clusterGroup', { tags: '@p1'}, ()
           }
 
           // Remove labels from the clusters.
-          dsFirstTwoClusterList.forEach(
+          dsAllClusterList.forEach(
             (dsCluster) => {
               // Adding wait to load page correctly to avoid interference with hamburger-menu.
               cy.wait(500);
@@ -755,6 +763,14 @@ describe("Test Application deployment based on 'clusterSelector'", { tags: '@p1'
   beforeEach('Cleanup leftover GitRepo if any.', () => {
     cy.login();
     cy.visit('/');
+    // Remove labels from the clusters.
+    dsAllClusterList.forEach(
+      (dsCluster) => {
+        // Adding wait to load page correctly to avoid interference with hamburger-menu.
+        cy.wait(500);
+        cy.removeClusterLabels(dsCluster, key, value);
+      }
+    )
     cy.deleteAllFleetRepos();
   })
 
@@ -783,7 +799,8 @@ describe("Test Application deployment based on 'clusterSelector'", { tags: '@p1'
     qase(qase_id,
       it(`Test install ${test_explanation} to the 2 clusters using clusterSelector(matchLabels) in GitRepo`, { tags: `@fleet-${qase_id}` }, () => {
 
-        cy.accesMenuSelection('Continuous Delivery', 'Clusters');
+        cy.accesMenuSelection('Continuous Delivery', 'Git Repos');
+        cy.clickNavMenu(['Clusters']);
         cy.contains('.title', 'Clusters').should('be.visible');
   
         // Assign label to the clusters 
@@ -874,6 +891,14 @@ describe("Test Application deployment based on 'clusterGroupSelector'", { tags: 
   beforeEach('Cleanup leftover GitRepo if any.', () => {
     cy.login();
     cy.visit('/');
+    // Remove labels from the clusters.
+    dsAllClusterList.forEach(
+      (dsCluster) => {
+        // Adding wait to load page correctly to avoid interference with hamburger-menu.
+        cy.wait(500);
+        cy.removeClusterLabels(dsCluster, key, value);
+      }
+    )
     cy.deleteClusterGroups();
     cy.deleteAllFleetRepos();
   })

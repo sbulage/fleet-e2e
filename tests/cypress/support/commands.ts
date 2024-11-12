@@ -549,29 +549,55 @@ Cypress.Commands.add('deleteClusterGroups', () => {
 
 // Remove added labels from the cluster(s)
 Cypress.Commands.add('removeClusterLabels', (clusterName, key, value) => {
-  // Navigate to Clusters page when other navigation is present.
-  cy.get('body').then((body) => {
-    if (body.find('.title').text().includes('Clusters')) {
-      return true
-    }
-    else {
-      cy.accesMenuSelection('Continuous Delivery', 'Clusters');
-    }
-  })
-
+  cy.accesMenuSelection('Continuous Delivery', 'Git Repos');
+  cy.clickNavMenu(['Clusters']);
   cy.contains('.title', 'Clusters').should('be.visible');
   cy.filterInSearchBox(clusterName);
   cy.open3dotsMenu(clusterName, 'Edit Config');
-  cy.get('div[class="row"] div[class="key-value"] button.role-link').first().click();
+  cy.contains('.title', 'Cluster:').should('be.visible');
+  // TODO: Remove below label remove logic after
+  // After label removal from cluster, it says 409 (conflict error) while saving.
+  // issue: # https://github.com/rancher/dashboard/issues/9563
+  // Below code will work for 3 labels on the cluster, 2 with disabled labels,
+  // 1 with actual removable label.
+  if (/\/2\.8/.test(Cypress.env('rancher_version'))) {
+    cy.get('div[class="row"] div[class="key-value"] button.role-link').first().click();
+  }
+  else {
+    cy.get('body').then((body) => {
+      if (body.find('span[class="switch hand"]')) {
+        cy.get('span[name="label-system-toggle"]').click();
+        cy.get('div[class="row"] div[class="key-value"] button.role-link').then(($el) => {
+          if ($el.length === 2) {
+            cy.log("There is no new label for remove. Only 2 default labels present.");
+          }
+          else {
+            cy.get('div[class="row"] div[class="key-value"] button.role-link').first().click();
+          }
+        })
+      }
+    })
+  }
+
   cy.wait(500);
   cy.clickButton('Save');
   cy.contains('Save').should('not.exist');
+  // Navigate back to all clusters page.
+  cy.clickNavMenu(['Clusters']);
 
   // Ensure label is removed.
+  cy.wait(500);
   cy.contains('.title', 'Clusters').should('be.visible');
   cy.filterInSearchBox(clusterName);
   cy.get('td.col-link-detail > span').contains(clusterName).click();
-  cy.get('div.tags > span').should("not.contain", `${key} : ${value}`);
+  cy.get('div.tags > span').then(($el) =>{
+    if ($el.length === 2) {
+      cy.log("Cluster Label get removed successfully.")
+    }
+    else {
+      cy.removeClusterLabels(clusterName, key, value)
+    }
+  })
 
   // Navigate back to all clusters page.
   cy.clickNavMenu(['Clusters']);
