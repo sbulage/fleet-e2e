@@ -32,7 +32,7 @@ declare global {
       deleteAll(fleetCheck?: boolean): Chainable<Element>;
       deleteAllFleetRepos(): Chainable<Element>;
       checkGitRepoStatus(repoName: string, bundles?: string, resources?: string): Chainable<Element>;
-      checkApplicationStatus(appName: string, clusterName?: string, appNamespace?: string): Chainable<Element>;
+      checkApplicationStatus(appName: string, clusterName?: string, appNamespace?: string, present?: boolean): Chainable<Element>;
       deleteApplicationDeployment(clusterName?: string): Chainable<Element>;
       modifyDeployedApplication(appName: string, clusterName?: string): Chainable<Element>;
       createRoleTemplate(roleType: string, roleName: string, newUserDefault?: string['yes'|'no'], rules?: string[]): Chainable<Element>;
