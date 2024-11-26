@@ -320,6 +320,12 @@ jobs:
           name: cypress-videos-basics-${{ inputs.cluster_name }}
           path: tests/cypress/videos
           retention-days: 7
+      - name: Upload webhook setup log
+        if: failure() 
+        uses: actions/upload-artifact@v4
+        with:
+          name: webhook-setup-log-${{ inputs.cluster_name }}
+          path: tests/assets/webhook-tests/webhook_setup.log
       - name: Add summary
         if: ${{ always() }}
         run: |

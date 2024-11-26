@@ -636,3 +636,22 @@ Cypress.Commands.add('verifyJobDeleted', (repoName, verifyJobDeletedEvent = true
   cy.filterInSearchBox(repoName);
   cy.get('table > tbody > tr').contains('There are no rows which match your search query.').should('be.visible');
 });
+
+// Simulate typing on the canvas terminal
+Cypress.Commands.add('typeIntoCanvasTermnal', (textToType) => {
+    // Simulate typing on the canvas terminal
+    cy.get('canvas').then(($canvas) => {
+      const canvas = $canvas[0];
+      const rect = canvas.getBoundingClientRect();
+    
+      // Simulate a click on the canvas
+      cy.wrap(canvas)
+        .trigger('mousedown', { clientX: rect.left + 10, clientY: rect.top + 10 })
+        .trigger('mouseup', { clientX: rect.left + 10, clientY: rect.top + 10 });
+    
+      // Simulate typing on the canvas
+      cy.wrap(canvas)
+        .trigger('keydown', { key: 'k' })
+        .type(textToType);
+    });
+});

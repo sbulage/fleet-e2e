@@ -327,3 +327,68 @@ if (!/\/2\.7/.test(Cypress.env('rancher_version')) && !/\/2\.8/.test(Cypress.env
   )});
 };
 
+describe('Test Fleet with Webhook', { tags: '@p0' }, () => {
+  qase(152,
+    it('Fleet-152: Test Fleet with Webhook and disable polling ', { tags: '@fleet-152' }, () => {
+
+      const repoName = 'webhook-test-disable-polling';
+      const gh_private_pwd = Cypress.env('gh_private_pwd');
+
+      // Prepare webhook in Github
+      cy.exec('bash assets/webhook-tests/webhook_setup.sh', { env: { gh_private_pwd } }).then((result) => {
+        cy.log(result.stdout, result.stderr);
+      })
+
+      // Open local terminal in Rancher UI
+      cy.accesMenuSelection('local');
+      cy.get('#btn-kubectl').click();
+      cy.contains('Connected').should('be.visible');
+
+      // Add yaml file to the terminal to create ad-hoc ingress
+      cy.get('button[data-testid="header-action-import-yaml"]').click();
+      cy.addYamlFile('assets/webhook-tests/webhook_ingress.yaml');
+      cy.clickButton('Import');
+      cy.clickButton('Close');
+
+      // Create webhook secret via terminal to be used in webhook
+      cy.typeIntoCanvasTermnal('\
+        kubectl create secret generic gitjob-webhook -n cattle-fleet-system --from-literal=github=webhooksecretvalue{enter}');
+
+      // Ensure webhook repo starts with 2 replicas
+      cy.exec('bash assets/webhook-tests/webhook_test_2_replicas.sh', { env: { gh_private_pwd } }).then((result) => {
+        cy.log(result.stdout, result.stderr);
+      });
+
+      // Gitrepo creation via YAML
+      cy.accesMenuSelection('Continuous Delivery', 'Git Repos');
+      cy.fleetNamespaceToggle('fleet-local');
+      cy.clickButton('Add Repository');
+      cy.clickButton('Edit as YAML');
+      cy.addYamlFile('assets/webhook-tests/webhook_test_disable_polling.yaml');
+      cy.clickButton('Create');
+      cy.verifyTableRow(0, 'Active', '1/1');
+      cy.checkGitRepoStatus(repoName, '1 / 1', '1 / 1');
+      cy.verifyJobDeleted(repoName, false);
+
+      // Verify deployments has 2 replicas only
+      cy.accesMenuSelection('local', 'Workloads', 'Deployments');
+      cy.filterInSearchBox(repoName);
+      cy.wait(500);
+      cy.contains('tr.main-row', repoName, { timeout: 20000 }).should('be.visible');
+      cy.verifyTableRow(0, 'Active', '2/2');
+
+      // Give extra time for job to finsih. 
+      // TODO: remove this wait once https://github.com/rancher/fleet/issues/3067  is fixed
+      // or find a way to wait for the job to finish
+      cy.wait(10000);
+
+      // Change replicas to 5
+      cy.exec('bash assets/webhook-tests/webhook_test_5_replicas.sh').then((result) => {
+        cy.log(result.stdout, result.stderr);
+      });
+
+      // Verify deployments has 5 replicas
+      cy.verifyTableRow(0, 'Active', '5/5');
+    })
+  );
+})

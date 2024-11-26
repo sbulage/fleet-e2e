@@ -51,6 +51,7 @@ declare global {
       clusterCountClusterGroup(clusterGroupName: string, clusterCount: number): Chainable<Element>;
       addYamlFile(yamlFilePath: string): Chainable<Element>;
       verifyJobDeleted(repoName: string, verifyJobDeletedEvent?: boolean ): Chainable<Element>;
+      typeIntoCanvasTermnal(textToType: string): Chainable<Element>;
     }
   }
 }
