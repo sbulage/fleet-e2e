@@ -144,8 +144,8 @@ Cypress.Commands.add('addFleetGitRepo', ({ repoName, repoUrl, branch, path, path
 
 // Deploy To target functionality used in addGitRepo
 Cypress.Commands.add('deployToClusterOrClusterGroup', (deployToTarget) => {
-  cy.get('div.labeled-select.create.hoverable').should('be.visible');
-  cy.get('div.labeled-select.create.hoverable').click({ force: true });
+  cy.get('[data-testid="fleet-gitrepo-target-cluster"]').should('be.visible');
+  cy.get('[data-testid="fleet-gitrepo-target-cluster"]').click({ force: true });
   cy.get('ul.vs__dropdown-menu > li').contains(deployToTarget).should("exist").click();
 });
 
@@ -522,6 +522,7 @@ Cypress.Commands.add('createClusterGroup', (clusterGroupName, key, value, banner
     cy.wait(500);
   }
   cy.clickButton('Create');
+  cy.filterInSearchBox(clusterGroupName);
   cy.verifyTableRow(0, 'Active', clusterGroupName);
 })
 
