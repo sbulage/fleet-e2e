@@ -143,9 +143,10 @@ Cypress.Commands.add('addFleetGitRepo', ({ repoName, repoUrl, branch, path, path
 });
 
 // Deploy To target functionality used in addGitRepo
+// TODO: Remove div.labeled-select.create.hoverable, div.labeled-select.edit.hoverable locators, once 2.8 is disabled.
 Cypress.Commands.add('deployToClusterOrClusterGroup', (deployToTarget) => {
-  cy.get('[data-testid="fleet-gitrepo-target-cluster"]').should('be.visible');
-  cy.get('[data-testid="fleet-gitrepo-target-cluster"]').click({ force: true });
+  cy.get('div.labeled-select.create.hoverable, div.labeled-select.edit.hoverable, [data-testid="fleet-gitrepo-target-cluster"]').first().should('be.visible');
+  cy.get('div.labeled-select.create.hoverable, div.labeled-select.edit.hoverable, [data-testid="fleet-gitrepo-target-cluster"]').first().click({ force: true });
   cy.get('ul.vs__dropdown-menu > li').contains(deployToTarget).should("exist").click();
 });
 
