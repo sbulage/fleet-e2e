@@ -1,0 +1,60 @@
+# This workflow calls the master E2E workflow with custom variables
+name: UI-RM_head
+run-name: ${{ github.event_name == 'workflow_dispatch' && format('`{0}` on `{1}` - `{2}` destroy={3}', inputs.rancher_version, inputs.upstream_cluster_version, inputs.grep_test_by_tag, inputs.destroy_runner) || github.workflow }}
+
+on:
+  workflow_dispatch:
+    inputs:
+      qase_run_id:
+        description: Qase run ID where the results will be reported
+        default: auto
+        type: string
+      destroy_runner:
+        description: Destroy the auto-generated self-hosted runner
+        default: true
+        type: boolean
+      rancher_version:
+        description: Rancher version channel/version/head_version latest/latest, latest/2.11.x[-rc1], prime/2.11.x, prime/devel/2.11, alpha/2.11.0-alpha1
+        default: latest/devel/head
+        type: string
+        required: true
+      upstream_cluster_version:
+        description: K3s upstream cluster version where to install Rancher
+        default: v1.30.3+k3s1
+        type: string
+        required: true
+      grep_test_by_tag:
+        description: Grep tags. For multiple selection separate with spaces. Keep always @login
+        required: false
+        type: string
+        default: '@login @p0 @p1 @rbac'
+  schedule:
+    - cron: '30 3 * * *'
+
+jobs:
+  ui:
+    uses: ./.github/workflows/master-e2e.yaml
+    secrets:
+      credentials: ${{ secrets.GCP_CREDENTIALS }}
+      pat_token: ${{ secrets.SELF_HOSTED_RUNNER_PAT_TOKEN }}
+      rancher_password: ${{ secrets.RANCHER_PASSWORD }}
+      gitlab_private_user: ${{ secrets.GITLAB_PRIVATE_USER }}
+      gitlab_private_pwd: ${{ secrets.GITLAB_PRIVATE_PWD }}
+      bitbucket_private_user: ${{ secrets.BITBUCKET_PRIVATE_USER }}
+      bitbucket_private_pwd: ${{ secrets.BITBUCKET_PRIVATE_PWD }}
+      gh_private_user: ${{ secrets.GH_PRIVATE_USER }}
+      gh_private_pwd: ${{ secrets.GH_PRIVATE_PWD }}
+      azure_private_user: ${{ secrets.AZURE_PRIVATE_USER }}
+      azure_private_pwd: ${{ secrets.AZURE_PRIVATE_PWD }}
+      rsa_private_key_qa: ${{ secrets.RSA_PRIVATE_KEY_QA }}
+      rsa_public_key_qa: ${{ secrets.RSA_PUBLIC_KEY_QA }}
+      qase_api_token: ${{ secrets.QASE_API_TOKEN }}
+    with:
+      test_description: "CI/Manual - UI - Deployment test with Standard K3s"
+      cluster_name: cluster-k3s
+      # WARNING, VALUES BELOW ARE HARDCODED FOR RUNS SCHEDULED BY CRON
+      destroy_runner: ${{ github.event_name == 'schedule' && true || inputs.destroy_runner }}
+      upstream_cluster_version: ${{ inputs.upstream_cluster_version || 'v1.30.3+k3s1' }}
+      rancher_version: ${{ inputs.rancher_version || 'latest/devel/head' }}
+      qase_run_id: ${{ inputs.qase_run_id || 'auto' }}
+      grep_test_by_tag: ${{ inputs.grep_test_by_tag || '@login @p0 @p1 @rbac' }}
