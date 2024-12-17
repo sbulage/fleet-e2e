@@ -275,7 +275,7 @@ jobs:
       - name: Cypress tests - Basics
         env:
           BROWSER: chrome
-          CYPRESS_DOCKER: 'cypress/included:13.6.4'
+          CYPRESS_DOCKER: 'cypress/included:13.16.0'
           RANCHER_URL: https://${{ needs.create-runner.outputs.public_dns }}/dashboard
           RANCHER_USER: admin
           RANCHER_PASSWORD: ${{ secrets.rancher_password }}
