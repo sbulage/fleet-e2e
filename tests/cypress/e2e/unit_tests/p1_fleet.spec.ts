@@ -537,6 +537,8 @@ if (!/\/2\.7/.test(Cypress.env('rancher_version')) && !/\/2\.8/.test(Cypress.env
       });
     });
 
+    if (!/\/2\.9/.test(Cypress.env('rancher_version'))) { 
+    // Skipping in 2.9 due to https://github.com/rancher/fleet/issues/3048
     qase(126,
       it(
         'Fleet-126: Test when `disablePolling=true` and forcing update Gitrepo will sync latest changes from Github',
@@ -568,7 +570,7 @@ if (!/\/2\.7/.test(Cypress.env('rancher_version')) && !/\/2\.8/.test(Cypress.env
           cy.verifyTableRow(0, 'Active', '5/5');
         }
       )
-    );
+    )};
 
     qase(124,
       it(
