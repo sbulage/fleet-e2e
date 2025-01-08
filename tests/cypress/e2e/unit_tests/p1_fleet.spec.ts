@@ -420,97 +420,101 @@ if (!/\/2\.7/.test(Cypress.env('rancher_version')) && !/\/2\.8/.test(Cypress.env
     )  
   });
 
-describe('Test Self-Healing on IMMUTABLE resources when correctDrift is enabled', { tags: '@p1'}, () => {
-  const correctDriftTestData: testData[] = [
-    { qase_id: 80,
-      repoName: "ds-cluster-correct-80",
-      resourceType: "ConfigMaps",
-      resourceName: "mp-app-config",
-      resourceLocation: "Storage",
-      resourceNamespace: "test-fleet-mp-config",
-      dataToAssert: "test, test_key",
-    },
-    { qase_id: 79,
-      repoName: "ds-cluster-correct-79",
-      resourceType: "Services",
-      resourceName: "mp-app-service",
-      resourceLocation: "Service Discovery",
-      resourceNamespace: "test-fleet-mp-service",
-      dataToAssert: "6341 ",
-    },
-  ]
-
-  correctDriftTestData.forEach(
-    ({qase_id, repoName, resourceType, resourceName, resourceLocation, resourceNamespace, dataToAssert}) => {
-      qase(qase_id,
-        it(`Fleet-${qase_id}: Test IMMUTABLE resource "${resourceType}" will NOT be self-healed when correctDrift is set to true.`, { tags: `@fleet-${qase_id}` }, () => {
-          const path = "multiple-paths"
-
-          // Add GitRepo by enabling 'correctDrift'
-          cy.fleetNamespaceToggle('fleet-default')
-          cy.addFleetGitRepo({ repoName, repoUrl, branch, path, correctDrift: 'yes' });
-          cy.clickButton('Create');
-          cy.checkGitRepoStatus(repoName, '2 / 2');
-          cy.accesMenuSelection(dsFirstClusterName, resourceLocation, resourceType);
-          cy.nameSpaceMenuToggle(resourceNamespace);
-          cy.filterInSearchBox(resourceName);
-          cy.get('.col-link-detail').contains(resourceName).should('be.visible');
-          cy.open3dotsMenu(resourceName, 'Edit Config');
-
-          if (resourceType === 'ConfigMaps') {
-            cy.clickButton('Add');
-            cy.get('[data-testid="input-kv-item-key-1"]').eq(0).focus().type('test_key');
-            cy.get('div.code-mirror.as-text-area').eq(1).click().type("test_data_value");
-            cy.clickButton('Add');
-          }
-          else if (resourceType === 'Services') {
-            cy.get("input[type=number]").clear().type("6341");
-          }
-
-          else  {
-            throw new Error(`Resource "${resourceType}" is invalid  / not implemented yet`);
-          }
-
-          cy.wait(500);
-          cy.clickButton('Save');
-          cy.filterInSearchBox(resourceName);
-          cy.verifyTableRow(0, resourceName, dataToAssert);
-
-          // Adding more wait for 30seconds to capture the error if occurred after modifying the resources.
-          cy.wait(30000);
-          cy.accesMenuSelection('Continuous Delivery', 'Git Repos');
-          cy.verifyTableRow(0, 'Active', repoName);
-
-          // Check All clusters are in healthy state after performing any modification to the resources.
-          dsAllClusterList.forEach((dsCluster) => {
-            // Adding wait to load page correctly to avoid interference with hamburger-menu.
-            cy.wait(500);
-            cy.accesMenuSelection('Continuous Delivery', 'Clusters');
-            cy.contains('.title', 'Clusters').should('be.visible');
-            cy.filterInSearchBox(dsCluster);
-            cy.verifyTableRow(0, 'Active', dsCluster);
-          })
-
-          // Any mutable resource will reconcile to it's original state immediately
-          // But with ConfigMaps and Services, it is not because they are immutable i.e.
-          // they didn't reconciled when `correctDrift` is enabled.
-          cy.deleteAllFleetRepos();
-
-          // Delete leftover resources if there are any on each downstream cluster.
-          // Currently, service is getting deleted from cluster, hence adding check for it.
-          dsAllClusterList.forEach((dsCluster) => {
-            // Adding wait to load page correctly to avoid interference with hamburger-menu.
-            cy.wait(500);
-            cy.accesMenuSelection(dsCluster, "Service Discovery", "Services");
+// Error will occur when use ForceUpdate.
+// In 2.9 we are skipping due flakiness in the test.
+if (!/\/2\.9/.test(Cypress.env('rancher_version'))) {
+  describe('Test Self-Healing on IMMUTABLE resources when correctDrift is enabled', { tags: '@p1'}, () => {
+    const correctDriftTestData: testData[] = [
+      { qase_id: 80,
+        repoName: "ds-cluster-correct-80",
+        resourceType: "ConfigMaps",
+        resourceName: "mp-app-config",
+        resourceLocation: "Storage",
+        resourceNamespace: "test-fleet-mp-config",
+        dataToAssert: "test, test_key",
+      },
+      { qase_id: 79,
+        repoName: "ds-cluster-correct-79",
+        resourceType: "Services",
+        resourceName: "mp-app-service",
+        resourceLocation: "Service Discovery",
+        resourceNamespace: "test-fleet-mp-service",
+        dataToAssert: "6341 ",
+      },
+    ]
+  
+    correctDriftTestData.forEach(
+      ({qase_id, repoName, resourceType, resourceName, resourceLocation, resourceNamespace, dataToAssert}) => {
+        qase(qase_id,
+          it(`Fleet-${qase_id}: Test IMMUTABLE resource "${resourceType}" will NOT be self-healed when correctDrift is set to true.`, { tags: `@fleet-${qase_id}` }, () => {
+            const path = "multiple-paths"
+  
+            // Add GitRepo by enabling 'correctDrift'
+            cy.fleetNamespaceToggle('fleet-default')
+            cy.addFleetGitRepo({ repoName, repoUrl, branch, path, correctDrift: 'yes' });
+            cy.clickButton('Create');
+            cy.checkGitRepoStatus(repoName, '2 / 2');
+            cy.accesMenuSelection(dsFirstClusterName, resourceLocation, resourceType);
             cy.nameSpaceMenuToggle(resourceNamespace);
             cy.filterInSearchBox(resourceName);
-            cy.deleteAll(false);
+            cy.get('.col-link-detail').contains(resourceName).should('be.visible');
+            cy.open3dotsMenu(resourceName, 'Edit Config');
+  
+            if (resourceType === 'ConfigMaps') {
+              cy.clickButton('Add');
+              cy.get('[data-testid="input-kv-item-key-1"]').eq(0).focus().type('test_key');
+              cy.get('div.code-mirror.as-text-area').eq(1).click().type("test_data_value");
+              cy.clickButton('Add');
+            }
+            else if (resourceType === 'Services') {
+              cy.get("input[type=number]").clear().type("6341");
+            }
+  
+            else  {
+              throw new Error(`Resource "${resourceType}" is invalid  / not implemented yet`);
+            }
+
+            cy.wait(500);
+            cy.clickButton('Save');
+            cy.filterInSearchBox(resourceName);
+            cy.verifyTableRow(0, resourceName, dataToAssert);
+
+            // Adding more wait for 30seconds to capture the error if occurred after modifying the resources.
+            cy.wait(30000);
+            cy.accesMenuSelection('Continuous Delivery', 'Git Repos');
+            cy.verifyTableRow(0, 'Active', repoName);
+
+            // Check All clusters are in healthy state after performing any modification to the resources.
+            dsAllClusterList.forEach((dsCluster) => {
+              // Adding wait to load page correctly to avoid interference with hamburger-menu.
+              cy.wait(500);
+              cy.accesMenuSelection('Continuous Delivery', 'Clusters');
+              cy.contains('.title', 'Clusters').should('be.visible');
+              cy.filterInSearchBox(dsCluster);
+              cy.verifyTableRow(0, 'Active', dsCluster);
+            })
+
+            // Any mutable resource will reconcile to it's original state immediately
+            // But with ConfigMaps and Services, it is not because they are immutable i.e.
+            // they didn't reconciled when `correctDrift` is enabled.
+            cy.deleteAllFleetRepos();
+
+            // Delete leftover resources if there are any on each downstream cluster.
+            // Currently, service is getting deleted from cluster, hence adding check for it.
+            dsAllClusterList.forEach((dsCluster) => {
+              // Adding wait to load page correctly to avoid interference with hamburger-menu.
+              cy.wait(500);
+              cy.accesMenuSelection(dsCluster, "Service Discovery", "Services");
+              cy.nameSpaceMenuToggle(resourceNamespace);
+              cy.filterInSearchBox(resourceName);
+              cy.deleteAll(false);
+            })
           })
-        })
-      )
-    }
-  )
-});
+        )
+      }
+    )
+  });
+}
 
 if (!/\/2\.7/.test(Cypress.env('rancher_version')) && !/\/2\.8/.test(Cypress.env('rancher_version'))) {
   describe('Tests with disablePolling', { tags: '@p1' }, () => {
