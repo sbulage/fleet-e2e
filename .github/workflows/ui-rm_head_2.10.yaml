@@ -20,7 +20,7 @@ on:
         required: true
       upstream_cluster_version:
         description: K3s upstream cluster version where to install Rancher
-        default: v1.28.8+k3s1
+        default: 'v1.30.8+k3s1'
         type: string
         required: true
       grep_test_by_tag:
@@ -54,7 +54,7 @@ jobs:
       cluster_name: cluster-k3s
       # WARNING, VALUES BELOW ARE HARDCODED FOR RUNS SCHEDULED BY CRON
       destroy_runner: ${{ github.event_name == 'schedule' && true || inputs.destroy_runner }}
-      upstream_cluster_version: ${{ inputs.upstream_cluster_version || 'v1.28.8+k3s1' }}
+      upstream_cluster_version: ${{ inputs.upstream_cluster_version || 'v1.30.8+k3s1' }}
       rancher_version: ${{ inputs.rancher_version || 'latest/devel/2.10' }}
       qase_run_id: ${{ inputs.qase_run_id || 'auto' }}
       grep_test_by_tag: ${{ inputs.grep_test_by_tag || '@login @p0 @p1 @rbac' }}
