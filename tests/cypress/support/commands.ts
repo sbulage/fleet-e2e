@@ -248,7 +248,7 @@ Cypress.Commands.add('accesMenuSelection', (firstAccessMenu='Continuous Delivery
   // added wait of 500ms to make time for CSS transitions to resolve (addresses tests flakiness)
   // unfortunately there's no "easy" way of waiting for transitions and 500ms is quick and does the trick
   cypressLib.burgerMenuToggle( {animationDistanceThreshold: 10} );
-  cy.wait(500);
+  cy.wait(750);
 
   cy.contains(firstAccessMenu).should('be.visible');
   cypressLib.accesMenu(firstAccessMenu);
@@ -632,8 +632,8 @@ Cypress.Commands.add('verifyJobDeleted', (repoName, verifyJobDeletedEvent = true
   // To be executed there or after cy.checkGitRepoStatus() function;
   if (verifyJobDeletedEvent) {
     cy.get('ul[role="tablist"]').contains('Recent Events').click();
-    cy.get('section#events > div > table > tbody > tr.main-row')
-      .eq(0)
+    cy.get('section#events table tr.main-row')
+      // .eq(0)
       .contains('job deletion triggered because job succeeded', { timeout: 20000 })
       .should('be.visible');
   };

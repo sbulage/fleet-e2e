@@ -311,7 +311,7 @@ if (!/\/2\.7/.test(Cypress.env('rancher_version')) && !/\/2\.8/.test(Cypress.env
       
       cy.contains(repoName).click();
       cy.get('ul[role="tablist"]').contains('Recent Events').click();
-      cy.get('section#events > div > table > tbody > tr.main-row').should('have.length', 2).then(() => {
+      cy.get('section#events table tr.main-row').should('have.length', 2).then(() => {
          cy.contains('GotNewCommit', { timeout: 20000 }).should('be.visible');
          cy.contains('GitJob was created', { timeout: 20000 }).should('be.visible');
          cy.contains('job deletion triggered because job succeeded', { timeout: 20000 }).should('not.exist');
