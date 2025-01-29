@@ -1,5 +1,5 @@
 /*
-Copyright © 2023 - 2024 SUSE LLC
+Copyright © 2023 - 2025 SUSE LLC
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -35,14 +35,18 @@ const (
 )
 
 var (
-	arch                 string
-	clusterName          string
-	rancherHostname      string
-	k8sDownstreamVersion string
-	rancherChannel       string
-	rancherHeadVersion   string
-	rancherVersion       string
-	dsClusterCountStr    string
+	arch                 			string
+	clusterName          			string
+	rancherHostname      			string
+	k8sDownstreamVersion 			string
+	rancherChannel       			string
+	rancherHeadVersion   			string
+	rancherVersion       			string
+	rancherUpgrade       			string
+	dsClusterCountStr    			string
+	rancherUpgradeChannel     string
+	rancherUpgradeHeadVersion string
+	rancherUpgradeVersion     string
 )
 
 /**
@@ -74,6 +78,7 @@ var _ = BeforeSuite(func() {
 	k8sDownstreamVersion = os.Getenv("INSTALL_K3S_VERSION")
 	rancherVersion = os.Getenv("RANCHER_VERSION")
 	dsClusterCountStr = os.Getenv("DS_CLUSTER_COUNT")
+	rancherUpgrade = os.Getenv("RANCHER_UPGRADE")
 
 	// Convert k3s version to a tag usable by k3d
 	k8sDownstreamVersion = strings.Replace(k8sDownstreamVersion, "+", "-", 1)
@@ -91,6 +96,21 @@ var _ = BeforeSuite(func() {
 		}
 		if len(s) > 2 {
 			rancherHeadVersion = s[2]
+		}
+	}
+
+	// Extract Rancher Manager channel/version to upgrade
+	if rancherUpgrade != "" {
+		// Split rancherUpgrade and reset it
+		s := strings.Split(rancherUpgrade, "/")
+
+		// Get needed informations
+		rancherUpgradeChannel = s[0]
+		if len(s) > 1 {
+			rancherUpgradeVersion = s[1]
+		}
+		if len(s) > 2 {
+			rancherUpgradeHeadVersion = s[2]
 		}
 	}
 })

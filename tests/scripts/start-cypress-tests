@@ -27,6 +27,7 @@ docker run --init -v $PWD:/workdir -w /workdir              \
     -e "RSA_PUBLIC_KEY_QA=$RSA_PUBLIC_KEY_QA"               \
     -e "GREP=$GREP"                                         \
     -e "GREPTAGS=$GREPTAGS"                                 \
+    -e "UPGRADE=$UPGRADE"                                   \
     --add-host host.docker.internal:host-gateway            \
     --ipc=host                                              \
     $CYPRESS_DOCKER                                         \

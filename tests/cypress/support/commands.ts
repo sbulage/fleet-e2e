@@ -1,5 +1,5 @@
 /*
-Copyright © 2023 - 2024 SUSE LLC
+Copyright © 2023 - 2025 SUSE LLC
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -218,7 +218,6 @@ Cypress.Commands.add('nameSpaceMenuToggle', (namespaceName) => {
   // For some reason I don't understand, click force doesn't work
   // in 2.10 an onwards, but it is mandatory for earlier versions
   // To be improved in the future
-
   const rancherVersion = Cypress.env('rancher_version');
   const old_versions = ["latest/devel/2.7", "latest/devel/2.8", "latest/devel/2.9"];
 
@@ -662,4 +661,11 @@ Cypress.Commands.add('typeIntoCanvasTermnal', (textToType) => {
         .trigger('keydown', { key: 'k' })
         .type(textToType);
     });
+});
+
+Cypress.Commands.add('checkGitRepoAfterUpgrade', (repoName, fleetNamespace='fleet-local') => {
+  cy.accesMenuSelection('Continuous Delivery', 'Git Repos');
+  cy.fleetNamespaceToggle(fleetNamespace);
+  cy.filterInSearchBox(repoName);
+  cy.verifyTableRow(0, /Active|Modified/, repoName);
 });

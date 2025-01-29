@@ -68,6 +68,13 @@ on:
         description: Rancher Manager channel/version/head_version to use for installation
         default: stable/latest/none
         type: string
+      upgrade:
+        description: Proceed with Rancher Upgrade (True/False)
+        default: true
+        type: boolean
+      rancher_upgrade:
+        description: Rancher Manager channel/version to upgrade to
+        type: string
       grep_test_by_tag:
         description: Grep tags. For multiple selection separate with spaces
         required: false
@@ -214,6 +221,9 @@ jobs:
       K3S_KUBECONFIG_MODE: 0644
       # For Rancher Manager
       RANCHER_VERSION: ${{ inputs.rancher_version }}
+      # For Rancher Manager Upgrade
+      RANCHER_UPGRADE: ${{ inputs.rancher_upgrade }}
+      UPGRADE: ${{ inputs.upgrade }}
       TIMEOUT_SCALE: 3
       # QASE variables
       QASE_API_TOKEN: ${{ secrets.qase_api_token }}
@@ -290,12 +300,87 @@ jobs:
           RSA_PRIVATE_KEY_QA: ${{ secrets.rsa_private_key_qa }}
           RSA_PUBLIC_KEY_QA: ${{ secrets.rsa_public_key_qa }}
           GREPTAGS: ${{ inputs.grep_test_by_tag }}
+          UPGRADE: 'false'
           # Add cypress/e2e/unit_tests/user.spec.ts again when implementing RBAC tests.
           SPEC: |
             cypress/e2e/unit_tests/first_login_rancher.spec.ts
             cypress/e2e/unit_tests/p0_fleet.spec.ts
             cypress/e2e/unit_tests/p1_fleet.spec.ts
             cypress/e2e/unit_tests/rbac_fleet.spec.ts
+            cypress/e2e/unit_tests/upgrade_fleet.spec.ts
+        run: |
+          if ${{ inputs.qase_run_id == 'none' }}; then
+            # Unset default QASE_* variables when reporting is disabled
+            unset QASE_REPORT
+            unset QASE_API_TOKEN
+            # QASE_RUN_ID is empty string already
+          fi
+          cd tests && make start-cypress-tests
+      - name: Upgrade Rancher Manager
+        id: rancher_upgrade
+        if: ${{ inputs.rancher_upgrade != '' }}
+        env:
+          PUBLIC_DNS: ${{ needs.create-runner.outputs.public_dns }}
+          PUBLIC_DOMAIN: bc.googleusercontent.com
+          RANCHER_UPGRADE: ${{ inputs.rancher_upgrade }}
+        run: |
+          cd tests
+
+          if make e2e-upgrade-rancher-manager; then
+            # Extract Rancher Manager version
+            RANCHER_VERSION=$(kubectl get pod \
+                                --namespace cattle-system \
+                                -l app=rancher \
+                                -o jsonpath={.items[*].status.containerStatuses[*].image} 2> /dev/null || true)
+
+            # Export values
+            echo "rancher_image_version=${RANCHER_VERSION}" >> ${GITHUB_OUTPUT}
+
+          else
+            # Needed to be sure that Github Action will see the failure
+            false
+          fi
+      - name: Extract component versions/informations after Upgrade
+        id: upgraded_component
+        run: |
+          # Extract Rancher Manager version
+          RM_UPGRADED_VERSION=$(kubectl get pod \
+            --namespace cattle-system \
+            -l app=rancher \
+            -o jsonpath={.items[*].status.containerStatuses[*].image} 2> /dev/null || true)
+          # Extract Fleet App version and images from local cluster
+          FLEET_APP_UPGRADED_VERSION="$(helm list -n cattle-fleet-system -o json 2> /dev/null | jq -r '.[0] | .chart')"
+          for ns in {cattle-fleet-system,cattle-fleet-local-system}; do
+            FLEET_UPGRADED_IMAGES+="$(kubectl get pods -n $ns -o jsonpath='{.items[*].spec.containers[*].image}' 2> /dev/null) "
+          done
+          # Export values
+          echo "rm_upgraded_version=${RM_UPGRADED_VERSION}" >> ${GITHUB_OUTPUT}
+          echo "fleet_app_upgraded_version=${FLEET_APP_UPGRADED_VERSION}" >> ${GITHUB_OUTPUT}
+          echo "fleet_images_after_upgrade=${FLEET_UPGRADED_IMAGES}" >> ${GITHUB_OUTPUT}
+      - name: Cypress tests - On Upgraded Rancher
+        id: cypress_result_after_rancher_upgrade
+        if: ${{ inputs.rancher_upgrade != '' }}
+        env:
+          BROWSER: chrome
+          CYPRESS_DOCKER: 'cypress/included:13.16.0'
+          RANCHER_URL: https://${{ needs.create-runner.outputs.public_dns }}/dashboard
+          RANCHER_USER: admin
+          RANCHER_PASSWORD: ${{ secrets.rancher_password }}
+          GITLAB_PRIVATE_USER: ${{ secrets.gitlab_private_user }}
+          GITLAB_PRIVATE_PWD: ${{ secrets.gitlab_private_pwd }}
+          BITBUCKET_PRIVATE_USER: ${{ secrets.bitbucket_private_user }}
+          BITBUCKET_PRIVATE_PWD: ${{ secrets.bitbucket_private_pwd }}
+          GH_PRIVATE_USER: ${{ secrets.gh_private_user }}
+          GH_PRIVATE_PWD: ${{ secrets.gh_private_pwd }}
+          AZURE_PRIVATE_USER: ${{ secrets.azure_private_user }}
+          AZURE_PRIVATE_PWD: ${{ secrets.azure_private_pwd }}
+          RSA_PRIVATE_KEY_QA: ${{ secrets.rsa_private_key_qa }}
+          RSA_PUBLIC_KEY_QA: ${{ secrets.rsa_public_key_qa }}
+          GREPTAGS: ${{ inputs.grep_test_by_tag }}
+          UPGRADE: ${{ inputs.upgrade }}
+          SPEC: |
+            cypress/e2e/unit_tests/first_login_rancher.spec.ts
+            cypress/e2e/unit_tests/upgrade_fleet.spec.ts
         run: |
           if ${{ inputs.qase_run_id == 'none' }}; then
             # Unset default QASE_* variables when reporting is disabled
@@ -343,6 +428,14 @@ jobs:
           echo "### Kubernetes" >> ${GITHUB_STEP_SUMMARY}
           echo "K3s version for Rancher Manager: ${{ env.INSTALL_K3S_VERSION }}" >> ${GITHUB_STEP_SUMMARY}
           echo "K3d version for downstream cluster: ${{ env.INSTALL_K3S_VERSION }}" >> ${GITHUB_STEP_SUMMARY}
+          if ${{ inputs.rancher_upgrade != '' }}; then
+            echo "### Rancher Manager Upgrade Information" >> ${GITHUB_STEP_SUMMARY}
+            echo "Rancher Manager Installed Version: ${{ steps.component.outputs.rm_version }}" >> ${GITHUB_STEP_SUMMARY}
+            echo "Rancher Manager Upgraded Version: ${{ steps.upgraded_component.outputs.rm_upgraded_version }}" >> ${GITHUB_STEP_SUMMARY}
+            echo "### Fleet (After Upgrade)" >> ${GITHUB_STEP_SUMMARY}
+            echo "Fleet App version: ${{ steps.upgraded_component.outputs.fleet_app_upgraded_version }}" >> ${GITHUB_STEP_SUMMARY}
+            echo "Fleet images in local cluster: ${{ steps.upgraded_component.outputs.fleet_images_after_upgrade }}" >> ${GITHUB_STEP_SUMMARY}
+          fi
 
   delete-runner:
     if: ${{ always() && inputs.destroy_runner == true }}
