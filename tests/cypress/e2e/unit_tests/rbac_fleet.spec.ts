@@ -945,7 +945,7 @@ describe('Test GitRepoRestrictions scenarios for GitRepo applicaiton deployment.
 // Note: to be executed after the above test cases
 // to avoid any interference (i.e: if continuous-delivery feature is not correctly enabled.)
 // To be replaced into other spec file when required.
-describe("Global settings related tests", { tags: '@rback'}, () => {
+describe("Global settings related tests", { tags: '@rbac'}, () => {
   if (!/\/2\.7/.test(Cypress.env('rancher_version')) && !/\/2\.8/.test(Cypress.env('rancher_version'))) {
     qase(156,
       it("Fleet-156: Test gitrepoJobsCleanup is disabled when continuous-delivery feature is off", { tags: '@fleet-156' }, () => {
