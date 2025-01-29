@@ -22,7 +22,7 @@
   "homepage": "https://github.com/rancher/fleet-e2e",
   "dependencies": {
     "@rancher-ecp-qa/cypress-library": "1.1.0",
-    "cy-verify-downloads": "^0.1.8",
+    "cy-verify-downloads": "^0.1.17",
     "cypress": "^13.16.0",
     "cypress-dark": "^1.8.3",
     "cypress-file-upload": "^5.0.8",
@@ -31,7 +31,7 @@
     "cypress-plugin-tab": "^1.0.5",
     "cypress-qase-reporter": "1.4.1",
     "dotenv": "^10.0.0",
-    "typescript": "^4.5.2"
+    "typescript": "^4.9.5"
   },
   "devDependencies": {
     "@cypress/grep": "^4.1.0",
