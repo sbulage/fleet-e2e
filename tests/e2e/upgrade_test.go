@@ -36,6 +36,8 @@ var _ = Describe("E2E - Upgrading Rancher Manager", Label("upgrade-rancher-manag
 	}
 
 	It("Upgrades Rancher Manager", func() {
+		// Report to Qase
+		testCaseID = 52
 
 		// Get before-upgrade Rancher Manager version
 		getImageVersion := []string{

@@ -24,6 +24,7 @@ import (
 	. "github.com/onsi/gomega"
 	"github.com/rancher-sandbox/ele-testhelpers/kubectl"
 	"github.com/rancher-sandbox/ele-testhelpers/tools"
+	. "github.com/rancher-sandbox/qase-ginkgo"
 )
 
 const (
@@ -37,16 +38,17 @@ const (
 var (
 	arch                 			string
 	clusterName          			string
-	rancherHostname      			string
+	dsClusterCountStr    			string
 	k8sDownstreamVersion 			string
 	rancherChannel       			string
 	rancherHeadVersion   			string
-	rancherVersion       			string
+	rancherHostname      			string
 	rancherUpgrade       			string
-	dsClusterCountStr    			string
+	rancherVersion       			string
 	rancherUpgradeChannel     string
 	rancherUpgradeHeadVersion string
 	rancherUpgradeVersion     string
+	testCaseID                int64
 )
 
 /**
@@ -113,4 +115,14 @@ var _ = BeforeSuite(func() {
 			rancherUpgradeHeadVersion = s[2]
 		}
 	}
+})
+
+var _ = ReportBeforeEach(func(report SpecReport) {
+	// Reset case ID
+	testCaseID = -1
+})
+
+var _ = ReportAfterEach(func(report SpecReport) {
+	// Add result in Qase if asked
+	Qase(testCaseID, report)
 })
