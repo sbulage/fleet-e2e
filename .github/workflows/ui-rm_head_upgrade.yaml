@@ -20,12 +20,12 @@ on:
         type: boolean
       rancher_version:
         description: Rancher version channel/version/head_version latest/latest, latest/2.y.x[-rc1], prime/2.y.x, prime/devel/2.y, alpha/2.y.0-alphaZ
-        default: latest/devel/2.9
+        default: latest/devel/2.10
         type: string
         required: true
       rancher_upgrade:
         description: Rancher Manager channel/version to upgrade to
-        default: latest/devel/2.10
+        default: latest/devel/head
         required: true
         type: string
       upstream_cluster_version:
