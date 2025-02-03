@@ -114,3 +114,23 @@ describe('Test gitrepos with cabundle', { tags: '@upgrade' }, () => {
     })
   );
 });
+
+if (!/\/2\.8/.test(Cypress.env('rancher_version')) && !/\/2\.9/.test(Cypress.env('rancher_version'))) {
+  describe('Test Crontab for Fleet job cleanup is present',  { tags: '@upgrade' }, () => {
+    qase(162,
+      it('FLEET-162: Test Crontab for Fleet job cleanup is present', { tags: '@fleet-162' }, () => {
+        // This test doesnot require upgrade flag as it not creating anything,
+        // only checking the existance of Crontab for Fleet cleanup job.
+
+        cy.accesMenuSelection('local', 'Workloads', 'CronJobs');
+        cy.filterInSearchBox('fleet-cleanup-gitrepo-jobs');
+
+        // Check Crontab for Fleet Cleanup job present and is Active
+        cy.verifyTableRow(0, 'Active', 'fleet-cleanup-gitrepo-jobs');
+
+        // Check Crontab schedule is '@daily'
+        cy.verifyTableRow(0, 'fleet-cleanup-gitrepo-jobs', '@daily');
+      })
+    );
+  });
+};
