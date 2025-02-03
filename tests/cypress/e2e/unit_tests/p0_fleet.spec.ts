@@ -393,3 +393,42 @@ if (!/\/2\.7/.test(Cypress.env('rancher_version')) && !/\/2\.8/.test(Cypress.env
     );
   })
 };
+
+if (!/\/2\.8/.test(Cypress.env('rancher_version')) && !/\/2\.9/.test(Cypress.env('rancher_version'))) {
+  describe('Test GitJob security context',  { tags: '@p0' }, () => {
+    qase(160,
+      it('FLEET-160: Test GitJob pod security context', { tags: '@fleet-160' }, () => {
+        // Check the GitJob pod for Security Context.
+        cy.accesMenuSelection('local', 'Workloads', 'Pods');
+        cy.filterInSearchBox('gitjob');
+        cy.verifyTableRow(0, 'Running', 'gitjob');
+        cy.contains('gitjob').click();
+        cy.clickButton('Config');
+        cy.get('section#container-0')
+          .find('.side-tabs ul.tabs li')
+          .eq(3)
+          .should('have.id', 'securityContext')
+          .contains('Security Context')
+          .should("be.visible")
+          .click()
+
+        // Check Run as Non-Root
+        cy.get('input[name="runasNonRoot"]:checked')
+          .should('have.value', 'false');
+
+        // Check Privilege Escalation
+        cy.get('input[name="allowPrivilegeEscalation"]:checked')
+          .should('have.value', 'false');
+
+        // Check Read Only Root File System
+        cy.get('input[name="readOnlyRootFilesystem"]:checked')
+          .should('have.value', 'true');
+
+        // Check Drop Capabilities
+        cy.get('[data-testid="input-security-drop"] .labeled-select .v-select span.vs__selected')
+          .contains('ALL')
+          .should('be.visible')
+      })
+    );
+  });
+};
