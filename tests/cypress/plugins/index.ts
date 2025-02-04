@@ -48,6 +48,7 @@ module.exports = (on: Cypress.PluginEvents, config: Cypress.PluginConfigOptions)
   config.env.rsa_private_key_qa  = process.env.RSA_PRIVATE_KEY_QA;
   config.env.rsa_public_key_qa   = process.env.RSA_PUBLIC_KEY_QA;
   config.env.upgrade             = process.env.UPGRADE;
+  config.env.fleet_app_version   = process.env.FLEET_APP_VERSION;
   
   return config;
 };

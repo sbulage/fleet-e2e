@@ -394,6 +394,7 @@ jobs:
           RSA_PUBLIC_KEY_QA: ${{ secrets.rsa_public_key_qa }}
           GREPTAGS: ${{ inputs.grep_test_by_tag }}
           UPGRADE: ${{ inputs.upgrade }}
+          FLEET_APP_VERSION: ${{ steps.component.outputs.fleet_app_version }}
           SPEC: |
             cypress/e2e/unit_tests/first_login_rancher.spec.ts
             cypress/e2e/unit_tests/upgrade_fleet.spec.ts

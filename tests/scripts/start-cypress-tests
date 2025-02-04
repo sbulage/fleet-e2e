@@ -28,6 +28,7 @@ docker run --init -v $PWD:/workdir -w /workdir              \
     -e "GREP=$GREP"                                         \
     -e "GREPTAGS=$GREPTAGS"                                 \
     -e "UPGRADE=$UPGRADE"                                   \
+    -e "FLEET_APP_VERSION=$FLEET_APP_VERSION"               \
     --add-host host.docker.internal:host-gateway            \
     --ipc=host                                              \
     $CYPRESS_DOCKER                                         \

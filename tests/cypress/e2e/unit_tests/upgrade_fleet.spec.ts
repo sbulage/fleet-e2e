@@ -61,7 +61,7 @@ describe('Test Fleet deployment on PUBLIC repos',  { tags: '@upgrade' }, () => {
       const repoUrl = 'https://github.com/rancher/fleet-examples'
       const repoName = "local-cluster-fleet-158"
       cy.log("===========================");
-      cy.log(upgrade);
+      cy.log("Cluster Upgraded: " + upgrade);
       cy.log("===========================");
 
       if (upgrade) {
@@ -91,10 +91,9 @@ describe('Test gitrepos with cabundle', { tags: '@upgrade' }, () => {
       const path = "qa-test-apps/nginx-app"
       const repoUrl = "https://github.com/rancher/fleet-test-data/"
       cy.log("===========================");
-      cy.log(upgrade);
+      cy.log("Cluster Upgraded: " + upgrade);
       cy.log("===========================");
 
-      // Remove this line after upgrade PR.
       if (upgrade) {
         cy.checkGitRepoAfterUpgrade(repoName, 'fleet-local');
       }
@@ -133,4 +132,54 @@ if (!/\/2\.8/.test(Cypress.env('rancher_version')) && !/\/2\.9/.test(Cypress.env
       })
     );
   });
-};
+}
+
+describe('Test "fleet-agent" image version on each downstream cluster',  { tags: '@upgrade' }, () => {
+  qase(163,
+    it('FLEET-163: Test "fleet-agent" image version on each downstream cluster after upgrade ', { tags: '@fleet-163' }, () => {
+      const dsAllClusterList = ['imported-0', 'imported-1', 'imported-2']
+      cy.log("===========================");
+      cy.log("Cluster Upgraded: " + upgrade);
+      cy.log("===========================");
+
+      //'fleet_app_version' is before upgrade version.
+      // For example 'fleet_app_version' is fleet-105.0.3+up0.11.3, after splitting
+      // we get 'fleet_agent_version' is '0.11.3'.
+      if (upgrade) {
+        const fleetAgentVersionBeforeUpgrade = Cypress.env('fleet_app_version').split('+up')[1];
+        cy.log('Fleet Agent image version BEFORE upgrade:' + fleetAgentVersionBeforeUpgrade)
+
+        // Check fleet-agent version of the downstream clusters.
+        dsAllClusterList.forEach((dsCluster) => {
+          cy.accesMenuSelection(dsCluster, 'Workloads', 'Pods');
+          cy.nameSpaceMenuToggle('All Namespaces');
+          cy.filterInSearchBox('fleet-agent');
+          cy.verifyTableRow(0, 'Running', 'fleet-agent-0');
+          cy.contains('fleet-agent-0').click();
+          cy.wait(500);
+          cy.clickButton('Config');
+
+          // We get 'fleetAgentImageAfterUpgrade' is 'rancher/fleet-agent:v0.12.0-alpha.4',
+          // after splitting we get 'fleetAgentVersionAfterUpgrade' is '0.12.0-alpha.4'
+          // We compare it with 'fleetAgentVersionBeforeUpgrade' which should "NOT" equal.
+          cy.get('input[placeholder="e.g. nginx:latest"]')
+            .invoke('val')
+            .then((fleetAgentImageAfterUpgrade) => {
+              if (typeof fleetAgentImageAfterUpgrade === 'string') {
+                const fleetAgentVersionAfterUpgrade = fleetAgentImageAfterUpgrade.split(':v')[1];
+                cy.log('Fleet Agent image version AFTER upgrade:' + fleetAgentVersionAfterUpgrade)
+                cy.wrap(fleetAgentVersionAfterUpgrade)
+                  .should('not.eq', fleetAgentVersionBeforeUpgrade)
+              }
+              else {
+                cy.log('"fleetAgentImage" is "undefined" and can be processed further')
+              }
+            })
+        })
+      }
+      else {
+        cy.log("This test has to run After Upgrade only")
+      }
+    })
+  );
+});
