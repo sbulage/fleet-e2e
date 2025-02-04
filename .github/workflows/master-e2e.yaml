@@ -407,7 +407,7 @@ jobs:
           fi
           cd tests && make start-cypress-tests
       - name: Upload Cypress screenshots (after-upgrade)
-        if: failure() 
+        if: failure() && ${{ inputs.rancher_upgrade != '' }}
         uses: actions/upload-artifact@v4
         with:
           name: cypress-screenshots-after-upgrade-${{ inputs.cluster_name }}
@@ -415,8 +415,7 @@ jobs:
           retention-days: 7
           if-no-files-found: ignore
       - name: Upload Cypress videos (after-upgrade)
-        # Test run video is always captured, so this action uses "always()" condition
-        if: always()
+        if: ${{ inputs.rancher_upgrade != '' }}
         uses: actions/upload-artifact@v4
         with:
           name: cypress-videos-after-upgrade-${{ inputs.cluster_name }}
