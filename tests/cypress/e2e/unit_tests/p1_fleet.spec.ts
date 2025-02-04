@@ -1249,3 +1249,31 @@ if (!/\/2\.7/.test(Cypress.env('rancher_version')) && !/\/2\.8/.test(Cypress.env
     )
   })
 };
+
+if (!/\/2\.7/.test(Cypress.env('rancher_version')) && !/\/2\.8/.test(Cypress.env('rancher_version'))) {
+  describe('Test Fleet Resource Count', { tags: '@p1'}, () => {
+    qase(155,
+      it("Fleet-155: Test clusters resource count is correct", { tags: '@fleet-155' }, () => {
+        const repoName = 'default-cluster-count-155'
+        const branch = "master"
+        const path = "simple"
+        const repoUrl = "https://github.com/rancher/fleet-examples"
+
+        cy.addFleetGitRepo({ repoName, repoUrl, branch, path });
+        cy.clickButton('Create');
+        cy.checkGitRepoStatus(repoName, '1 / 1', '6 / 6');
+
+        // Get the Resource count from GitRepo and store it.
+        cy.gitRepoResourceCountAsInteger(repoName, 'fleet-default');
+
+        // Compare Resource count from GitRepo(stored)
+        // with resource count from each downstream cluster.
+        dsAllClusterList.forEach((dsCluster) => {
+          cy.compareClusterResourceCount(dsCluster);
+        })
+
+        cy.deleteAllFleetRepos();
+      })
+    )
+  });
+}

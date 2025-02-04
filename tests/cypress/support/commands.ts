@@ -669,3 +669,43 @@ Cypress.Commands.add('checkGitRepoAfterUpgrade', (repoName, fleetNamespace='flee
   cy.filterInSearchBox(repoName);
   cy.verifyTableRow(0, /Active|Modified/, repoName);
 });
+
+Cypress.Commands.add('gitRepoResourceCountAsInteger', (repoName, fleetNamespace='fleet-local') => {
+  cy.accesMenuSelection('Continuous Delivery', 'Git Repos');
+  cy.fleetNamespaceToggle(fleetNamespace);
+  cy.verifyTableRow(0, 'Active', repoName);
+  cy.contains(repoName).click()
+  cy.get('.primaryheader > h1').contains(repoName).should('be.visible')
+
+  // Get the Resource count text from UI and convert it into integer.
+  cy.get("div[data-testid='gitrepo-deployment-summary'] div[class='count']")
+  .invoke('text')
+  .then((countText) => {
+    // Add '7' default resource count available on each cluster.
+    const gitRepoResourceCount = parseInt(countText.trim(), 10) + 7;
+    cy.log("GitRepo Resource count is: " + gitRepoResourceCount);
+    cy.wrap(gitRepoResourceCount).as('gitRepoResourceCount');
+  })
+})
+
+Cypress.Commands.add('compareClusterResourceCount', (clusterName) => {
+  // Check the resource count from each cluster matches with resources created by GitRepo.
+  cy.accesMenuSelection('Continuous Delivery', 'Clusters');
+  cy.contains('.title', 'Clusters').should('be.visible');
+  cy.filterInSearchBox(clusterName);
+  cy.verifyTableRow(0, 'Active', clusterName);
+  cy.get('td.col-link-detail > span').contains(clusterName).click();
+
+  // Get the stored 'gitRepoResourceCount' value and
+  // compare with existing resource count from cluster.
+  cy.get('@gitRepoResourceCount').then((gitRepoResourceCount) => {
+    cy.get("div[primary-color-var='--sizzle-success'] div[class='data compact'] > h1")
+    .invoke('text')
+    .then((clusterResourceCountText) => {
+      // Covert it into integer and then compare with resources created via GitRepo.
+      const resourceCountOnCluster = parseInt(clusterResourceCountText.trim(), 10);
+      cy.log("Resource count on each cluster is: " + resourceCountOnCluster);
+      expect(gitRepoResourceCount).to.equal(resourceCountOnCluster);
+    })
+  })
+})

@@ -53,6 +53,8 @@ declare global {
       verifyJobDeleted(repoName: string, verifyJobDeletedEvent?: boolean ): Chainable<Element>;
       typeIntoCanvasTermnal(textToType: string): Chainable<Element>;
       checkGitRepoAfterUpgrade(repoName: string, fleetNamespace?: string): Chainable<Element>;
+      gitRepoResourceCountAsInteger(repoName: string, fleetNamespace?: string): Chainable<Element>;
+      compareClusterResourceCount(clusterName: string): Chainable<Element>;
     }
   }
 }
