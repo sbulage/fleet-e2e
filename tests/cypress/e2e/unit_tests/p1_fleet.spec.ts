@@ -1177,3 +1177,75 @@ describe("Test Application deployment based on 'clusterGroupSelector'", { tags: 
   })
 });
 
+if (!/\/2\.7/.test(Cypress.env('rancher_version')) && !/\/2\.8/.test(Cypress.env('rancher_version'))){
+
+  describe('Test namespace deletion when bundle is deleted', { tags: '@p1'}, () => {
+    
+    qase(131,
+      it("Fleet-131: Test NAMESPACE will be DELETED after GitRepo is deleted.", { tags: '@fleet-131' }, () => {
+        const repoName = 'test-ns-deleted-when-bundle-deleted'
+        const namespaceName = 'my-custom-namespace'
+
+        cy.fleetNamespaceToggle('fleet-local');
+        cy.clickButton('Add Repository');
+        cy.clickButton('Edit as YAML');
+        cy.addYamlFile('assets/131-ns-deleted-when-bundle-deleted.yaml');
+        cy.clickButton('Create');
+        cy.checkGitRepoStatus(repoName, '1 / 1', '1 / 1');
+
+        // Check namespace is created 
+        cy.accesMenuSelection('local', 'Projects/Namespaces');
+        cy.filterInSearchBox(namespaceName);
+        cy.verifyTableRow(0, 'Active', namespaceName);
+
+        // Delete GitRepo
+        cy.deleteAllFleetRepos();
+
+        // Check namespace is deleted
+        cy.accesMenuSelection('local', 'Projects/Namespaces');
+        cy.filterInSearchBox(namespaceName);
+        cy.contains(namespaceName).should('not.exist');
+      })
+    )
+
+    qase(164,
+      it("Fleet-164: Test NAMESPACE will be DELETED after main NESTED GitRepo is deleted.", { tags: '@fleet-164' }, () => {
+        const repoName = 'test-ns-deleted-with-nested-bundle'
+        const repoName2= 'my-gitrepo'
+        const namespaceName = 'my-custom-namespace'
+        const repoUrl = 'https://github.com/fleetqa/fleet-qa-examples-public'
+        const branch = 'main'
+        const path = 'bundles-delete-namespaces-nested'
+
+        cy.fleetNamespaceToggle('fleet-local');
+        // cy.clickButton('Add Repository');
+        cy.addFleetGitRepo({ repoName, repoUrl, branch, path });
+        cy.clickButton('Create');
+        // As 2 gitrepos are created, we need to wait for both to be displayed
+        // before we can check the status
+        cy.wait(2000);
+        cy.verifyTableRow(1, 'Active', repoName);
+        cy.verifyTableRow(0, 'Active', repoName2);
+
+        // Check namespace is created 
+        cy.accesMenuSelection('local', 'Projects/Namespaces');
+        cy.filterInSearchBox(namespaceName);
+        cy.verifyTableRow(0, 'Active', namespaceName);
+
+        // Go back to the GitRepos and delete only the main one
+        cy.accesMenuSelection('Continuous Delivery', 'Git Repos');
+        cy.fleetNamespaceToggle('fleet-local');
+        cy.filterInSearchBox(repoName); // this is the main one
+        
+        // Since whe expeect that the deletion of the main one also
+        // deletes the nested one, the 'deleteAll' function will check this
+        cy.deleteAll();
+
+        // Check namespace is deleted
+        cy.accesMenuSelection('local', 'Projects/Namespaces');
+        cy.filterInSearchBox(namespaceName);
+        cy.contains(namespaceName, {timeout: 20000 }).should('not.exist');
+     })
+    )
+  })
+};
