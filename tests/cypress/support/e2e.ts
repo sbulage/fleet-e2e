@@ -23,7 +23,7 @@ declare global {
       open3dotsMenu(name: string, selection?: string, checkNotInMenu?: boolean): Chainable<Element>;
       addPathOnGitRepoCreate(path: string, index?: number): Chainable<Element>;
       gitRepoAuth(AuthType: string, userOrPublicKey?: string, pwdOrPrivateKey?: string, gitOrHelmAuth?: string, helmUrlRegex?: string): Chainable<Element>;
-      addFleetGitRepo(repoName: string, repoUrl?: string, branch?: string, path?: string, path2?: string, fleetNamespace?: string, editConfig?: boolean, helmUrlRegex?: string, deployToTarget?: string, tlsOption?: string, tlsCertificate?: string): Chainable<Element>;
+      addFleetGitRepo(repoName: string, repoUrl?: string, branch?: string, path?: string, path2?: string, fleetNamespace?: string, editConfig?: boolean, helmUrlRegex?: string, deployToTarget?: string, tlsOption?: string, tlsCertificate?: string, allowedTargetNamespace?: string): Chainable<Element>;
       fleetNamespaceToggle(toggleOption: string): Chainable<Element>;
       verifyTableRow(rowNumber: number, expectedText1?: string|RegExp, expectedText2?: string|RegExp): Chainable<Element>;
       nameSpaceMenuToggle(namespaceName: string): Chainable<Element>;
@@ -55,6 +55,8 @@ declare global {
       checkGitRepoAfterUpgrade(repoName: string, fleetNamespace?: string): Chainable<Element>;
       gitRepoResourceCountAsInteger(repoName: string, fleetNamespace?: string): Chainable<Element>;
       compareClusterResourceCount(clusterName: string): Chainable<Element>;
+      createNewUser(username: string, password: string, role: string, uncheckStandardUser?: boolean): Chainable<Element>;
+      addFleetGitRepoNew(repoName: string, repoUrl?: string, branch?: string, path?: string, path2?: string, fleetNamespace?: string, editConfig?: boolean, helmUrlRegex?: string, deployToTarget?: string, tlsOption?: string, tlsCertificate?: string, allowedTargetNamespace?: string): Chainable<Element>;
     }
   }
 }

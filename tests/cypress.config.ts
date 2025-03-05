@@ -3,7 +3,7 @@ import { defineConfig } from 'cypress'
 const qaseAPIToken = process.env.QASE_API_TOKEN
 
 export default defineConfig({
-  viewportWidth: 1314,
+  viewportWidth: 1396,
   viewportHeight: 954,
   // defaultBrowser: 'chrome',
   defaultCommandTimeout: 10000,

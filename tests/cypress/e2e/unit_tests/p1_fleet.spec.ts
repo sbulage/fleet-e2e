@@ -276,7 +276,7 @@ if (!/\/2\.7/.test(Cypress.env('rancher_version'))) {
   describe('Test local cluster behavior with New workspace', { tags: '@p1'}, () => {
     qase(107,
       it("Fleet-107: Test LOCAL CLUSTER cannot be moved to another workspace as no 'Change workspace' option available..", { tags: '@fleet-107' }, () => {
-        cy.accesMenuSelection('Continuous Deliver', 'Clusters');
+        cy.accesMenuSelection('Continuous Delivery', 'Clusters');
         cy.fleetNamespaceToggle('fleet-local');
         cy.open3dotsMenu('local', 'Change workspace', true);
       })
@@ -458,6 +458,7 @@ if (!/\/2\.9/.test(Cypress.env('rancher_version'))) {
             cy.nameSpaceMenuToggle(resourceNamespace);
             cy.filterInSearchBox(resourceName);
             cy.get('.col-link-detail').contains(resourceName).should('be.visible');
+            cy.verifyTableRow(0, resourceName);
             cy.open3dotsMenu(resourceName, 'Edit Config');
   
             if (resourceType === 'ConfigMaps') {
@@ -865,7 +866,7 @@ describe('Test application deployment based on clusterGroup', { tags: '@p1'}, ()
       // Update GitRepo with newly created clusterGroup.
       cy.addFleetGitRepo({ repoName, deployToTarget: newClusterGroupName, fleetNamespace: 'fleet-default', editConfig: true });
       cy.clickButton('Save');
-      cy.checkGitRepoStatus(repoName, '1 / 1', '1 / 1');
+      cy.checkGitRepoStatus(repoName, '1 / 1');
 
       // Check application is present on third cluster i.e. imported-2
       cy.checkApplicationStatus(appName, dsThirdClusterName, 'All Namespaces');
