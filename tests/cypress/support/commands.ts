@@ -88,9 +88,9 @@ Cypress.Commands.add('importYaml', ({ clusterName, yamlFilePath }) => {
 Cypress.Commands.add('addFleetGitRepo', ({ repoName, repoUrl, branch, path, path2, gitOrHelmAuth, gitAuthType, userOrPublicKey, pwdOrPrivateKey, tlsOption, tlsCertificate, keepResources, correctDrift, fleetNamespace='fleet-local', editConfig=false, helmUrlRegex, deployToTarget, allowedTargetNamespace="" }) => {
 
   //Version check for 2.11 (head) onwards
-  const head_versions = ["latest/devel/head", "prime/2.11.0", "alpha/2.11.0"];
+  const alpha_or_prime_versions = [/^(prime|alpha)\/2\.(1[1-9]|[2-9]\d*)(\..*)?$/];
 
-  if (head_versions.includes(rancherVersion)){
+  if ("latest/devel/head".includes(rancherVersion) || alpha_or_prime_versions.some(regex => regex.test(rancherVersion))){
     cy.addFleetGitRepoNew({ repoName, repoUrl, branch, path, path2, gitOrHelmAuth, gitAuthType, userOrPublicKey, pwdOrPrivateKey, tlsOption, tlsCertificate, keepResources, correctDrift, fleetNamespace, editConfig, helmUrlRegex, deployToTarget, allowedTargetNamespace})
   }
   else{
