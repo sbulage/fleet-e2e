@@ -459,6 +459,9 @@ Cypress.Commands.add('deleteApplicationDeployment', (clusterName='local') => {
 
 // Modify given application
 Cypress.Commands.add('modifyDeployedApplication', (appName, clusterName='local') => {
+  // Wait added to mitigate problems unfolding burger menu 2.11 onwards
+  // TODO: remove or rework when possible
+  cy.wait(2000);
   cypressLib.burgerMenuToggle();
   cypressLib.accesMenu(clusterName);
   cy.clickNavMenu(['Workloads', 'Deployments']);

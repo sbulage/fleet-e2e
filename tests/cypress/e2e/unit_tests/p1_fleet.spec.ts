@@ -230,6 +230,9 @@ describe('Test Self-Healing of resource modification when correctDrift option us
       cy.addFleetGitRepo({ repoName, correctDrift: 'yes', editConfig: true });
       cy.clickButton('Save');
       // This test is exception for using 'Force Update'.
+      // Wait added to mitigate problems before force ipdate on 2.11 onwards
+      // TODO: remove or rework when possible 
+      cy.wait(2000);
       cy.open3dotsMenu(repoName, 'Force Update');
       cy.checkGitRepoStatus(repoName, '1 / 1', '1 / 1');
       cy.checkApplicationStatus(appName);
