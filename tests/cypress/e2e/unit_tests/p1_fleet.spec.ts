@@ -1258,23 +1258,34 @@ if (!/\/2\.7/.test(Cypress.env('rancher_version')) && !/\/2\.8/.test(Cypress.env
   describe('Test Fleet Resource Count', { tags: '@p1'}, () => {
     qase(155,
       it("Fleet-155: Test clusters resource count is correct", { tags: '@fleet-155' }, () => {
+
         const repoName = 'default-cluster-count-155'
         const branch = "master"
         const path = "simple"
         const repoUrl = "https://github.com/rancher/fleet-examples"
+        let resourceCount = '18 / 18'
+        let multipliedResourceCount = true
+
+        if (/\/2\.10/.test(Cypress.env('rancher_version')) || /\/2\.9/.test(Cypress.env('rancher_version'))) {
+          resourceCount = '6 / 6'
+          multipliedResourceCount = false
+        }
+
+        // Get Default Resources from single cluster before GitRepo.
+        cy.currentClusterResourceCount(dsFirstClusterName);
 
         cy.addFleetGitRepo({ repoName, repoUrl, branch, path });
         cy.clickButton('Create');
-        cy.checkGitRepoStatus(repoName, '1 / 1', '6 / 6');
+        cy.checkGitRepoStatus(repoName, '1 / 1', resourceCount);
 
         // Get the Resource count from GitRepo and store it.
         cy.gitRepoResourceCountAsInteger(repoName, 'fleet-default');
 
-        // Compare Resource count from GitRepo(stored)
-        // with resource count from each downstream cluster.
-        dsAllClusterList.forEach((dsCluster) => {
-          cy.compareClusterResourceCount(dsCluster);
-        })
+        // Get Actual Resources from single cluster by subtracting default resources.
+        cy.actualResourceOnCluster(dsFirstClusterName);
+
+        // Compare Resource count from GitRepo with Cluster resource.
+        cy.compareClusterResourceCount(multipliedResourceCount);
 
         cy.deleteAllFleetRepos();
       })

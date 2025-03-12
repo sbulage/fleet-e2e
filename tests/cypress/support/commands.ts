@@ -783,6 +783,22 @@ Cypress.Commands.add('checkGitRepoAfterUpgrade', (repoName, fleetNamespace='flee
   cy.verifyTableRow(0, /Active|Modified/, repoName);
 });
 
+Cypress.Commands.add('currentClusterResourceCount', (clusterName) => {
+  cy.accesMenuSelection('Continuous Delivery', 'Clusters');
+  cy.contains('.title', 'Clusters').should('be.visible');
+  cy.filterInSearchBox(clusterName);
+  cy.verifyTableRow(0, 'Active', clusterName);
+  cy.get('td.col-link-detail > span').contains(clusterName).click();
+  cy.get("div[primary-color-var='--sizzle-success'] div[class='data compact'] > h1")
+  .invoke('text')
+  .then((clusterResourceCountText) => {
+    // Convert to integer
+    const clusterCurrentResourceCount = parseInt(clusterResourceCountText.trim(), 10);
+    cy.log("Resource count on each cluster is: " + clusterCurrentResourceCount);
+    cy.wrap(clusterCurrentResourceCount).as('clusterCurrentResourceCount');
+  })
+})
+
 Cypress.Commands.add('gitRepoResourceCountAsInteger', (repoName, fleetNamespace='fleet-local') => {
   cy.accesMenuSelection('Continuous Delivery', 'Git Repos');
   cy.fleetNamespaceToggle(fleetNamespace);
@@ -790,35 +806,51 @@ Cypress.Commands.add('gitRepoResourceCountAsInteger', (repoName, fleetNamespace=
   cy.contains(repoName).click()
   cy.get('.primaryheader > h1').contains(repoName).should('be.visible')
 
-  // Get the Resource count text from UI and convert it into integer.
   cy.get("div[data-testid='gitrepo-deployment-summary'] div[class='count']")
   .invoke('text')
-  .then((countText) => {
-    // Add '7' default resource count available on each cluster.
-    const gitRepoResourceCount = parseInt(countText.trim(), 10) + 7;
-    cy.log("GitRepo Resource count is: " + gitRepoResourceCount);
-    cy.wrap(gitRepoResourceCount).as('gitRepoResourceCount');
+  .then((gitRepoResourceCountText) => {
+    const gitRepoTotalResourceCount = parseInt(gitRepoResourceCountText.trim(), 10);
+    cy.log("GitRepo Resource count is: " + gitRepoTotalResourceCount);
+    cy.wrap(gitRepoTotalResourceCount).as('gitRepoTotalResourceCount');
   })
 })
 
-Cypress.Commands.add('compareClusterResourceCount', (clusterName) => {
-  // Check the resource count from each cluster matches with resources created by GitRepo.
+Cypress.Commands.add('actualResourceOnCluster', (clusterName) => {
+// Get Cluster Resources before GitRepo created.
   cy.accesMenuSelection('Continuous Delivery', 'Clusters');
   cy.contains('.title', 'Clusters').should('be.visible');
   cy.filterInSearchBox(clusterName);
   cy.verifyTableRow(0, 'Active', clusterName);
   cy.get('td.col-link-detail > span').contains(clusterName).click();
+  // Get resources from the cluster page after GitRepo install.
+  cy.get("div[primary-color-var='--sizzle-success'] div[class='data compact'] > h1")
+  .invoke('text')
+  .then((clusterResourceCountText) => {
+    const resourceCountOnCluster = parseInt(clusterResourceCountText.trim(), 10);
+    cy.log("Resource count on each cluster is: " + resourceCountOnCluster);
+    cy.get('@clusterCurrentResourceCount').then((clusterCurrentResourceCount) => {
+      // Remove default 6/7 resources from Total resources available
+      // on single cluster after GitRepo install it's resources.
+      const actualResourceOnCluster = resourceCountOnCluster - clusterCurrentResourceCount;
+      cy.wrap(actualResourceOnCluster).as('actualResourceOnCluster');
+    })
+  })
+})
 
+Cypress.Commands.add('compareClusterResourceCount', (multipliedResourceCount=true) => {
   // Get the stored 'gitRepoResourceCount' value and
-  // compare with existing resource count from cluster.
-  cy.get('@gitRepoResourceCount').then((gitRepoResourceCount) => {
-    cy.get("div[primary-color-var='--sizzle-success'] div[class='data compact'] > h1")
-    .invoke('text')
-    .then((clusterResourceCountText) => {
-      // Covert it into integer and then compare with resources created via GitRepo.
-      const resourceCountOnCluster = parseInt(clusterResourceCountText.trim(), 10);
-      cy.log("Resource count on each cluster is: " + resourceCountOnCluster);
-      expect(gitRepoResourceCount).to.equal(resourceCountOnCluster);
+  // Multipy 'actualResourceOnCluster' 3 times because 3 clusters.
+  // Compare final result with the 'gitRepoTotalResourceCount'.
+  cy.get('@actualResourceOnCluster').then((actualResourceOnCluster) => {
+    cy.get('@gitRepoTotalResourceCount').then((gitRepoTotalResourceCount) => {
+      // When 'sameResourceEachCluster' is true then each cluster has 
+      // 'actualResourceOnCluster' is equal to 'gitRepoResourceCount'
+      if (multipliedResourceCount) {
+        expect(gitRepoTotalResourceCount).to.equal(actualResourceOnCluster * 3);
+      }
+      else {
+        expect(gitRepoTotalResourceCount).to.equal(actualResourceOnCluster);
+      }
     })
   })
 })
