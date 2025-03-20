@@ -5,10 +5,18 @@ Automation Repository for Fleet i.e. Rancher Continuous Delivery.
 
 # CI status
 
-|Lint| Rancher Head | Rancher v2.10-Head | Rancher v2.9-Head | Rancher v2.8-head |
-|---|---|---|---|---|
-|TBA|[![Rancher-head_CI](https://github.com/rancher/fleet-e2e/actions/workflows/ui-rm_head.yaml/badge.svg?branch=main)](https://github.com/rancher/fleet-e2e/actions/workflows/ui-rm_head.yaml)|[![Rancher-2.10-head_CI](https://github.com/rancher/fleet-e2e/actions/workflows/ui-rm_head_2.10.yaml/badge.svg?branch=main)](https://github.com/rancher/fleet-e2e/actions/workflows/ui-rm_head_2.10.yaml)|[![Rancher-2.9-head_CI](https://github.com/rancher/fleet-e2e/actions/workflows/ui-rm_head_2.9.yaml/badge.svg?branch=main)](https://github.com/rancher/fleet-e2e/actions/workflows/ui-rm_head_2.9.yaml) |[![Rancher-2.8-head_CI](https://github.com/rancher/fleet-e2e/actions/workflows/ui-rm_head_2.8.yaml/badge.svg?branch=main)](https://github.com/rancher/fleet-e2e/actions/workflows/ui-rm_head_2.8.yaml)
+## Daily CI runs
+|Lint| Rancher Head | Rancher v2.11-Head | Rancher v2.10-Head
+|---|---|---|---|
+|TBA|[![Rancher-head_CI](https://github.com/rancher/fleet-e2e/actions/workflows/ui-rm_head.yaml/badge.svg?branch=main)](https://github.com/rancher/fleet-e2e/actions/workflows/ui-rm_head.yaml)|[![Rancher-2.11-head_CI](https://github.com/rancher/fleet-e2e/actions/workflows/ui-rm_head_2.11.yaml/badge.svg?branch=main)](https://github.com/rancher/fleet-e2e/actions/workflows/ui-rm_head_2.11.yaml)| [![Rancher-2.10-head_CI](https://github.com/rancher/fleet-e2e/actions/workflows/ui-rm_head_2.10.yaml/badge.svg?branch=main)](https://github.com/rancher/fleet-e2e/actions/workflows/ui-rm_head_2.10.yaml)|
+
+## Weekly CI Runs
+| Rancher v2.9-Head | Rancher v2.8-head |
+|---|---|
+| [![Rancher-2.9-head_CI](https://github.com/rancher/fleet-e2e/actions/workflows/ui-rm_head_2.9.yaml/badge.svg?branch=main)](https://github.com/rancher/fleet-e2e/actions/workflows/ui-rm_head_2.9.yaml) |[![Rancher-2.8-head_CI](https://github.com/rancher/fleet-e2e/actions/workflows/ui-rm_head_2.8.yaml/badge.svg?branch=main)](https://github.com/rancher/fleet-e2e/actions/workflows/ui-rm_head_2.8.yaml)|
+
 ---
+
 # What is Fleet?
 
 - **Cluster engine:** Fleet is a container management and deployment engine designed to offer users more control on the local cluster and constant monitoring through GitOps. Fleet focuses not only on the ability to scale, but it also gives users a high degree of control and visibility to monitor exactly what is installed on the cluster.
@@ -25,6 +33,8 @@ Currently, we divide our tests by priority (`p0`, `p1`,...). Aside of this we ha
 - `first_login_rancher.spec.ts` 
 - `p0_fleet.spec.ts`
 - `p1_fleet.spec.ts`
+- `rbac_fleet.spec.ts`
+- `upgrade_fleet.spec.ts` (This only run in Upgrade Scenario not in Daily run.)
 
 By default, all these spec files will be executed every day in our nightly runs in the different Rancher versions.
 
