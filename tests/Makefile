@@ -14,5 +14,8 @@ publish-qase-run: deps
 e2e-install-rancher: deps
 	ginkgo --label-filter install -r -v ./e2e
 
+e2e-upgrade-rancher-manager: deps
+	ginkgo --label-filter upgrade-rancher-manager -r -v ./e2e
+
 start-cypress-tests:
 	@./scripts/start-cypress-tests

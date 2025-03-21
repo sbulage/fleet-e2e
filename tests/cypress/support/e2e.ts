@@ -1,5 +1,5 @@
 /*
-Copyright © 2023 - 2024 SUSE LLC
+Copyright © 2023 - 2025 SUSE LLC
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -23,7 +23,7 @@ declare global {
       open3dotsMenu(name: string, selection?: string, checkNotInMenu?: boolean): Chainable<Element>;
       addPathOnGitRepoCreate(path: string, index?: number): Chainable<Element>;
       gitRepoAuth(AuthType: string, userOrPublicKey?: string, pwdOrPrivateKey?: string, gitOrHelmAuth?: string, helmUrlRegex?: string): Chainable<Element>;
-      addFleetGitRepo(repoName: string, repoUrl?: string, branch?: string, path?: string, path2?: string, fleetNamespace?: string, editConfig?: boolean, helmUrlRegex?: string, deployToTarget?: string, tlsOption?: string, tlsCertificate?: string ): Chainable<Element>;
+      addFleetGitRepo(repoName: string, repoUrl?: string, branch?: string, path?: string, path2?: string, fleetNamespace?: string, editConfig?: boolean, helmUrlRegex?: string, deployToTarget?: string, tlsOption?: string, tlsCertificate?: string, allowedTargetNamespace?: string): Chainable<Element>;
       fleetNamespaceToggle(toggleOption: string): Chainable<Element>;
       verifyTableRow(rowNumber: number, expectedText1?: string|RegExp, expectedText2?: string|RegExp): Chainable<Element>;
       nameSpaceMenuToggle(namespaceName: string): Chainable<Element>;
@@ -32,7 +32,7 @@ declare global {
       deleteAll(fleetCheck?: boolean): Chainable<Element>;
       deleteAllFleetRepos(): Chainable<Element>;
       checkGitRepoStatus(repoName: string, bundles?: string, resources?: string): Chainable<Element>;
-      checkApplicationStatus(appName: string, clusterName?: string, appNamespace?: string): Chainable<Element>;
+      checkApplicationStatus(appName: string, clusterName?: string, appNamespace?: string, present?: boolean): Chainable<Element>;
       deleteApplicationDeployment(clusterName?: string): Chainable<Element>;
       modifyDeployedApplication(appName: string, clusterName?: string): Chainable<Element>;
       createRoleTemplate(roleType: string, roleName: string, newUserDefault?: string['yes'|'no'], rules?: string[]): Chainable<Element>;
@@ -51,6 +51,14 @@ declare global {
       clusterCountClusterGroup(clusterGroupName: string, clusterCount: number): Chainable<Element>;
       addYamlFile(yamlFilePath: string): Chainable<Element>;
       verifyJobDeleted(repoName: string, verifyJobDeletedEvent?: boolean ): Chainable<Element>;
+      typeIntoCanvasTermnal(textToType: string): Chainable<Element>;
+      checkGitRepoAfterUpgrade(repoName: string, fleetNamespace?: string): Chainable<Element>;
+      gitRepoResourceCountAsInteger(repoName: string, fleetNamespace?: string): Chainable<Element>;
+      compareClusterResourceCount(multipliedResourceCount: boolean): Chainable<Element>;
+      createNewUser(username: string, password: string, role: string, uncheckStandardUser?: boolean): Chainable<Element>;
+      addFleetGitRepoNew(repoName: string, repoUrl?: string, branch?: string, path?: string, path2?: string, fleetNamespace?: string, editConfig?: boolean, helmUrlRegex?: string, deployToTarget?: string, tlsOption?: string, tlsCertificate?: string, allowedTargetNamespace?: string): Chainable<Element>;
+      currentClusterResourceCount(clusterName: string): Chainable<Element>;
+      actualResourceOnCluster(clusterName: string): Chainable<Element>;
     }
   }
 }

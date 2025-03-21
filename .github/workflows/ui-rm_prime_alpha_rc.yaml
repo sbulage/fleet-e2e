@@ -19,8 +19,8 @@ on:
         type: string
         required: true
       upstream_cluster_version:
-        description: K3s upstream cluster version where to install Rancher
-        default: 'v1.28.8+k3s1'
+        description: K3s upstream cluster version where to install Rancher (change this to 'v1.30.8+k3s1' when use 2.10 onwards)
+        default: 'v1.29.12+k3s1'
         type: string
         required: true
       grep_test_by_tag:
@@ -50,7 +50,6 @@ jobs:
     with:
       test_description: "CI/Manual - UI - Deployment test with Standard K3s"
       cluster_name: cluster-k3s
-      # WARNING, VALUES BELOW ARE HARDCODED FOR RUNS SCHEDULED BY CRON
       destroy_runner: ${{ inputs.destroy_runner }}
       upstream_cluster_version: ${{ inputs.upstream_cluster_version }}
       rancher_version: ${{ inputs.rancher_version }}

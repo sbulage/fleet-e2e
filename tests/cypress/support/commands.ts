@@ -1,5 +1,5 @@
 /*
-Copyright © 2023 - 2024 SUSE LLC
+Copyright © 2023 - 2025 SUSE LLC
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -17,6 +17,8 @@ limitations under the License.
 import 'cypress-file-upload';
 import * as cypressLib from '@rancher-ecp-qa/cypress-library';
 
+export const noRowsMessages = ['There are no rows to show.', 'There are no rows which match your search query.']
+export const rancherVersion = Cypress.env('rancher_version');
 // Generic commands
 
 // Fleet commands
@@ -83,28 +85,133 @@ Cypress.Commands.add('importYaml', ({ clusterName, yamlFilePath }) => {
 
 // Command add and edit Fleet Git Repository
 // TODO: Rename this command name to 'addEditFleetGitRepo'
-Cypress.Commands.add('addFleetGitRepo', ({ repoName, repoUrl, branch, path, path2, gitOrHelmAuth, gitAuthType, userOrPublicKey, pwdOrPrivateKey, tlsOption, tlsCertificate, keepResources, correctDrift, fleetNamespace='fleet-local', editConfig=false, helmUrlRegex, deployToTarget }) => {
+Cypress.Commands.add('addFleetGitRepo', ({ repoName, repoUrl, branch, path, path2, gitOrHelmAuth, gitAuthType, userOrPublicKey, pwdOrPrivateKey, tlsOption, tlsCertificate, keepResources, correctDrift, fleetNamespace='fleet-local', editConfig=false, helmUrlRegex, deployToTarget, allowedTargetNamespace="" }) => {
+
+  //Version check for 2.11 (head) onwards
+  const alpha_or_prime_versions = [/^(prime|prime-optimus|alpha)\/2\.(1[1-9]|[2-9]\d*)(\..*)?$/];
+  const devel_or_head_versions = ["latest/devel/head", "latest/devel/2.11"]
+
+  // TODO: re-work on regex more to include 2.11 onwards and not before versions in it.
+  if (devel_or_head_versions.includes(rancherVersion) || alpha_or_prime_versions.some(regex => regex.test(rancherVersion))){
+    cy.addFleetGitRepoNew({ repoName, repoUrl, branch, path, path2, gitOrHelmAuth, gitAuthType, userOrPublicKey, pwdOrPrivateKey, tlsOption, tlsCertificate, keepResources, correctDrift, fleetNamespace, editConfig, helmUrlRegex, deployToTarget, allowedTargetNamespace})
+  }
+  else{
+    cy.accesMenuSelection('Continuous Delivery', 'Git Repos');
+    if (editConfig === true) {
+      cy.fleetNamespaceToggle(fleetNamespace);
+      // Check 'Error' state only to allowedTargetNamespace test only
+      cy.verifyTableRow(0, /Active|Modified|Error/, repoName);
+      cy.open3dotsMenu(repoName, 'Edit Config');
+      cy.contains('Git Repo:').should('be.visible');
+    } 
+    else {
+      cy.clickButton('Add Repository');
+      cy.contains('Git Repo:').should('be.visible');
+      cy.typeValue('Name', repoName);
+      cy.typeValue('Repository URL', repoUrl);
+      cy.typeValue('Branch Name', branch);
+    }
+    // Path is not required when git repo contains 1 application folder only.
+    if (path) {
+      cy.addPathOnGitRepoCreate(path);
+    }
+    if (path2) {
+      cy.addPathOnGitRepoCreate(path2, 1);
+    }
+    if (gitAuthType) {
+      cy.gitRepoAuth(gitOrHelmAuth, gitAuthType, userOrPublicKey, pwdOrPrivateKey, helmUrlRegex);
+    }
+
+    if (tlsOption) {
+      cy.contains(`TLS Certificate Verification`).click();
+      // Select the TLS option
+      cy.get('ul.vs__dropdown-menu > li > div', { timeout: 15000 })
+        .contains(tlsOption, { matchCase: false })
+        .should('be.visible')
+        .click();
+
+      if (tlsOption = 'Specify additional certificates') {
+        cy.readFile(tlsCertificate).then((content) => {
+          cy.get('textarea[placeholder="Paste in one or more certificates, starting with -----BEGIN CERTIFICATE----"]').type(content);
+        });
+      }
+    }
+
+    // Check the checkbox of keepResources if option 'yes' is given.
+    // After checked check-box, `keepResources: true` is set
+    // in the GitRepo YAML.
+    if (keepResources === 'yes') {
+      cy.get('.checkbox-outer-container.check').contains('Always Keep Resources').click();
+    }
+    if (correctDrift === 'yes') {
+      cy.get('[data-testid="GitRepo-correctDrift-checkbox"] > .checkbox-container > .checkbox-custom').click();
+    }
+    cy.clickButton('Next');
+    cy.get('button.btn').contains('Previous').should('be.visible');
+    // Target to any cluster or group or no cluster.
+    if (deployToTarget) {
+      cy.deployToClusterOrClusterGroup(deployToTarget);
+    }
+
+    // Type allowed namespace name in the Target Namespace while creating GitRepo.
+    if (allowedTargetNamespace !== "") {
+      cy.get('input[placeholder="Optional: Require all resources to be in this namespace"]').type(allowedTargetNamespace);
+    }
+  }
+});
+
+Cypress.Commands.add('addFleetGitRepoNew', ({ repoName, repoUrl, branch, path, path2, gitOrHelmAuth, gitAuthType, userOrPublicKey, pwdOrPrivateKey, tlsOption, tlsCertificate, keepResources, correctDrift, fleetNamespace='fleet-local', editConfig=false, helmUrlRegex, deployToTarget, allowedTargetNamespace="" }) => {
+
   cy.accesMenuSelection('Continuous Delivery', 'Git Repos');
+
   if (editConfig === true) {
     cy.fleetNamespaceToggle(fleetNamespace);
-    cy.verifyTableRow(0, /Active|Modified/, repoName);
+    // Check 'Error' state only to allowedTargetNamespace test only
+    cy.verifyTableRow(0, /Active|Modified|Error/, repoName);
     cy.open3dotsMenu(repoName, 'Edit Config');
     cy.contains('Git Repo:').should('be.visible');
+    // This new 'Create: Step 1' is present on new UI 2.11 onwards
+    cy.clickButton('Next');
   } 
+
+  // PART 1 - METADATA + PART 2 REPOSITORY DETAILS (a)
   else {
     cy.clickButton('Add Repository');
     cy.contains('Git Repo:').should('be.visible');
     cy.typeValue('Name', repoName);
+
+    // This new 'Create: Step 1' is present on new UI 2.11 onwards
+    cy.clickButton('Next');
+
     cy.typeValue('Repository URL', repoUrl);
     cy.typeValue('Branch Name', branch);
   }
-  // Path is not required when git repo contains 1 application folder only.
+
+  // PART 2b - REPOSITORY DETAILS
   if (path) {
     cy.addPathOnGitRepoCreate(path);
   }
   if (path2) {
     cy.addPathOnGitRepoCreate(path2, 1);
   }
+
+  // This new 'Create: Step 2' is present on new UI 2.11 onwards
+  cy.clickButton('Next');
+
+  // PART 3 - TARGET DETAILS
+  // This new 'Create: Step 3' is present on new UI 2.11 onwards
+  if (deployToTarget) {
+    cy.deployToClusterOrClusterGroup(deployToTarget);
+  }
+
+  // Type allowed namespace name in the Target Namespace while creating GitRepo.
+  if (allowedTargetNamespace !== "") {
+    cy.get('input[placeholder="Optional: Require all resources to be in this namespace"]').type(allowedTargetNamespace);
+  }
+
+  cy.clickButton('Next');
+
+  // PART 4 -ADVANCED
   if (gitAuthType) {
     cy.gitRepoAuth(gitOrHelmAuth, gitAuthType, userOrPublicKey, pwdOrPrivateKey, helmUrlRegex);
   }
@@ -123,54 +230,60 @@ Cypress.Commands.add('addFleetGitRepo', ({ repoName, repoUrl, branch, path, path
       });
     }
   }
-
   // Check the checkbox of keepResources if option 'yes' is given.
   // After checked check-box, `keepResources: true` is set
   // in the GitRepo YAML.
   if (keepResources === 'yes') {
-    cy.get('.checkbox-outer-container.check').contains('Always Keep Resources').click();
+    cy.get('.checkbox-outer-container.check').contains('Always Keep Resources', { matchCase: false }).click();
   }
   if (correctDrift === 'yes') {
-    cy.get('[data-testid="GitRepo-correctDrift-checkbox"] > .checkbox-container > .checkbox-custom').click();
-  }
-  cy.clickButton('Next');
-  cy.get('button.btn').contains('Previous').should('be.visible');
-  // Target to any cluster or group or no cluster.
-  if (deployToTarget) {
-    cy.deployToClusterOrClusterGroup(deployToTarget);
+    cy.get('.checkbox-outer-container.check').contains('Enable self-healing', { matchCase: false }).click();
   }
 });
 
 // Deploy To target functionality used in addGitRepo
+// TODO: Remove div.labeled-select.create.hoverable, div.labeled-select.edit.hoverable locators, once 2.8 is disabled.
 Cypress.Commands.add('deployToClusterOrClusterGroup', (deployToTarget) => {
-  cy.get('div.labeled-select.create.hoverable').should('be.visible');
-  cy.get('div.labeled-select.create.hoverable').click({ force: true });
+  cy.get('div.labeled-select.create.hoverable, div.labeled-select.edit.hoverable, [data-testid="fleet-gitrepo-target-cluster"]').first().should('be.visible');
+  cy.get('div.labeled-select.create.hoverable, div.labeled-select.edit.hoverable, [data-testid="fleet-gitrepo-target-cluster"]').first().click({ force: true });
   cy.get('ul.vs__dropdown-menu > li').contains(deployToTarget).should("exist").click();
 });
 
 // 3 dots menu selection
 Cypress.Commands.add('open3dotsMenu', (name, selection, checkNotInMenu=false) => {
+  // Let cy.filterInSearchBox() operation finish and wait before opening Edit Menu.
+  cy.wait(500);
   // Open 3 dots button
   cy.contains('tr.main-row', name).should('exist').within(() => {
-    cy.get('.icon.icon-actions').click({ force: true });
+    cy.get('.icon.icon-actions', { timeout: 500 }).click({ force: true });
     cy.wait(250)
   });
 
   if (checkNotInMenu === true) {
-    cy.get('.list-unstyled.menu > li').each(($el) => {
+    cy.get('.list-unstyled.menu > li, [role="menuitem"]').each(($el) => {
         if ($el.text() != selection) {
-        cy.log(`Cannot perform action with specified value "${selection}" since it is not present. Current Menu is: "${$el.text()}"`);
-        cy.get('ul.list-unstyled.menu').contains(selection).should('not.exist')
-      }        
+          cy.log(`Cannot perform action with specified value "${selection}" since it is not present. Current Menu is: "${$el.text()}"`);
+          cy.get('ul.list-unstyled.menu, [role="menuitem"]')
+            .contains(selection).should('not.exist');
+        }
     });
     // Close 3 dots button menu
-    cy.get('.background').should('exist').click({ force: true });
+    cy.get('body').should('exist').click({ force: true });
   }
-  
+
   else if (selection) {
     // Open edit config and select option
-    cy.get('.list-unstyled.menu > li > span', { timeout: 15000 }).contains(selection).should('be.visible');
-    cy.get('.list-unstyled.menu > li > span', { timeout: 15000 }).contains(selection).click({ force: true });
+    cy.get('.list-unstyled.menu > li > span, div.dropdownTarget', { timeout: 15000 }).contains(selection).should('be.visible');
+    cy.get('.list-unstyled.menu > li > span, div.dropdownTarget', { timeout: 15000 }).contains(selection).click({ force: true });
+    if (selection === 'Force Update') {
+      // Wait for the 'Force Update' pop-up box open.
+      cy.wait(500);
+      cy.get('body', { timeout: 10000 }).then(($body) => {
+        if ($body.find('.card-title > h4').text().includes('Force Update')) {
+          cy.get('[data-testid="deactivate-driver-confirm"] > span').should('be.visible').click();
+        }    
+      })
+    };
     // Ensure dropdown is not present
     cy.contains('Edit Config').should('not.exist')
   }
@@ -214,13 +327,17 @@ Cypress.Commands.add('nameSpaceMenuToggle', (namespaceName) => {
   cy.get('.top > .ns-filter').should('be.visible');
 
   // For some reason I don't understand, click force doesn't work
-  // in 2.10, but it is mandatory for earlier versions
-  // TODO: this is a workaround. Please improve it.
-  if (/\/2\.10/.test(Cypress.env('rancher_version'))) {
-    cy.get('.top > .ns-filter').click();  
-  }
-  else {
+  // in 2.10 an onwards, but it is mandatory for earlier versions
+  // To be improved in the future
+  const old_versions = ["latest/devel/2.7", "latest/devel/2.8", "latest/devel/2.9"];
+
+  if (old_versions.includes(rancherVersion)) {
+    cy.log('Rancher version is: ' + rancherVersion , 'Clicking WITH force:true');
     cy.get('.top > .ns-filter').click({ force: true });
+  }
+  else  {
+    cy.log('Rancher version is: ' + rancherVersion, 'Clicking WITHOUT force:true');
+    cy.get('.top > .ns-filter').click();
   }
   cy.get('div.ns-item').contains(namespaceName).scrollIntoView()
   cy.get('div.ns-item').contains(namespaceName).click()
@@ -240,7 +357,7 @@ Cypress.Commands.add('accesMenuSelection', (firstAccessMenu='Continuous Delivery
   // added wait of 500ms to make time for CSS transitions to resolve (addresses tests flakiness)
   // unfortunately there's no "easy" way of waiting for transitions and 500ms is quick and does the trick
   cypressLib.burgerMenuToggle( {animationDistanceThreshold: 10} );
-  cy.wait(500);
+  cy.wait(750);
 
   cy.contains(firstAccessMenu).should('be.visible');
   cypressLib.accesMenu(firstAccessMenu);
@@ -259,15 +376,16 @@ Cypress.Commands.add('accesMenuSelection', (firstAccessMenu='Continuous Delivery
 
 // Fleet namespace toggle
 Cypress.Commands.add('fleetNamespaceToggle', (toggleOption='local') => {
-  cy.contains('fleet-').click();
-  cy.contains(toggleOption).should('be.visible').click();
+  cy.get('.vs__selected-options')
+  .contains('fleet-')
+  .click({force: true});
+cy.contains(toggleOption).should('be.visible').click({force: true});
 });
 
 // Command to delete all rows if check box and delete button are present
 // Note: This function may be substituted by 'cypressLib.deleteAllResources' 
 // when hardcoded texts present can be parameterized
 Cypress.Commands.add('deleteAll', (fleetCheck=true) => {
-  const noRowsMessages = ['There are no rows to show.', 'There are no rows which match your search query.']
   cy.get('body').then(($body) => {
     if ($body.text().includes('Delete')) {
       cy.wait(250) // Add small wait to give time for things to settle
@@ -317,14 +435,19 @@ Cypress.Commands.add('checkGitRepoStatus', (repoName, bundles, resources) => {
 });
 
 // Check deployed application status (present or not)
-Cypress.Commands.add('checkApplicationStatus', (appName, clusterName='local', appNamespace='Only User Namespaces') => {
+Cypress.Commands.add('checkApplicationStatus', (appName, clusterName='local', appNamespace='Only User Namespaces', present=true) => {
   cy.accesMenuSelection(clusterName, 'Workloads', 'Pods');
   cy.nameSpaceMenuToggle(appNamespace);
   cy.filterInSearchBox(appName);
-  cy.contains('tr.main-row[data-testid="sortable-table-0-row"]').should('not.be.empty', { timeout: 25000 });
-  cy.get(`table > tbody > tr.main-row[data-testid="sortable-table-0-row"]`)
-    .children({ timeout: 60000 })
-    .should('contain.text', appName);
+  if (present === true) {
+    cy.contains('tr.main-row[data-testid="sortable-table-0-row"]').should('not.be.empty', { timeout: 25000 });
+    cy.get(`table > tbody > tr.main-row[data-testid="sortable-table-0-row"]`)
+      .children({ timeout: 60000 })
+      .should('contain.text', appName);
+  }
+  else {
+    cy.get('td > span, td.text-center > span').invoke('text').should('be.oneOf', noRowsMessages)
+  }
 });
 
 // Delete the leftover applications
@@ -338,6 +461,9 @@ Cypress.Commands.add('deleteApplicationDeployment', (clusterName='local') => {
 
 // Modify given application
 Cypress.Commands.add('modifyDeployedApplication', (appName, clusterName='local') => {
+  // Wait added to mitigate problems unfolding burger menu 2.11 onwards
+  // TODO: remove or rework when possible
+  cy.wait(2000);
   cypressLib.burgerMenuToggle();
   cypressLib.accesMenu(clusterName);
   cy.clickNavMenu(['Workloads', 'Deployments']);
@@ -392,8 +518,8 @@ Cypress.Commands.add('assignRoleToUser', (userName, roleName) => {
   cy.contains('.title', 'Users').should('be.visible');
   cy.filterInSearchBox(userName);
   cy.open3dotsMenu(userName, 'Edit Config');
-  cy.get(`span[aria-label='${roleName}']`).scrollIntoView();
-  cy.get(`span[aria-label='${roleName}']`).should('be.visible').click();
+  cy.get(`span[aria-label='${roleName}'], div[class='checkbox-section checkbox-section--custom'] span[role='checkbox']`).scrollIntoView();
+  cy.get(`span[aria-label='${roleName}'], div[class='checkbox-section checkbox-section--custom'] span[role='checkbox']`).should('be.visible').click();
 
   cy.clickButton('Save');
   // Sortering by Age so first row is the desired user
@@ -517,6 +643,7 @@ Cypress.Commands.add('createClusterGroup', (clusterGroupName, key, value, banner
     cy.wait(500);
   }
   cy.clickButton('Create');
+  cy.filterInSearchBox(clusterGroupName);
   cy.verifyTableRow(0, 'Active', clusterGroupName);
 })
 
@@ -549,29 +676,55 @@ Cypress.Commands.add('deleteClusterGroups', () => {
 
 // Remove added labels from the cluster(s)
 Cypress.Commands.add('removeClusterLabels', (clusterName, key, value) => {
-  // Navigate to Clusters page when other navigation is present.
-  cy.get('body').then((body) => {
-    if (body.find('.title').text().includes('Clusters')) {
-      return true
-    }
-    else {
-      cy.accesMenuSelection('Continuous Delivery', 'Clusters');
-    }
-  })
-
+  cy.accesMenuSelection('Continuous Delivery', 'Git Repos');
+  cy.clickNavMenu(['Clusters']);
   cy.contains('.title', 'Clusters').should('be.visible');
   cy.filterInSearchBox(clusterName);
   cy.open3dotsMenu(clusterName, 'Edit Config');
-  cy.get('div[class="row"] div[class="key-value"] button.role-link').first().click();
+  cy.contains('.title', 'Cluster:').should('be.visible');
+  // TODO: Remove below label remove logic after
+  // After label removal from cluster, it says 409 (conflict error) while saving.
+  // issue: # https://github.com/rancher/dashboard/issues/9563
+  // Below code will work for 3 labels on the cluster, 2 with disabled labels,
+  // 1 with actual removable label.
+  if (/\/2\.8/.test(Cypress.env('rancher_version'))) {
+    cy.get('div[class="row"] div[class="key-value"] button.role-link').first().click();
+  }
+  else {
+    cy.get('body').then((body) => {
+      if (body.find('span[class="switch hand"]')) {
+        cy.get('span[name="label-system-toggle"]').click();
+        cy.get('div[class="row"] div[class="key-value"] button.role-link').then(($el) => {
+          if ($el.length === 2) {
+            cy.log("There is no new label for remove. Only 2 default labels present.");
+          }
+          else {
+            cy.get('div[class="row"] div[class="key-value"] button.role-link').first().click();
+          }
+        })
+      }
+    })
+  }
+
   cy.wait(500);
   cy.clickButton('Save');
   cy.contains('Save').should('not.exist');
+  // Navigate back to all clusters page.
+  cy.clickNavMenu(['Clusters']);
 
   // Ensure label is removed.
+  cy.wait(500);
   cy.contains('.title', 'Clusters').should('be.visible');
   cy.filterInSearchBox(clusterName);
   cy.get('td.col-link-detail > span').contains(clusterName).click();
-  cy.get('div.tags > span').should("not.contain", `${key} : ${value}`);
+  cy.get('div.tags > span').then(($el) =>{
+    if ($el.length === 2) {
+      cy.log("Cluster Label get removed successfully.")
+    }
+    else {
+      cy.removeClusterLabels(clusterName, key, value)
+    }
+  })
 
   // Navigate back to all clusters page.
   cy.clickNavMenu(['Clusters']);
@@ -593,8 +746,8 @@ Cypress.Commands.add('verifyJobDeleted', (repoName, verifyJobDeletedEvent = true
   // To be executed there or after cy.checkGitRepoStatus() function;
   if (verifyJobDeletedEvent) {
     cy.get('ul[role="tablist"]').contains('Recent Events').click();
-    cy.get('section#events > div > table > tbody > tr.main-row')
-      .eq(0)
+    cy.get('section#events table tr.main-row')
+      // .eq(0)
       .contains('job deletion triggered because job succeeded', { timeout: 20000 })
       .should('be.visible');
   };
@@ -605,3 +758,137 @@ Cypress.Commands.add('verifyJobDeleted', (repoName, verifyJobDeletedEvent = true
   cy.filterInSearchBox(repoName);
   cy.get('table > tbody > tr').contains('There are no rows which match your search query.').should('be.visible');
 });
+
+// Simulate typing on the canvas terminal
+Cypress.Commands.add('typeIntoCanvasTermnal', (textToType) => {
+    // Simulate typing on the canvas terminal
+    cy.get('canvas').then(($canvas) => {
+      const canvas = $canvas[0];
+      const rect = canvas.getBoundingClientRect();
+    
+      // Simulate a click on the canvas
+      cy.wrap(canvas)
+        .trigger('mousedown', { clientX: rect.left + 10, clientY: rect.top + 10 })
+        .trigger('mouseup', { clientX: rect.left + 10, clientY: rect.top + 10 });
+    
+      // Simulate typing on the canvas
+      cy.wrap(canvas)
+        .trigger('keydown', { key: 'k' })
+        .type(textToType);
+    });
+});
+
+Cypress.Commands.add('checkGitRepoAfterUpgrade', (repoName, fleetNamespace='fleet-local') => {
+  cy.accesMenuSelection('Continuous Delivery', 'Git Repos');
+  cy.fleetNamespaceToggle(fleetNamespace);
+  cy.filterInSearchBox(repoName);
+  cy.verifyTableRow(0, /Active|Modified/, repoName);
+});
+
+Cypress.Commands.add('currentClusterResourceCount', (clusterName) => {
+  cy.accesMenuSelection('Continuous Delivery', 'Clusters');
+  cy.contains('.title', 'Clusters').should('be.visible');
+  cy.filterInSearchBox(clusterName);
+  cy.verifyTableRow(0, 'Active', clusterName);
+  cy.get('td.col-link-detail > span').contains(clusterName).click();
+  cy.get("div[primary-color-var='--sizzle-success'] div[class='data compact'] > h1")
+  .invoke('text')
+  .then((clusterResourceCountText) => {
+    // Convert to integer
+    const clusterCurrentResourceCount = parseInt(clusterResourceCountText.trim(), 10);
+    cy.log("Resource count on each cluster is: " + clusterCurrentResourceCount);
+    cy.wrap(clusterCurrentResourceCount).as('clusterCurrentResourceCount');
+  })
+})
+
+Cypress.Commands.add('gitRepoResourceCountAsInteger', (repoName, fleetNamespace='fleet-local') => {
+  cy.accesMenuSelection('Continuous Delivery', 'Git Repos');
+  cy.fleetNamespaceToggle(fleetNamespace);
+  cy.verifyTableRow(0, 'Active', repoName);
+  cy.contains(repoName).click()
+  cy.get('.primaryheader > h1').contains(repoName).should('be.visible')
+
+  cy.get("div[data-testid='gitrepo-deployment-summary'] div[class='count']")
+  .invoke('text')
+  .then((gitRepoResourceCountText) => {
+    const gitRepoTotalResourceCount = parseInt(gitRepoResourceCountText.trim(), 10);
+    cy.log("GitRepo Resource count is: " + gitRepoTotalResourceCount);
+    cy.wrap(gitRepoTotalResourceCount).as('gitRepoTotalResourceCount');
+  })
+})
+
+Cypress.Commands.add('actualResourceOnCluster', (clusterName) => {
+// Get Cluster Resources before GitRepo created.
+  cy.accesMenuSelection('Continuous Delivery', 'Clusters');
+  cy.contains('.title', 'Clusters').should('be.visible');
+  cy.filterInSearchBox(clusterName);
+  cy.verifyTableRow(0, 'Active', clusterName);
+  cy.get('td.col-link-detail > span').contains(clusterName).click();
+  // Get resources from the cluster page after GitRepo install.
+  cy.get("div[primary-color-var='--sizzle-success'] div[class='data compact'] > h1")
+  .invoke('text')
+  .then((clusterResourceCountText) => {
+    const resourceCountOnCluster = parseInt(clusterResourceCountText.trim(), 10);
+    cy.log("Resource count on each cluster is: " + resourceCountOnCluster);
+    cy.get('@clusterCurrentResourceCount').then((clusterCurrentResourceCount) => {
+      // Remove default 6/7 resources from Total resources available
+      // on single cluster after GitRepo install it's resources.
+      const actualResourceOnCluster = resourceCountOnCluster - clusterCurrentResourceCount;
+      cy.wrap(actualResourceOnCluster).as('actualResourceOnCluster');
+    })
+  })
+})
+
+Cypress.Commands.add('compareClusterResourceCount', (multipliedResourceCount=true) => {
+  // Get the stored 'gitRepoResourceCount' value and
+  // Multipy 'actualResourceOnCluster' 3 times because 3 clusters.
+  // Compare final result with the 'gitRepoTotalResourceCount'.
+  cy.get('@actualResourceOnCluster').then((actualResourceOnCluster) => {
+    cy.get('@gitRepoTotalResourceCount').then((gitRepoTotalResourceCount) => {
+      // When 'sameResourceEachCluster' is true then each cluster has 
+      // 'actualResourceOnCluster' is equal to 'gitRepoResourceCount'
+      if (multipliedResourceCount) {
+        expect(gitRepoTotalResourceCount).to.equal(actualResourceOnCluster * 3);
+      }
+      else {
+        expect(gitRepoTotalResourceCount).to.equal(actualResourceOnCluster);
+      }
+    })
+  })
+})
+
+Cypress.Commands.add('createNewUser', (username, password, role, uncheckStandardUser=false) => {
+  cy.contains('Users & Authentication')
+    .click();
+  cy.contains('.title', 'Users')
+    .should('exist');
+  cy.clickButton('Create');
+  cy.typeValue('Username', username);
+  cy.typeValue('New Password', password);
+  cy.typeValue('Confirm Password', password);
+  if (role) {
+    cy.contains(role)
+    .click();
+  } 
+  if (uncheckStandardUser === true) {
+    cy.get('body').then((body) => {
+      if (body.find('span[aria-label="Standard User"]').length) {
+        cy.get('span[aria-label="Standard User"]').scrollIntoView();
+        cy.get('span[aria-label="Standard User"]')
+          .should('be.visible')        
+          .click();
+      }
+      else if (body.find('div[data-testid="grb-checkbox-user"] > .checkbox-container').length) {
+        cy.get('div[data-testid="grb-checkbox-user"] > .checkbox-container').scrollIntoView();
+        cy.get('div[data-testid="grb-checkbox-user"] > .checkbox-container')
+          .contains('Standard User')
+          .should('be.visible')
+          .click();
+      }
+    })    
+  }
+  cy.getBySel('form-save')
+    .contains('Create')
+    .click();
+  cy.contains(username).should('exist');
+})

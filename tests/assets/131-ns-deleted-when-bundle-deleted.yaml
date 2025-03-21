@@ -1,0 +1,13 @@
+apiVersion: fleet.cattle.io/v1alpha1
+kind: GitRepo
+metadata:
+  name: test-ns-deleted-when-bundle-deleted
+  namespace: fleet-local
+spec:
+  branch: main
+  paths:
+    - bundles-delete-namespaces
+  repo: https://github.com/fleetqa/fleet-qa-examples-public/
+  deleteNamespace: true
+  targetNamespace: my-custom-namespace
+__clone: true
