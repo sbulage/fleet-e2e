@@ -401,12 +401,18 @@ Cypress.Commands.add('deleteAll', (fleetCheck=true) => {
 });
 
 // Command to delete all repos pressent in Fleet local and default
-Cypress.Commands.add('deleteAllFleetRepos', () => {
+Cypress.Commands.add('deleteAllFleetRepos', (namespaceName) => {
   cy.accesMenuSelection('Continuous Delivery', 'Git Repos');
   cy.fleetNamespaceToggle('fleet-local')
   cy.deleteAll();
   cy.fleetNamespaceToggle('fleet-default')
   cy.deleteAll();
+
+  // Delete all repos from newly created workspace if any.
+  if (namespaceName) {
+    cy.fleetNamespaceToggle(namespaceName);
+    cy.deleteAll();
+  }
 });
 
 // Check Git repo deployment status
@@ -891,4 +897,110 @@ Cypress.Commands.add('createNewUser', (username, password, role, uncheckStandard
     .contains('Create')
     .click();
   cy.contains(username).should('exist');
+})
+
+Cypress.Commands.add('createNewFleetWorkspace', (newWorkspaceName) => {
+  // Create new workspace
+  cy.accesMenuSelection('Continuous Delivery', 'Advanced', 'Workspaces');
+  cy.clickButton('Create')
+  cy.contains('Workspace:').should('be.visible');
+  cy.typeValue('Name', newWorkspaceName);
+  cy.clickButton('Create');
+  cy.filterInSearchBox(newWorkspaceName)
+  cy.verifyTableRow(0, 'Active', newWorkspaceName);
+})
+
+Cypress.Commands.add('enableFeatureFlag', (flagName) => {
+  // Enable given Feature Flag for the cluster.
+  cy.accesMenuSelection("Global Settings", "Feature Flags");
+  cy.contains('.title', 'Feature Flags').should('be.visible');
+
+  cy.filterInSearchBox(flagName);
+  cy.verifyTableRow(0, 'Disabled', flagName);
+  cy.open3dotsMenu(flagName, 'Activate');
+
+  // Activate the Feature Flag
+  cy.get('div.card-title')
+  .should('be.visible')
+  .then(($el) => {
+    if ($el.text().includes('Are you sure?')) {
+      // Check that 'Are you sure?' is visible before activating.
+      cy.checkModalCardTitle('Are you sure?', false);
+      cy.clickButton("Activate");
+    }
+  });
+
+  // Check that 'Are you sure?' is not visible anymore.
+  cy.checkModalCardTitle('Are you sure?', false, false);
+
+  // After activation, Rancher pod will restart.
+  // Wait for 'Waiting for Restart' to disappear.
+  cy.checkModalCardTitle('Waiting for Restart')
+})
+
+Cypress.Commands.add('checkModalCardTitle', (expectedText, waitForRestart=true, shouldHaveText=true) => {
+  // Pop-up menu comes under <div modal>, when interacting with different
+  // dialog boxes. Check the text present/absense on each Modal page Title.
+  cy.get('div.card-title')
+    .should('be.visible')
+
+  cy.get('div.card-title')
+  .invoke('text') // Get the raw text
+  .then((text) => {
+    // Normalize the text by replacing non-breaking spaces with regular spaces and trimming
+    const normalizedText = text.replace(/\u00A0/g, ' ').trim();
+
+    if (shouldHaveText) {
+      expect(normalizedText).to.equal(expectedText); 
+    } else {
+      expect(normalizedText).to.not.equal(expectedText); 
+    }
+
+    // Now check for the "Waiting for Restart" condition if waitForRestart is true
+    if (waitForRestart) {
+      cy.contains(expectedText, { timeout: 180000 }).should('not.exist');
+    }
+  });
+})
+
+Cypress.Commands.add('moveClusterToWorkspace', (clusterName, workspaceName, timeout) => {
+  // Navigate to Clusters page when other navigation is present.
+  cy.get('body').then((body) => {
+    if (body.find('.title').text().includes('Clusters')) {
+      return true
+    }
+    else {
+      cy.accesMenuSelection('Continuous Delivery', 'Clusters');
+    }
+  })
+
+  cy.filterInSearchBox(clusterName);
+  cy.verifyTableRow(0, 'Active', clusterName);
+  cy.open3dotsMenu(clusterName, 'Change workspace')
+
+  // Check pop-up menu has title and no need to wait for restart Rancher(false).
+  cy.checkModalCardTitle('Assign Cluster To…', false);
+
+  cy.get(
+    `[data-testid="workspace_options"] .vs__dropdown-toggle, 
+    .labeled-select.edit.hoverable [aria-label="Search for option"]`
+  ).click();
+  cy.contains(workspaceName, { matchCase: false })
+    .should('be.visible')
+    .click();
+  cy.clickButton('Apply');
+
+  // It automatically switches to Newly created workspace.
+  // We will change the Fleet workspace explicitly to newly created workspace
+  cy.fleetNamespaceToggle(workspaceName);
+  cy.clickNavMenu(['Clusters']);
+  cy.filterInSearchBox(clusterName);
+
+  // After move, cluster requires around 60seconds to back in Active state.
+  cy.wait(timeout);
+  cy.verifyTableRow(0, 'Active', clusterName);
+})
+
+Cypress.Commands.add('restoreClusterToDefaultWorkspace', (clusterName, timeout, defaultWorkspaceName='fleet-default', ) => {
+  cy.moveClusterToWorkspace(clusterName, defaultWorkspaceName, timeout);
 })
