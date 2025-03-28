@@ -1041,6 +1041,57 @@ describe("Test Application deployment based on 'clusterSelector'", { tags: '@p1'
       })
     )
   })
+
+  qase(19,
+    it("Fleet-19: Test remove label from cluster-2 to remove application from it when application deployed using clusterSelector(matchLabels)", { tags: '@fleet-19' }, () => {
+      const dsSecondClusterName = dsAllClusterList[1]
+      gitRepoFile = 'assets/git-repo-multiple-app-cluster-selector.yaml'
+
+      cy.accesMenuSelection('Continuous Delivery', 'Clusters');
+      cy.contains('.title', 'Clusters').should('be.visible');
+
+      // Assign label to the clusters 
+      dsFirstTwoClusterList.forEach(
+        (dsCluster) => {
+          cy.assignClusterLabel(dsCluster, key, value);
+        }
+      )
+
+      // Create a GitRepo targeting cluster group created from YAML.
+      cy.clickNavMenu(['Git Repos']);
+      cy.wait(500);
+      cy.clickButton('Add Repository');
+      cy.contains('Git Repo:').should('be.visible');
+      cy.clickButton('Edit as YAML');
+      cy.addYamlFile(gitRepoFile);
+      cy.clickButton('Create');
+      cy.checkGitRepoStatus('default-multiple-apps-cluster-selector', '2 / 2');
+
+      // Check first application status on both clusters.
+      dsFirstTwoClusterList.forEach((dsCluster) => {
+        cy.checkApplicationStatus(appName, dsCluster, 'All Namespaces');
+      })
+
+      // Remove label from the Second cluster i.e. imported-1
+      cy.wait(500);
+      cy.removeClusterLabels(dsSecondClusterName, key, value);
+
+      // Check application is absent i.e. removed from second cluster i.e. imported-1
+      cy.checkApplicationStatus(appName, dsSecondClusterName, 'All Namespaces', false);
+
+      // Check application is available on first cluster i.e. imported-0
+      cy.checkApplicationStatus(appName, dsFirstClusterName, 'All Namespaces');
+
+      // Remove labels from the clusters.
+      dsFirstTwoClusterList.forEach(
+        (dsCluster) => {
+          // Adding wait to load page correctly to avoid interference with hamburger-menu.
+          cy.wait(500);
+          cy.removeClusterLabels(dsCluster, key, value);
+        }
+      )
+    })
+  )
 });
 
 describe("Test Application deployment based on 'clusterGroupSelector'", { tags: '@p1'}, () => {
