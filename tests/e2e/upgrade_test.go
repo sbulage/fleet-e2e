@@ -119,11 +119,28 @@ var _ = Describe("E2E - Upgrading Rancher Manager", Label("upgrade-rancher-manag
 			// and check that it's different to the version before upgrade
 			fleetVersionAfterUpgrade, err := kubectl.RunWithoutErr(getFleetImageVersion...)
 
+			// Parse the versions from the images
+			beforeUpgradeImages := strings.Fields(fleetVersionBeforeUpgrade)
+			afterUpgradeImages := strings.Fields(fleetVersionAfterUpgrade)
+
 			// Get after-upgrade Fleet version and check that it's different from the before-upgrade version
 			// getFleetImageVersion output consists of 3 fleet images,
 			// so we're checking 3 images must be present there.
 			g.Expect(err).To(Not(HaveOccurred()))
 			g.Expect(len(strings.Fields(fleetVersionAfterUpgrade))).To(Equal(3))
+
+			// Check version of the first image
+			fmt.Println("First Fleet image after upgrade:", afterUpgradeImages[0]) // Debugging output
+			g.Expect(beforeUpgradeImages[0]).To(Not(Equal(afterUpgradeImages[0])))
+
+			// Check version of the second image
+			fmt.Println("Second Fleet image after upgrade:", afterUpgradeImages[1]) // Debugging output
+			g.Expect(beforeUpgradeImages[1]).To(Not(Equal(afterUpgradeImages[1])))
+
+			// Check version of the third image
+			fmt.Println("Third Fleet image after upgrade:", afterUpgradeImages[2]) // Debugging output
+			g.Expect(beforeUpgradeImages[2]).To(Not(Equal(afterUpgradeImages[2])))
+
 			fmt.Println("Current Fleet version after upgrade:", fleetVersionAfterUpgrade) // Debugging output
 			g.Expect(fleetVersionAfterUpgrade).To(Not(Equal(fleetVersionBeforeUpgrade)))
 	}, tools.SetTimeout(10*time.Minute), 20*time.Second).Should(Succeed())

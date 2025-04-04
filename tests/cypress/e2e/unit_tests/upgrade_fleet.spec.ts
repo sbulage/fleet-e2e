@@ -154,8 +154,8 @@ describe('Test "fleet-agent" image version on each downstream cluster',  { tags:
           cy.accesMenuSelection(dsCluster, 'Workloads', 'Pods');
           cy.nameSpaceMenuToggle('All Namespaces');
           cy.filterInSearchBox('fleet-agent');
-          cy.verifyTableRow(0, 'Running', 'fleet-agent-0');
-          cy.contains('fleet-agent-0').click();
+          cy.verifyTableRow(0, 'Running', 'fleet-agent');
+          cy.contains('fleet-agent').click();
           cy.wait(500);
           cy.clickButton('Config');
 
