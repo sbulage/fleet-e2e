@@ -111,6 +111,8 @@ describe('Test Fleet deployment on PRIVATE repos with SSH auth', { tags: '@p0' }
   });
 });
 
+if (!/\/2\.8/.test(Cypress.env('rancher_version'))) {
+
 describe('Test Fleet deployment on PRIVATE repos using KNOWN HOSTS', { tags: '@p0' }, () => {
   const repoUrl = 'git@github.com:fleetqa/fleet-qa-examples.git';
   const secretKnownHostsKeys = ['assets/known-host.yaml', 'assets/known-host-missmatch.yaml'];
@@ -135,22 +137,62 @@ describe('Test Fleet deployment on PRIVATE repos using KNOWN HOSTS', { tags: '@p
     });
   });
 
+    // Ensure flag `insecureSkipHostKeyChecks: false` is passed
+    // This is not mant to be in QASE
+    // Workaround to type into canvas
+    // It should be nested data under fleet
+    // TODO: remove this once this becomes default behavior
+    it('Add special flag to test default known-hosts', () => {
+      // Open local terminal in Rancher UI
+      cy.accesMenuSelection('local');
+      cy.get('#btn-kubectl').click();
+      cy.contains('Connected').should('be.visible');
+      
+      // Ensure flag `insecureSkipHostKeyChecks: false` is passed
+      // Workaround to type into canvas
+      // It should be nested data under fleet
+      // TODO: remove this once default behavior 
+      cy.typeIntoCanvasTermnal(`\
+        kubectl patch configmap rancher-config \
+        -n cattle-system \
+        --type merge \
+        -p '{
+          "data": {
+            "fleet": "insecureSkipHostKeyChecks: false"
+          }
+        }'{enter}`
+      );
+
+      // Forcing wait to ensure flag is ready
+      cy.wait(30000);
+      
+      // Close local terminal
+      cy.get('i.closer.icon').click();
+    })
+
+  // Custom / no default
   qase(141,
     it('FLEET-141  Test to install "NGINX" app using "KNOWN HOSTS" auth on PRIVATE repository', { tags: '@fleet-141' }, () => {
+
       const repoName = 'local-cluster-fleet-141';
       const gitAuthType = 'ssh-key-knownhost';
-
+  
+      cy.accesMenuSelection('Continuous Delivery', 'Git Repos');
+      
       // Create private repo using known host
       cy.fleetNamespaceToggle('fleet-local');
       cy.addFleetGitRepo({ repoName, repoUrl, gitAuthType, branch, path });
       cy.clickButton('Create');
+      cy.verifyTableRow(0, 'Active', '1/1');
       cy.checkGitRepoStatus(repoName, '1 / 1');
     })
   );
 
+  // Custom error / no default
   qase(143,
     it('FLEET-143  Test apps cannot be installed when using missmatched "KNOWN HOSTS" auth on PRIVATE repository',
       { tags: '@fleet-143' }, () => {
+
         const repoName = 'local-cluster-fleet-143';
         const gitAuthType = 'ssh-key-knownhost-missmatch';
 
@@ -164,7 +206,100 @@ describe('Test Fleet deployment on PRIVATE repos using KNOWN HOSTS', { tags: '@p
         cy.contains('Ssh: handshake failed: knownhosts: key mismatch').should('be.visible');
     })
   );
-});
+
+  // Default verify
+  qase(168,
+    it('FLEET-168 Verify Fleet default known-host is set on configmap',
+      { tags: '@fleet-168' }, () => {
+
+        // Create private repo using known host
+        cy.accesMenuSelection('local', 'Storage', 'ConfigMaps');
+        cy.nameSpaceMenuToggle('All Namespaces');
+        cy.filterInSearchBox('known-hosts');
+        cy.open3dotsMenu('known-hosts', 'Edit YAML');
+        cy.contains('ssh-rsa').its(length).should('be.visible')
+    })
+  );
+
+  // No custom / yes default
+  qase(169,
+    it('FLEET-169 Verify that without custom known-host, fleet uses default custom ones from defined in configmap',
+      { tags: '@fleet-169' }, () => {
+
+        const repoName = 'local-cluster-fleet-169';
+        const gitAuthType = "ssh"
+        const repoUrl = "git@github.com:fleetqa/fleet-qa-examples.git"
+        const userOrPublicKey = Cypress.env("rsa_public_key_qa")
+        const pwdOrPrivateKey = Cypress.env("rsa_private_key_qa")
+
+        // Delete added custom known-hosts
+        cy.accesMenuSelection('local', 'Storage', 'Secrets');
+        cy.nameSpaceMenuToggle('All Namespaces');
+        // We pass ssh-key because is needed as it is private repo
+        cy.filterInSearchBox('ssh-key');
+        cy.deleteAll(false);
+        
+        // Verify gitrepo is added using default knownhost
+        cy.accesMenuSelection('Continuous Delivery', 'Git Repos');
+        cy.fleetNamespaceToggle('fleet-local');
+        cy.addFleetGitRepo({ repoName, repoUrl, branch, path, gitAuthType, userOrPublicKey, pwdOrPrivateKey });
+        cy.clickButton('Create');
+        cy.checkGitRepoStatus(repoName, '1 / 1');
+    })
+  );  
+
+  // No ssh , then no default
+  qase(170,
+    it('FLEET-170 Verify that without ssh-key on private repo, custom known-host does not apply',
+      { tags: '@fleet-170' }, () => {
+
+        const repoName = 'local-cluster-fleet-170';
+        const repoUrl = "git@github.com:fleetqa/fleet-qa-examples.git"
+        
+        // Verify gitrepo is canot be added when default knownhost exists
+        // since it does not have ssh access
+        cy.accesMenuSelection('Continuous Delivery', 'Git Repos');
+        cy.fleetNamespaceToggle('fleet-local');
+        cy.addFleetGitRepo({ repoName, repoUrl, branch, path});
+        cy.clickButton('Create');
+        cy.verifyTableRow(0, /Error|Git Updating/, '0/0');
+    })
+  );  
+
+  // No custom + no default -> nothing gets deployed
+  // TODO: re-do ensuring that known-host default can be brought up safely
+  qase(171,
+    it.skip('FLEET-171 Verify that without custom nor default known-host a gitrepo that needs this validation cannot be installed',
+      { tags: '@fleet-171' }, () => {
+
+        const repoName = 'local-cluster-fleet-171';
+        const gitAuthType = "ssh"
+        const repoUrl = "git@github.com:fleetqa/fleet-qa-examples.git"
+        const userOrPublicKey = Cypress.env("rsa_public_key_qa")
+        const pwdOrPrivateKey = Cypress.env("rsa_private_key_qa")
+
+        // Delete added custom known-hosts
+        cy.accesMenuSelection('local', 'Storage', 'Secrets');
+        cy.nameSpaceMenuToggle('All Namespaces');
+        cy.filterInSearchBox('ssh-key');
+        cy.deleteAll(false);
+        
+        // Delete default custom known-hosts
+        cy.accesMenuSelection('local', 'Storage', 'ConfigMaps');
+        cy.nameSpaceMenuToggle('All Namespaces');
+        cy.filterInSearchBox('known-hosts');
+        cy.deleteAll(false);
+                
+        // Verify gitrepo is added using default knownhost
+        cy.accesMenuSelection('Continuous Delivery', 'Git Repos');
+        cy.fleetNamespaceToggle('fleet-local');
+        cy.addFleetGitRepo({ repoName, repoUrl, branch, path, gitAuthType, userOrPublicKey, pwdOrPrivateKey });
+        cy.clickButton('Create');
+        // Enrure that apps cannot be installed && error appears
+        cy.verifyTableRow(0, /Error|Git Updating/, '0/0');        
+    })
+  )})
+};
 
 describe('Test gitrepos with cabundle', { tags: '@p0' }, () => {
   qase(142,
@@ -431,4 +566,45 @@ if (!/\/2\.8/.test(Cypress.env('rancher_version')) && !/\/2\.9/.test(Cypress.env
       })
     );
   });
+};
+
+if (!/\/2\.8/.test(Cypress.env('rancher_version'))) {
+ 
+  describe('Test lifecycle secrets', { tags: '@p0' }, () => {
+    
+    const repoUrl = 'https://github.com/rancher/fleet-test-data/';
+    const branch = 'master';
+    const path = 'simple-chart';
+
+    qase(172,
+      it('Fleet-172 Test gitjob can store helm values in secret', { tags: '@fleet-172' }, () => {
+
+        const repoName = 'simple-chart-secret';
+  
+        // Deploy Gitrepo
+        cy.fleetNamespaceToggle('fleet-local');
+        cy.addFleetGitRepo({ repoName, repoUrl, branch, path });
+        cy.clickButton('Create');
+        cy.verifyTableRow(0, 'Active', '1/1');
+        
+        // Confirm cabundle secret is created
+        cy.accesMenuSelection('local', 'Storage', 'Secrets');
+        cy.nameSpaceMenuToggle('All Namespaces');
+        
+        // Verify values in bundle-deployments
+        cy.filterInSearchBox(repoName);
+        cy.open3dotsMenu('fleet.cattle.io/bundle-deployment/v1alpha1', 'Edit YAML');
+        cy.contains('stagedValues: eyJuYW1lIjoiZXhhbXBsZS12YWx1ZSJ9').should('be.visible');
+        cy.contains('values: eyJuYW1lIjoiZXhhbXBsZS12YWx1ZSJ9').should('be.visible');
+        cy.clickButton('Cancel');
+        
+        // Verify values in bundle
+        cy.filterInSearchBox(repoName);
+        cy.open3dotsMenu('fleet.cattle.io/bundle-values/v1alpha1', 'Edit YAML');
+        cy.contains('values.yaml: eyJuYW1lIjoiZXhhbXBsZS12YWx1ZSJ9').should('be.visible');
+        cy.clickButton('Cancel');
+        
+      })
+    )
+  })
 };
