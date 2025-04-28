@@ -992,6 +992,7 @@ Cypress.Commands.add('moveClusterToWorkspace', (clusterName, workspaceName, time
 
   // It automatically switches to Newly created workspace.
   // We will change the Fleet workspace explicitly to newly created workspace
+  cy.wait(500);
   cy.fleetNamespaceToggle(workspaceName);
   cy.clickNavMenu(['Clusters']);
   cy.filterInSearchBox(clusterName);
