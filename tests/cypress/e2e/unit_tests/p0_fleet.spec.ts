@@ -113,45 +113,30 @@ describe('Test Fleet deployment on PRIVATE repos with SSH auth', { tags: '@p0' }
 
 if (!/\/2\.8/.test(Cypress.env('rancher_version'))) {
 
-describe('Test Fleet deployment on PRIVATE repos using KNOWN HOSTS', { tags: '@p0' }, () => {
-  const repoUrl = 'git@github.com:fleetqa/fleet-qa-examples.git';
-  const secretKnownHostsKeys = ['assets/known-host.yaml', 'assets/known-host-missmatch.yaml'];
+  describe('Test Fleet deployment on PRIVATE repos using KNOWN HOSTS', 
+    { tags: '@p0' }, () => {
 
-  before('Preparing known hosts secrets via UI', () => {
-    // Create known hosts from yaml file
-    cy.exec(`bash assets/add-known-host.sh`).then((result) => {
-      cy.log(result.stdout, result.stderr);
-    });
+    const repoUrl = 'git@github.com:fleetqa/fleet-qa-examples.git';
+    const secretKnownHostsKeys = ['assets/known-host.yaml', 'assets/known-host-missmatch.yaml'];
+    const userOrPublicKey = Cypress.env("rsa_public_key_qa")
+    const pwdOrPrivateKey = Cypress.env("rsa_private_key_qa")
 
-    // Create secret via UI
-    cy.login();
-    cy.accesMenuSelection('local', 'Storage', 'Secrets');
+    before('Preparing known hosts secrets via UI', () => {
 
-    // Creating both known host keys in one loop
-    secretKnownHostsKeys.forEach((secretKnownHostsKeys) => {
-      cy.clickButton('Create');
-      cy.contains('Public key and private key for SSH').should('be.visible').click();
-      cy.clickButton('Edit as YAML');
-      cy.addYamlFile(secretKnownHostsKeys);
-      cy.clickButton('Create');
-    });
-  });
+      // Create known hosts from yaml file
+      cy.exec(`bash assets/add-known-host.sh`).then((result) => {
+        cy.log(result.stdout, result.stderr);
+      });
 
-    // Ensure flag `insecureSkipHostKeyChecks: false` is passed
-    // This is not mant to be in QASE
-    // Workaround to type into canvas
-    // It should be nested data under fleet
-    // TODO: remove this once this becomes default behavior
-    it('Add special flag to test default known-hosts', () => {
-      // Open local terminal in Rancher UI
-      cy.accesMenuSelection('local');
-      cy.get('#btn-kubectl').click();
-      cy.contains('Connected').should('be.visible');
-      
+      cy.login();
+
       // Ensure flag `insecureSkipHostKeyChecks: false` is passed
       // Workaround to type into canvas
       // It should be nested data under fleet
       // TODO: remove this once default behavior 
+      cy.accesMenuSelection('local');
+      cy.get('#btn-kubectl').click();
+      cy.contains('Connected').should('be.visible');    
       cy.typeIntoCanvasTermnal(`\
         kubectl patch configmap rancher-config \
         -n cattle-system \
@@ -162,143 +147,179 @@ describe('Test Fleet deployment on PRIVATE repos using KNOWN HOSTS', { tags: '@p
           }
         }'{enter}`
       );
-
       // Forcing wait to ensure flag is ready
       cy.wait(30000);
-      
+
       // Close local terminal
       cy.get('i.closer.icon').click();
-    })
 
-  // Custom / no default
-  qase(141,
-    it('FLEET-141  Test to install "NGINX" app using "KNOWN HOSTS" auth on PRIVATE repository', { tags: '@fleet-141' }, () => {
+      // Create secret via UI
+      cy.accesMenuSelection('local', 'Storage', 'Secrets');
 
-      const repoName = 'local-cluster-fleet-141';
-      const gitAuthType = 'ssh-key-knownhost';
-  
-      cy.accesMenuSelection('Continuous Delivery', 'Git Repos');
-      
-      // Create private repo using known host
-      cy.fleetNamespaceToggle('fleet-local');
-      cy.addFleetGitRepo({ repoName, repoUrl, gitAuthType, branch, path });
-      cy.clickButton('Create');
-      cy.verifyTableRow(0, 'Active', '1/1');
-      cy.checkGitRepoStatus(repoName, '1 / 1');
-    })
-  );
+      // Creating both known host keys in one loop
+      secretKnownHostsKeys.forEach((secretKnownHostsKeys) => {
+        cy.clickButton('Create');
+        cy.contains('Public key and private key for SSH').should('be.visible').click();
+        cy.clickButton('Edit as YAML');
+        cy.addYamlFile(secretKnownHostsKeys);
+        cy.clickButton('Create');
+      });
+    });
 
-  // Custom error / no default
-  qase(143,
-    it('FLEET-143  Test apps cannot be installed when using missmatched "KNOWN HOSTS" auth on PRIVATE repository',
-      { tags: '@fleet-143' }, () => {
+    // Custom / no default
+    qase(141,
+      it('FLEET-141  Test to install "NGINX" app using "KNOWN HOSTS" auth on PRIVATE repository', 
+        { tags: '@fleet-141' }, () => {
 
-        const repoName = 'local-cluster-fleet-143';
-        const gitAuthType = 'ssh-key-knownhost-missmatch';
-
+        const repoName = 'local-cluster-fleet-141';
+        const gitAuthType = 'ssh-key-knownhost';
+    
+        cy.accesMenuSelection('Continuous Delivery', 'Git Repos');
+        
         // Create private repo using known host
         cy.fleetNamespaceToggle('fleet-local');
         cy.addFleetGitRepo({ repoName, repoUrl, gitAuthType, branch, path });
         cy.clickButton('Create');
-
-        // Enrure that apps cannot be installed && error appears
-        cy.verifyTableRow(0, /Error|Git Updating/, '0/0');
-        cy.contains('Ssh: handshake failed: knownhosts: key mismatch').should('be.visible');
-    })
-  );
-
-  // Default verify
-  qase(168,
-    it('FLEET-168 Verify Fleet default known-host is set on configmap',
-      { tags: '@fleet-168' }, () => {
-
-        // Create private repo using known host
-        cy.accesMenuSelection('local', 'Storage', 'ConfigMaps');
-        cy.nameSpaceMenuToggle('All Namespaces');
-        cy.filterInSearchBox('known-hosts');
-        cy.open3dotsMenu('known-hosts', 'Edit YAML');
-        cy.contains('ssh-rsa').its(length).should('be.visible')
-    })
-  );
-
-  // No custom / yes default
-  qase(169,
-    it('FLEET-169 Verify that without custom known-host, fleet uses default custom ones from defined in configmap',
-      { tags: '@fleet-169' }, () => {
-
-        const repoName = 'local-cluster-fleet-169';
-        const gitAuthType = "ssh"
-        const repoUrl = "git@github.com:fleetqa/fleet-qa-examples.git"
-        const userOrPublicKey = Cypress.env("rsa_public_key_qa")
-        const pwdOrPrivateKey = Cypress.env("rsa_private_key_qa")
-
-        // Delete added custom known-hosts
-        cy.accesMenuSelection('local', 'Storage', 'Secrets');
-        cy.nameSpaceMenuToggle('All Namespaces');
-        // We pass ssh-key because is needed as it is private repo
-        cy.filterInSearchBox('ssh-key');
-        cy.deleteAll(false);
-        
-        // Verify gitrepo is added using default knownhost
-        cy.accesMenuSelection('Continuous Delivery', 'Git Repos');
-        cy.fleetNamespaceToggle('fleet-local');
-        cy.addFleetGitRepo({ repoName, repoUrl, branch, path, gitAuthType, userOrPublicKey, pwdOrPrivateKey });
-        cy.clickButton('Create');
+        cy.verifyTableRow(0, 'Active', '1/1');
         cy.checkGitRepoStatus(repoName, '1 / 1');
+      })
+    );
+
+    // Custom error / no default
+    qase(143,
+      it('FLEET-143  Test apps cannot be installed when using missmatched "KNOWN HOSTS" auth on PRIVATE repository',
+        { tags: '@fleet-143' }, () => {
+
+          const repoName = 'local-cluster-fleet-143';
+          const gitAuthType = 'ssh-key-knownhost-missmatch';
+
+          // Create private repo using known host
+          cy.fleetNamespaceToggle('fleet-local');
+          cy.addFleetGitRepo({ repoName, repoUrl, gitAuthType, branch, path });
+          cy.clickButton('Create');
+
+          // Enrure that apps cannot be installed && error appears
+          cy.verifyTableRow(0, /Error|Git Updating/, '0/0');
+          cy.contains('Ssh: handshake failed: knownhosts: key mismatch').should('be.visible');
+      })
+    );
+
+    // Default verify
+    qase(168,
+      it('FLEET-168 Verify Fleet default known-host is set on configmap',
+        { tags: '@fleet-168' }, () => {
+
+          // Create private repo using known host
+          cy.accesMenuSelection('local', 'Storage', 'ConfigMaps');
+          cy.nameSpaceMenuToggle('All Namespaces');
+          cy.filterInSearchBox('known-hosts');
+          cy.open3dotsMenu('known-hosts', 'Edit YAML');
+          cy.contains('ssh-rsa').its(length).should('be.visible')
+      })
+    );
+
+    // No custom / yes default
+    qase(169,
+      it('FLEET-169 Verify that without custom known-host, fleet uses default custom ones from defined in configmap',
+        { tags: '@fleet-169' }, () => {
+
+          const repoName = 'local-cluster-fleet-169';
+          const gitAuthType = "ssh"
+
+          // Delete added custom known-hosts
+          cy.accesMenuSelection('local', 'Storage', 'Secrets');
+          cy.nameSpaceMenuToggle('All Namespaces');
+          // We pass ssh-key because is needed as it is private repo
+          cy.filterInSearchBox('ssh-key');
+          cy.deleteAll(false);
+          
+          // Verify gitrepo is added using default knownhost
+          cy.accesMenuSelection('Continuous Delivery', 'Git Repos');
+          cy.fleetNamespaceToggle('fleet-local');
+          cy.addFleetGitRepo({ repoName, repoUrl, branch, path, gitAuthType, userOrPublicKey, pwdOrPrivateKey });
+          cy.clickButton('Create');
+          cy.checkGitRepoStatus(repoName, '1 / 1');
+      })
+    );  
+
+    // No ssh , then no default
+    qase(170,
+      it('FLEET-170 Verify that without ssh-key on private repo, custom known-host does not apply',
+        { tags: '@fleet-170' }, () => {
+
+          const repoName = 'local-cluster-fleet-170';
+          
+          // Verify gitrepo is canot be added when default knownhost exists
+          // since it does not have ssh access
+          cy.accesMenuSelection('Continuous Delivery', 'Git Repos');
+          cy.fleetNamespaceToggle('fleet-local');
+          cy.addFleetGitRepo({ repoName, repoUrl, branch, path});
+          cy.clickButton('Create');
+          cy.verifyTableRow(0, /Error|Git Updating/, '0/0');
+      })
+    );  
+
+    // No custom + no default -> nothing gets deployed
+    qase(171,
+      it('FLEET-171 Verify that without custom nor default known-host a gitrepo that needs this validation cannot be installed',
+        { tags: '@fleet-171' }, () => {
+
+          const repoName = 'local-cluster-fleet-171';
+          const gitAuthType = "ssh"
+
+          // Delete added custom known-hosts
+          cy.accesMenuSelection('local', 'Storage', 'Secrets');
+          cy.nameSpaceMenuToggle('All Namespaces');
+          cy.filterInSearchBox('ssh-key');
+          cy.deleteAll(false);
+          
+          // Delete default custom known-hosts
+          cy.accesMenuSelection('local', 'Storage', 'ConfigMaps');
+          cy.nameSpaceMenuToggle('All Namespaces');
+          cy.filterInSearchBox('known-hosts');
+
+          // Remove the given 'known_host' values
+          cy.open3dotsMenu('known-hosts', 'Edit Config')
+          cy.clickButton('Remove')
+
+          // Re-add the key to avoid other girepos to be stalled
+          cy.clickButton('Add')
+          cy.get("section[id='data'] input[placeholder='e.g. foo']").type('known_hosts');
+          cy.wait(500); // Needs time for previous command to finnish
+          cy.clickButton('Save')
+          cy.wait(500); // Needs time for previous command to finnish
+                  
+          // Verify gitrepo is added using default knownhost
+          cy.accesMenuSelection('Continuous Delivery', 'Git Repos')
+          cy.fleetNamespaceToggle('fleet-local')
+          cy.addFleetGitRepo({ repoName, repoUrl, branch, path, gitAuthType, userOrPublicKey, pwdOrPrivateKey })
+          cy.clickButton('Create')
+
+          // Ensure that apps cannot be installed && error appears
+          cy.wait(500); // Wait to avoid initial 'updating'
+          cy.verifyTableRow(0, /Error|Git Updating/, '0/0');
+          cy.contains('Strict host key checks are enforced, but no known_hosts data was found').should('be.visible')
+      })
+    );
+
+    after('Returning custom known_host values', () => {
+      
+      cy.accesMenuSelection('local', 'Storage', 'ConfigMaps');
+      cy.nameSpaceMenuToggle('All Namespaces');
+      cy.filterInSearchBox('known-hosts');
+      cy.open3dotsMenu('known-hosts', 'Edit Config')
+      cy.clickButton('Remove')
+      
+      // Attach file from 'fixtures' directory since it is native for Cypress
+      cy.get("section[id='data'] input[type='file']").attachFile('known_hosts')
+      cy.contains('bitbucket').should('be.visible')
+      cy.wait(500); // Needs time for previous command to finnish
+      cy.clickButton('Save')
+      cy.wait(500); // Needs time for previous command to finnish
+      cy.log('"known_host" values returned')
     })
-  );  
-
-  // No ssh , then no default
-  qase(170,
-    it('FLEET-170 Verify that without ssh-key on private repo, custom known-host does not apply',
-      { tags: '@fleet-170' }, () => {
-
-        const repoName = 'local-cluster-fleet-170';
-        const repoUrl = "git@github.com:fleetqa/fleet-qa-examples.git"
-        
-        // Verify gitrepo is canot be added when default knownhost exists
-        // since it does not have ssh access
-        cy.accesMenuSelection('Continuous Delivery', 'Git Repos');
-        cy.fleetNamespaceToggle('fleet-local');
-        cy.addFleetGitRepo({ repoName, repoUrl, branch, path});
-        cy.clickButton('Create');
-        cy.verifyTableRow(0, /Error|Git Updating/, '0/0');
-    })
-  );  
-
-  // No custom + no default -> nothing gets deployed
-  // TODO: re-do ensuring that known-host default can be brought up safely
-  qase(171,
-    it.skip('FLEET-171 Verify that without custom nor default known-host a gitrepo that needs this validation cannot be installed',
-      { tags: '@fleet-171' }, () => {
-
-        const repoName = 'local-cluster-fleet-171';
-        const gitAuthType = "ssh"
-        const repoUrl = "git@github.com:fleetqa/fleet-qa-examples.git"
-        const userOrPublicKey = Cypress.env("rsa_public_key_qa")
-        const pwdOrPrivateKey = Cypress.env("rsa_private_key_qa")
-
-        // Delete added custom known-hosts
-        cy.accesMenuSelection('local', 'Storage', 'Secrets');
-        cy.nameSpaceMenuToggle('All Namespaces');
-        cy.filterInSearchBox('ssh-key');
-        cy.deleteAll(false);
-        
-        // Delete default custom known-hosts
-        cy.accesMenuSelection('local', 'Storage', 'ConfigMaps');
-        cy.nameSpaceMenuToggle('All Namespaces');
-        cy.filterInSearchBox('known-hosts');
-        cy.deleteAll(false);
-                
-        // Verify gitrepo is added using default knownhost
-        cy.accesMenuSelection('Continuous Delivery', 'Git Repos');
-        cy.fleetNamespaceToggle('fleet-local');
-        cy.addFleetGitRepo({ repoName, repoUrl, branch, path, gitAuthType, userOrPublicKey, pwdOrPrivateKey });
-        cy.clickButton('Create');
-        // Enrure that apps cannot be installed && error appears
-        cy.verifyTableRow(0, /Error|Git Updating/, '0/0');        
-    })
-  )})
+    
+  })
 };
 
 describe('Test gitrepos with cabundle', { tags: '@p0' }, () => {
