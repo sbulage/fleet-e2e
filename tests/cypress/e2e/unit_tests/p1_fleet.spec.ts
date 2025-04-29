@@ -521,11 +521,18 @@ if (!/\/2\.9/.test(Cypress.env('rancher_version'))) {
 }
 
 if (!/\/2\.7/.test(Cypress.env('rancher_version')) && !/\/2\.8/.test(Cypress.env('rancher_version'))) {
+
   describe('Tests with disablePolling', { tags: '@p1' }, () => {
+  
     const gh_private_pwd = Cypress.env('gh_private_pwd');
     const repoName = 'test-disable-polling';
 
-    beforeEach('Ensuring Github repo has desired amount of replicas (2)', () => {
+    // Function to prepare Github repo used in the test
+    // It will make sure it starts with 2 replicas and changes it to 5
+    // We use this instead of hook to make it more resilient
+    function prepareGithubRepoReplicas() {
+
+      // Ensuring Github repo has desired amount of replicas (2)
       cy.exec('bash assets/disable_polling_reset_2_replicas.sh', { env: { gh_private_pwd } }).then((result) => {
         cy.log(result.stdout, result.stderr);
       });
@@ -543,8 +550,8 @@ if (!/\/2\.7/.test(Cypress.env('rancher_version')) && !/\/2\.8/.test(Cypress.env
       cy.exec('bash assets/disable_polling_setting_5_replicas.sh').then((result) => {
         cy.log(result.stdout, result.stderr);
       });
-    });
-
+    }
+    
     if (!/\/2\.9/.test(Cypress.env('rancher_version'))) { 
     // Skipping in 2.9 due to https://github.com/rancher/fleet/issues/3048
     qase(126,
@@ -552,6 +559,9 @@ if (!/\/2\.7/.test(Cypress.env('rancher_version')) && !/\/2\.8/.test(Cypress.env
         'Fleet-126: Test when `disablePolling=true` and forcing update Gitrepo will sync latest changes from Github',
         { tags: '@fleet-126', retries: 1 }, // TODO: Retry added to avoid intermittent failures. Remove once fixed.
         () => {
+
+          prepareGithubRepoReplicas()
+          
           // Forcing 15 seconds of wait to check if changes occur after this time.
           cy.wait(15000);
 
@@ -585,6 +595,9 @@ if (!/\/2\.7/.test(Cypress.env('rancher_version')) && !/\/2\.8/.test(Cypress.env
         'Fleet-124: Test when `disablePolling=true` Gitrepo will not sync latest changes from Github',
         { tags: '@fleet-124' },
         () => {
+
+          prepareGithubRepoReplicas()
+
           // Forcing 15 seconds of wait to check if changes occur after this time.
           cy.wait(15000);
 
@@ -601,6 +614,9 @@ if (!/\/2\.7/.test(Cypress.env('rancher_version')) && !/\/2\.8/.test(Cypress.env
         'Fleet-125: Test when `disablePolling=true` and pausing / unpausing Gitrepo will sync latest changes from Github',
         { tags: '@fleet-125' },
         () => {
+
+          prepareGithubRepoReplicas()
+
           cy.accesMenuSelection('Continuous Delivery', 'Git Repos');
           cy.fleetNamespaceToggle('fleet-local');
           cy.open3dotsMenu(repoName, 'Pause');

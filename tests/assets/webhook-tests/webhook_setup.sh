@@ -41,6 +41,8 @@ done
 
 echo "All webhooks deleted."
 
+sleep 3 # Adding a bit of sleep to get things to settle
+
 # Create new adhock webhook with the specific Google External IP
 wget --quiet \
      --method=POST \
