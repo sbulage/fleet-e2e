@@ -64,6 +64,8 @@ declare global {
       moveClusterToWorkspace(clusterName: string, workspaceName: string, timeout: number): Chainable<Element>;
       restoreClusterToDefaultWorkspace(clusterName: string, timeout: number, defaultWorkspaceName?: string): Chainable<Element>;
       createNewFleetWorkspace(newWorkspaceName: string): Chainable<Element>;
+      createConfigMap(configMapName: string): Chainable<Element>;
+      deleteConfigMap(configMapName: string): Chainable<Element>;
     }
   }
 }

@@ -1005,3 +1005,20 @@ Cypress.Commands.add('moveClusterToWorkspace', (clusterName, workspaceName, time
 Cypress.Commands.add('restoreClusterToDefaultWorkspace', (clusterName, timeout, defaultWorkspaceName='fleet-default', ) => {
   cy.moveClusterToWorkspace(clusterName, defaultWorkspaceName, timeout);
 })
+
+Cypress.Commands.add('createConfigMap', (configMapName) => {
+  cy.accesMenuSelection('local', 'Storage', 'ConfigMaps');
+  cy.clickButton('Create');
+  cy.clickButton('Edit as YAML');
+  cy.addYamlFile('assets/helm-app-test-map-configmap.yaml');
+  cy.clickButton('Create');
+  cy.filterInSearchBox(configMapName);
+  cy.verifyTableRow(0, configMapName);
+})
+
+
+Cypress.Commands.add('deleteConfigMap', (configMapName) => {
+    cy.accesMenuSelection('local', 'Storage', 'ConfigMaps');
+    cy.filterInSearchBox(configMapName);
+    cy.deleteAll(false);
+  })
