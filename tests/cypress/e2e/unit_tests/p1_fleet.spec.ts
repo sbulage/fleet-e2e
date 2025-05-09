@@ -890,21 +890,6 @@ describe('Test application deployment based on clusterGroup', { tags: '@p1'}, ()
       // Check application is present on third cluster i.e. imported-2
       cy.checkApplicationStatus(appName, dsThirdClusterName, 'All Namespaces');
 
-      // Application from First 2 clusters are not get removed in time.
-      // There is issue open for the same: https://github.com/rancher/fleet/issues/3091
-      // Till this issue gets fixed, we have to perform "Force Update" on 2 clusters.
-      // This is a work around and not a permanent solution.
-      cy.accesMenuSelection('Continuous Delivery', 'Git Repos');
-      cy.clickNavMenu(['Clusters']);
-      cy.contains('.title', 'Clusters').should('be.visible');
-      dsFirstTwoClusterList.forEach(
-        (dsCluster) => {
-          cy.filterInSearchBox(dsCluster);
-          cy.open3dotsMenu(dsCluster, 'Force Update');
-          cy.wait(2000); // It take some time to Update.
-          cy.verifyTableRow(0, 'Active');
-        }
-      )
       // Check application status on first 2 clusters i.e. imported-0 and imported-1
       // Application should be removed from first 2 clusters i.e. imported-0 and imported-1
       dsFirstTwoClusterList.forEach(
