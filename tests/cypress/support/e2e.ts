@@ -66,6 +66,7 @@ declare global {
       createNewFleetWorkspace(newWorkspaceName: string): Chainable<Element>;
       createConfigMap(configMapName: string): Chainable<Element>;
       deleteConfigMap(configMapName: string): Chainable<Element>;
+      closePopWindow(windowMessage: string): Chainable<Element>;
     }
   }
 }

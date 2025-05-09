@@ -285,10 +285,14 @@ if (!/\/2\.8/.test(Cypress.env('rancher_version'))) {
           // Re-add the key to avoid other girepos to be stalled
           cy.clickButton('Add')
           cy.get("section[id='data'] input[placeholder='e.g. foo']").type('known_hosts');
-          cy.wait(500); // Needs time for previous command to finnish
+          cy.wait(500); // Needs time for previous command to finish
           cy.clickButton('Save')
-          cy.wait(500); // Needs time for previous command to finnish
-                  
+          cy.wait(500); // Needs time for previous command to finish
+
+          // TODO: remove once this bug is fixed: 
+          // https://github.com/rancher/dashboard/issues/14295#issuecomment-2862105017
+          cy.closePopWindow('ConfigMap Creation Warning')
+                
           // Verify gitrepo is added using default knownhost
           cy.accesMenuSelection('Continuous Delivery', 'Git Repos')
           cy.fleetNamespaceToggle('fleet-local')

@@ -621,6 +621,11 @@ Cypress.Commands.add('upgradeFleet', () => {
 
 // Add label to the imported cluster(s)
 Cypress.Commands.add('assignClusterLabel', (clusterName, key, value) => {
+  
+  // TODO: remove once this bug is fixed: 
+  // https://github.com/rancher/dashboard/issues/14295#issuecomment-2862105017
+  cy.closePopWindow('Warning')
+  
   cy.filterInSearchBox(clusterName);
   cy.open3dotsMenu(clusterName, 'Edit Config');
   cy.clickButton('Add Label');
@@ -636,6 +641,12 @@ Cypress.Commands.add('assignClusterLabel', (clusterName, key, value) => {
 // Create clusterGroup based on label assigned to the cluster
 Cypress.Commands.add('createClusterGroup', (clusterGroupName, key, value, bannerMessageToAssert, assignClusterGroupLabel=false, clusterGroupLabelKey, clusterGroupLabelValue) => {
   cy.fleetNamespaceToggle('fleet-default');
+
+
+  // TODO: remove once this bug is fixed: 
+  // https://github.com/rancher/dashboard/issues/14295#issuecomment-2862105017
+  cy.closePopWindow('Warning')
+
   cy.clickButton('Create');
   cy.get('input[placeholder="A unique name"]').type(clusterGroupName);
   cy.clickButton('Add Rule');
@@ -685,6 +696,11 @@ Cypress.Commands.add('removeClusterLabels', (clusterName, key, value) => {
   cy.accesMenuSelection('Continuous Delivery', 'Git Repos');
   cy.clickNavMenu(['Clusters']);
   cy.contains('.title', 'Clusters').should('be.visible');
+
+  // TODO: remove once this bug is fixed: 
+  // https://github.com/rancher/dashboard/issues/14295#issuecomment-2862105017
+  cy.closePopWindow('Warning')
+
   cy.filterInSearchBox(clusterName);
   cy.open3dotsMenu(clusterName, 'Edit Config');
   cy.contains('.title', 'Cluster:').should('be.visible');
@@ -1022,3 +1038,15 @@ Cypress.Commands.add('deleteConfigMap', (configMapName) => {
     cy.filterInSearchBox(configMapName);
     cy.deleteAll(false);
   })
+
+// Command to remove pop-ups if they appear
+// Note: this should be MOMENTARY and a bug should be filed
+// Remove them once bug is fixed
+Cypress.Commands.add('closePopWindow', (windowMessage) => {
+  cy.get('body').then(($body) => {
+    if ($body.find('.growl-text-title').text().includes(windowMessage)) {
+      cy.log('POP UP WINDOW FOUND. CLOSING IT. PLEASE INVESTIGATE CAUSE');
+      cy.get('i.close.hand.icon.icon-close').should('be.visible').click();
+    }
+  })
+})
