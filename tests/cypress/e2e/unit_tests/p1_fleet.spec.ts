@@ -144,6 +144,11 @@ describe('Test Self-Healing of resource modification when correctDrift option us
       // Update exising GitRepo by enabling 'correctDrift'
       cy.addFleetGitRepo({ repoName, correctDrift: 'yes', editConfig: true });
       cy.clickButton('Save');
+      
+      // TODO: remove once this bug is fixed: 
+      // https://github.com/rancher/dashboard/issues/14295#issuecomment-2862105017
+      cy.closePopWindow('Warning')
+
       // This test is exception for using 'Force Update'.
       // Wait added to mitigate problems before force ipdate on 2.11 onwards
       // TODO: remove or rework when possible 

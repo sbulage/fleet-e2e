@@ -267,6 +267,11 @@ Cypress.Commands.add('open3dotsMenu', (name, selection, checkNotInMenu=false) =>
             .contains(selection).should('not.exist');
         }
     });
+    
+    // TODO: remove once this bug is fixed: 
+    // https://github.com/rancher/dashboard/issues/14295#issuecomment-2862105017
+    cy.closePopWindow('Warning')
+
     // Close 3 dots button menu
     cy.get('body').should('exist').click({ force: true });
   }
@@ -342,6 +347,11 @@ Cypress.Commands.add('nameSpaceMenuToggle', (namespaceName) => {
   cy.get('div.ns-item').contains(namespaceName).scrollIntoView()
   cy.get('div.ns-item').contains(namespaceName).click()
   cy.get('div.ns-dropdown.ns-open > i.icon.icon-chevron-up').click({ force: true });
+
+  // TODO: remove once this bug is fixed: 
+  // https://github.com/rancher/dashboard/issues/14295#issuecomment-2862105017
+  cy.closePopWindow('Warning')
+  
 })
 
 // Command to filter text in searchbox
@@ -480,6 +490,10 @@ Cypress.Commands.add('modifyDeployedApplication', (appName, clusterName='local')
   // TODO: Add logic to increase resource count to given no.
   cy.get('.icon-plus').click();
   cy.get('#trigger > .icon.icon-chevron-up').click({ force: true });
+  
+  // TODO: remove once this bug is fixed: 
+  // https://github.com/rancher/dashboard/issues/14295#issuecomment-2862105017
+  cy.closePopWindow('Warning')
 });
 
 // Create Role Template (User & Authentication)
@@ -693,6 +707,9 @@ Cypress.Commands.add('deleteClusterGroups', () => {
 
 // Remove added labels from the cluster(s)
 Cypress.Commands.add('removeClusterLabels', (clusterName, key, value) => {
+  // TODO: remove once this bug is fixed: 
+  // https://github.com/rancher/dashboard/issues/14295#issuecomment-2862105017
+  cy.closePopWindow('Warning')
   cy.accesMenuSelection('Continuous Delivery', 'Git Repos');
   cy.clickNavMenu(['Clusters']);
   cy.contains('.title', 'Clusters').should('be.visible');
@@ -1042,14 +1059,28 @@ Cypress.Commands.add('deleteConfigMap', (configMapName) => {
 // Command to remove pop-ups if they appear
 // Note: this should be MOMENTARY and a bug should be filed
 // Remove them once bug is fixed
-Cypress.Commands.add('closePopWindow', (windowMessage) => {
-  cy.get('body').then(($body) => {
-    if ($body.find('.growl-text-title').text().includes(windowMessage)) {
-      cy.log('POP UP WINDOW FOUND. CLOSING IT. PLEASE INVESTIGATE CAUSE');
-      cy.get('i.close.hand.icon.icon-close').should('be.visible').click();
+Cypress.Commands.add('closePopWindow', (windowMessage, retries = 5, delay = 1000) => {
+  
+  const checkAndClose = (remainingRetries) => {
+    if (remainingRetries <= 0) {
+      cy.log('No pop-up found after retries.');
+      return;
     }
-  })
-})
+
+    cy.get('body').then(($body) => {
+      if ($body.find('.growl-text-title').text().includes(windowMessage)) {
+        cy.log('POP UP WINDOW FOUND. CLOSING IT. PLEASE INVESTIGATE CAUSE');
+        cy.get('i.close.hand.icon.icon-close').should('be.visible').click();
+      } else {
+        cy.wait(delay).then(() => {
+          checkAndClose(remainingRetries - 1);
+        });
+      }
+    });
+  };
+
+  checkAndClose(retries);
+});
 
 Cypress.Commands.add('k8sUpgradeInRancher', (clusterName) => {
   const k8s_version_for_upgrade_ds_cluster = Cypress.env('k8s_version_upgrade_ds_cluster_to');
