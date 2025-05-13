@@ -114,7 +114,7 @@ describe('Test GitRepo Bundle name validation and max character trimming behavio
   )
 });
 
-describe('Test application deployment based on clusterGroup', { tags: '@p1'}, () => {
+describe('Test application deployment based on clusterGroup', { tags: '@p1_2'}, () => {
   const value = 'value_prod'
 
   beforeEach('Cleanup leftover GitRepo, ClusterGroup or label etc. if any.', () => {
@@ -396,7 +396,7 @@ describe('Test application deployment based on clusterGroup', { tags: '@p1'}, ()
   )
 });
 
-describe("Test Application deployment based on 'clusterSelector'", { tags: '@p1'}, () => {
+describe("Test Application deployment based on 'clusterSelector'", { tags: '@p1_2'}, () => {
   const key = 'key_env'
   const value = 'value_testing'
   let gitRepoFile
@@ -589,7 +589,7 @@ describe("Test Application deployment based on 'clusterSelector'", { tags: '@p1'
   )
 });
 
-describe("Test Application deployment based on 'clusterGroupSelector'", { tags: '@p1'}, () => {
+describe("Test Application deployment based on 'clusterGroupSelector'", { tags: '@p1_2'}, () => {
   const clusterGroupLabelKey = 'cluster_group_selector_env'
   const clusterGroupLabelValue = 'cluster_group_selector_test'
   let clusterGroupSelectorFile
@@ -739,7 +739,7 @@ describe("Test Application deployment based on 'clusterGroupSelector'", { tags: 
 
 if (!/\/2\.7/.test(Cypress.env('rancher_version')) && !/\/2\.8/.test(Cypress.env('rancher_version'))){
 
-  describe('Test namespace deletion when bundle is deleted', { tags: '@p1'}, () => {
+  describe('Test namespace deletion when bundle is deleted', { tags: '@p1_2'}, () => {
     
     qase(131,
       it("Fleet-131: Test NAMESPACE will be DELETED after GitRepo is deleted.", { tags: '@fleet-131' }, () => {
@@ -811,7 +811,7 @@ if (!/\/2\.7/.test(Cypress.env('rancher_version')) && !/\/2\.8/.test(Cypress.env
 };
 
 if (!/\/2\.7/.test(Cypress.env('rancher_version')) && !/\/2\.8/.test(Cypress.env('rancher_version'))) {
-  describe('Test Fleet Resource Count', { tags: '@p1'}, () => {
+  describe('Test Fleet Resource Count', { tags: '@p1_2'}, () => {
     qase(155,
       it("Fleet-155: Test clusters resource count is correct", { tags: '@fleet-155' }, () => {
 
@@ -849,7 +849,7 @@ if (!/\/2\.7/.test(Cypress.env('rancher_version')) && !/\/2\.8/.test(Cypress.env
   });
 }
 
-describe('Test move cluster to newly created workspace and deploy application to it.', { tags: '@p1'}, () => {
+describe('Test move cluster to newly created workspace and deploy application to it.', { tags: '@p1_2'}, () => {
   qase(51,
     it("Fleet-51: Test move cluster to newly created workspace and deploy application to it.", { tags: '@fleet-51' }, () => {
       const repoName = 'default-cluster-new-workspace-51'
@@ -904,7 +904,7 @@ describe('Test move cluster to newly created workspace and deploy application to
   )
 });
 
-describe('Test Helm app with Custom Values', { tags: '@p1' }, () => {
+describe('Test Helm app with Custom Values', { tags: '@p1_2' }, () => {
   const configMapName = "test-map"
   const repoTestData: testData[] = [
     {qase_id: 173, message: '`valuesFrom` with empty', path:'qa-test-apps/helm-app/values-from-with-empty-values' },
