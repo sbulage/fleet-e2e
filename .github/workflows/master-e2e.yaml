@@ -309,6 +309,7 @@ jobs:
             cypress/e2e/unit_tests/first_login_rancher.spec.ts
             cypress/e2e/unit_tests/p0_fleet.spec.ts
             cypress/e2e/unit_tests/p1_fleet.spec.ts
+            cypress/e2e/unit_tests/p1_2_fleet.spec.ts
             cypress/e2e/unit_tests/rbac_fleet.spec.ts
             cypress/e2e/unit_tests/upgrade_fleet.spec.ts
         run: |
