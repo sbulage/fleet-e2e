@@ -25,7 +25,7 @@ declare global {
       gitRepoAuth(AuthType: string, userOrPublicKey?: string, pwdOrPrivateKey?: string, gitOrHelmAuth?: string, helmUrlRegex?: string): Chainable<Element>;
       addFleetGitRepo(repoName: string, repoUrl?: string, branch?: string, path?: string, path2?: string, fleetNamespace?: string, editConfig?: boolean, helmUrlRegex?: string, deployToTarget?: string, tlsOption?: string, tlsCertificate?: string, allowedTargetNamespace?: string): Chainable<Element>;
       fleetNamespaceToggle(toggleOption: string): Chainable<Element>;
-      verifyTableRow(rowNumber: number, expectedText1?: string|RegExp, expectedText2?: string|RegExp): Chainable<Element>;
+      verifyTableRow(rowNumber: number, expectedText1?: string|RegExp, expectedText2?: string|RegExp, timeout?: number): Chainable<Element>;
       nameSpaceMenuToggle(namespaceName: string): Chainable<Element>;
       accesMenuSelection(firstAccessMenu: string, secondAccessMenu?: string, clickOption?: string): Chainable<Element>;
       filterInSearchBox(filterText: string): Chainable<Element>;
@@ -67,6 +67,7 @@ declare global {
       createConfigMap(configMapName: string): Chainable<Element>;
       deleteConfigMap(configMapName: string): Chainable<Element>;
       closePopWindow(windowMessage: string): Chainable<Element>;
+      k8sUpgradeInRancher(clusterName: string): Chainable<Element>;
     }
   }
 }

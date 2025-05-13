@@ -29,6 +29,7 @@ docker run --init -v $PWD:/workdir -w /workdir              \
     -e "GREPTAGS=$GREPTAGS"                                 \
     -e "UPGRADE=$UPGRADE"                                   \
     -e "FLEET_APP_VERSION=$FLEET_APP_VERSION"               \
+    -e "K8S_VERSION_UPGRADE_DS_CLUSTER_TO=$K8S_VERSION_UPGRADE_DS_CLUSTER_TO"               \
     --add-host host.docker.internal:host-gateway            \
     --ipc=host                                              \
     $CYPRESS_DOCKER                                         \

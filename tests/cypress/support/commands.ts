@@ -291,13 +291,13 @@ Cypress.Commands.add('open3dotsMenu', (name, selection, checkNotInMenu=false) =>
 
 // Verify textvalues in table giving the row number
 // More items can be added with new ".and"
-Cypress.Commands.add('verifyTableRow', (rowNumber, expectedText1, expectedText2) => {
+Cypress.Commands.add('verifyTableRow', (rowNumber, expectedText1, expectedText2, timeout=60000) => {
   // Adding small wait to give time for things to settle a bit
   // Could not find a better way to wait, but can be improved
   cy.wait(1000)
   // Ensure table is loaded and visible
   cy.contains('tr.main-row[data-testid="sortable-table-0-row"]').should('not.be.empty', { timeout: 25000 });
-  cy.get(`table > tbody > tr.main-row[data-testid="sortable-table-${rowNumber}-row"]`, { timeout: 60000 }).should(($row) => {
+  cy.get(`table > tbody > tr.main-row[data-testid="sortable-table-${rowNumber}-row"]`, { timeout: timeout }).should(($row) => {
     // Replace whitespaces by a space and trim the string for both expected texts
     const text = $row.text().replace(/\s+/g, ' ').trim();
 
@@ -1049,4 +1049,41 @@ Cypress.Commands.add('closePopWindow', (windowMessage) => {
       cy.get('i.close.hand.icon.icon-close').should('be.visible').click();
     }
   })
+})
+
+Cypress.Commands.add('k8sUpgradeInRancher', (clusterName) => {
+  const k8s_version_for_upgrade_ds_cluster = Cypress.env('k8s_version_upgrade_ds_cluster_to');
+  const timeout = 420000
+  cy.accesMenuSelection('Cluster Management' , 'Clusters');
+  cy.wait(500);
+  cy.filterInSearchBox(clusterName);
+  cy.verifyTableRow(0, 'Active');
+  cy.reload()
+  cy.filterInSearchBox(clusterName);
+  cy.verifyTableRow(0, 'Active'); 
+  cy.get('tr.main-row')
+    .find('span.cluster-link a')
+    .click();
+
+  cy.get('[data-testid="masthead-action-menu"]').should('be.visible').click();
+  cy.get('.list-unstyled.menu > li > span, div.dropdownTarget', { timeout: 15000 }).contains('Edit Config').should('be.visible');
+  cy.get('.list-unstyled.menu > li > span, div.dropdownTarget', { timeout: 15000 }).contains('Edit Config').click({ force: true });
+  // Ensure dropdown is not present
+  cy.contains('Edit Config').should('not.exist')
+
+  cy.wait(10000);
+  cy.get(
+    `[data-testid="cruimported-kubernetesversion"] .vs__dropdown-toggle, 
+    .labeled-select.edit.hoverable [aria-label="Search for option"]`
+  ).click();
+  cy.log(`k8s_version_for_upgrade_ds_cluster: ${k8s_version_for_upgrade_ds_cluster}`);
+  expect(k8s_version_for_upgrade_ds_cluster).to.be.a('string');
+  cy.contains(k8s_version_for_upgrade_ds_cluster)
+    .should('be.visible')
+    .and('not.equal', Cypress.env('k8s_version'))
+    .click();
+  cy.clickButton('Save');
+  cy.filterInSearchBox(clusterName);
+  cy.verifyTableRow(0, 'Upgrading');
+  cy.verifyTableRow(0, 'Active', k8s_version_for_upgrade_ds_cluster, timeout);
 })

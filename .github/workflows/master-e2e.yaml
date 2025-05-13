@@ -225,6 +225,9 @@ jobs:
       RANCHER_UPGRADE: ${{ inputs.rancher_upgrade }}
       UPGRADE: ${{ inputs.upgrade }}
       TIMEOUT_SCALE: 3
+      # K8s Version Upgrade
+      K8S_VERSION_UPGRADE_DS_CLUSTER: ${{ inputs.k8s_version_upgrade_ds_cluster }}
+      K8S_VERSION_UPGRADE_DS_CLUSTER_TO: ${{ inputs.k8s_version_to_upgrade_ds_cluster_to }}
       # QASE variables
       QASE_API_TOKEN: ${{ secrets.qase_api_token }}
       QASE_PROJECT_CODE: FLEET
@@ -395,6 +398,8 @@ jobs:
           GREPTAGS: ${{ inputs.grep_test_by_tag }}
           UPGRADE: ${{ inputs.upgrade }}
           FLEET_APP_VERSION: ${{ steps.component.outputs.fleet_app_version }}
+          K8S_VERSION_UPGRADE_DS_CLUSTER: ${{ inputs.k8s_version_upgrade_ds_cluster }}
+          K8S_VERSION_UPGRADE_DS_CLUSTER_TO: ${{ inputs.k8s_version_to_upgrade_ds_cluster_to }}
           SPEC: |
             cypress/e2e/unit_tests/first_login_rancher.spec.ts
             cypress/e2e/unit_tests/upgrade_fleet.spec.ts
