@@ -79,7 +79,7 @@ on:
         description: Grep tags. For multiple selection separate with spaces
         required: false
         type: string
-        default: '@login @p0 @p1 @rbac'
+        default: '@login @p0 @p1 @p1_2 @rbac'
       runner_template:
         description: Runner template to use
         # Another template available on GCP: fleet-qa-e2e-ci-runner-spot-leap-15-4-x86-64-template-v1

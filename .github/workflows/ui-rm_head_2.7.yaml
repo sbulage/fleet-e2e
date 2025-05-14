@@ -27,7 +27,7 @@ on:
         description: Grep tags. For multiple selection separate with spaces. Keep always @login
         required: false
         type: string
-        default: '@login @p0 @p1 @rbac'
+        default: '@login @p0 @p1 @p1_2 @rbac'
 
 jobs:
   ui:
@@ -55,4 +55,4 @@ jobs:
       upstream_cluster_version: ${{ inputs.upstream_cluster_version || 'v1.26.10+k3s2' }}
       rancher_version: ${{ inputs.rancher_version || 'latest/devel/2.7' }}
       qase_run_id: ${{ inputs.qase_run_id || 'auto' }}
-      grep_test_by_tag: ${{ inputs.grep_test_by_tag || '@login @p0 @p1 @rbac' }}
+      grep_test_by_tag: ${{ inputs.grep_test_by_tag || '@login @p0 @p1 @p1_2 @rbac' }}
