@@ -9,9 +9,10 @@ else
   echo "Repo already exists, skipping clone."
 fi
 
+sleep 3
+
 echo -e "Confirming repo exist in path"
-test -e "$PWD/fleet-qa-examples-public/disable-polling"
-if [ $? -ne 0 ]; then
+if [ ! -d "$PWD/fleet-qa-examples-public/disable-polling" ]; then
     echo "Error: path $PWD/fleet-qa-examples-public/disable-polling does not exist"
     exit 1
 fi
