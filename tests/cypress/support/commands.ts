@@ -267,10 +267,6 @@ Cypress.Commands.add('open3dotsMenu', (name, selection, checkNotInMenu=false) =>
             .contains(selection).should('not.exist');
         }
     });
-    
-    // TODO: remove once this bug is fixed: 
-    // https://github.com/rancher/dashboard/issues/14295#issuecomment-2862105017
-    cy.closePopWindow('Warning')
 
     // Close 3 dots button menu
     cy.get('body').should('exist').click({ force: true });
@@ -347,11 +343,6 @@ Cypress.Commands.add('nameSpaceMenuToggle', (namespaceName) => {
   cy.get('div.ns-item').contains(namespaceName).scrollIntoView()
   cy.get('div.ns-item').contains(namespaceName).click()
   cy.get('div.ns-dropdown.ns-open > i.icon.icon-chevron-up').click({ force: true });
-
-  // TODO: remove once this bug is fixed: 
-  // https://github.com/rancher/dashboard/issues/14295#issuecomment-2862105017
-  cy.closePopWindow('Warning')
-  
 })
 
 // Command to filter text in searchbox
@@ -490,10 +481,6 @@ Cypress.Commands.add('modifyDeployedApplication', (appName, clusterName='local')
   // TODO: Add logic to increase resource count to given no.
   cy.get('.icon-plus').click();
   cy.get('#trigger > .icon.icon-chevron-up').click({ force: true });
-  
-  // TODO: remove once this bug is fixed: 
-  // https://github.com/rancher/dashboard/issues/14295#issuecomment-2862105017
-  cy.closePopWindow('Warning')
 });
 
 // Create Role Template (User & Authentication)
@@ -636,10 +623,6 @@ Cypress.Commands.add('upgradeFleet', () => {
 // Add label to the imported cluster(s)
 Cypress.Commands.add('assignClusterLabel', (clusterName, key, value) => {
   
-  // TODO: remove once this bug is fixed: 
-  // https://github.com/rancher/dashboard/issues/14295#issuecomment-2862105017
-  cy.closePopWindow('Warning')
-  
   cy.filterInSearchBox(clusterName);
   cy.open3dotsMenu(clusterName, 'Edit Config');
   cy.clickButton('Add Label');
@@ -655,11 +638,6 @@ Cypress.Commands.add('assignClusterLabel', (clusterName, key, value) => {
 // Create clusterGroup based on label assigned to the cluster
 Cypress.Commands.add('createClusterGroup', (clusterGroupName, key, value, bannerMessageToAssert, assignClusterGroupLabel=false, clusterGroupLabelKey, clusterGroupLabelValue) => {
   cy.fleetNamespaceToggle('fleet-default');
-
-
-  // TODO: remove once this bug is fixed: 
-  // https://github.com/rancher/dashboard/issues/14295#issuecomment-2862105017
-  cy.closePopWindow('Warning')
 
   cy.clickButton('Create');
   cy.get('input[placeholder="A unique name"]').type(clusterGroupName);
@@ -707,17 +685,10 @@ Cypress.Commands.add('deleteClusterGroups', () => {
 
 // Remove added labels from the cluster(s)
 Cypress.Commands.add('removeClusterLabels', (clusterName, key, value) => {
-  // TODO: remove once this bug is fixed: 
-  // https://github.com/rancher/dashboard/issues/14295#issuecomment-2862105017
-  cy.closePopWindow('Warning')
+
   cy.accesMenuSelection('Continuous Delivery', 'Git Repos');
   cy.clickNavMenu(['Clusters']);
   cy.contains('.title', 'Clusters').should('be.visible');
-
-  // TODO: remove once this bug is fixed: 
-  // https://github.com/rancher/dashboard/issues/14295#issuecomment-2862105017
-  cy.closePopWindow('Warning')
-
   cy.filterInSearchBox(clusterName);
   cy.open3dotsMenu(clusterName, 'Edit Config');
   cy.contains('.title', 'Cluster:').should('be.visible');

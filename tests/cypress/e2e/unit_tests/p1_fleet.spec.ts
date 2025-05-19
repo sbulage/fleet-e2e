@@ -144,20 +144,12 @@ describe('Test Self-Healing of resource modification when correctDrift option us
       // Update exising GitRepo by enabling 'correctDrift'
       cy.addFleetGitRepo({ repoName, correctDrift: 'yes', editConfig: true });
       cy.clickButton('Save');
-      
-      // TODO: remove once this bug is fixed: 
-      // https://github.com/rancher/dashboard/issues/14295#issuecomment-2862105017
-      cy.closePopWindow('Warning')
 
       // This test is exception for using 'Force Update'.
       // Wait added to mitigate problems before force ipdate on 2.11 onwards
       // TODO: remove or rework when possible 
       cy.wait(2000);
       cy.open3dotsMenu(repoName, 'Force Update');
-
-      // TODO: remove once this bug is fixed: 
-      // https://github.com/rancher/dashboard/issues/14295#issuecomment-2862105017
-      cy.closePopWindow('Warning')
 
       cy.checkGitRepoStatus(repoName, '1 / 1', '1 / 1');
       cy.checkApplicationStatus(appName);
@@ -495,10 +487,6 @@ if (!/\/2\.7/.test(Cypress.env('rancher_version')) && !/\/2\.8/.test(Cypress.env
           cy.filterInSearchBox('nginx-test-polling');
           cy.wait(500);
 
-          // TODO: remove once this bug is fixed: 
-          // https://github.com/rancher/dashboard/issues/14295#issuecomment-2862105017
-          cy.closePopWindow('Warning')
-
           cy.log('HERE WE SHOULD SEE 2/2');
           cy.contains('tr.main-row', 'nginx-test-polling', { timeout: 20000 }).should('be.visible');
           cy.screenshot('Screenshot BEFORE reloading should be 2/2');
@@ -551,17 +539,9 @@ if (!/\/2\.7/.test(Cypress.env('rancher_version')) && !/\/2\.8/.test(Cypress.env
           cy.fleetNamespaceToggle('fleet-local');
           cy.open3dotsMenu(repoName, 'Pause');
 
-          // TODO: remove once this bug is fixed: 
-          // https://github.com/rancher/dashboard/issues/14295#issuecomment-2862105017
-          cy.closePopWindow('Warning')
-
           cy.verifyTableRow(0, 'Paused');
           cy.wait(2000); // Wait to let time for pause to take effect.
           cy.open3dotsMenu(repoName, 'Unpause');
-
-          // TODO: remove once this bug is fixed: 
-          // https://github.com/rancher/dashboard/issues/14295#issuecomment-2862105017
-          cy.closePopWindow('Warning')
 
           cy.verifyTableRow(0, 'Active');
           // Verify deployment changes to 5?

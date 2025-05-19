@@ -482,11 +482,6 @@ describe("Test Application deployment based on 'clusterSelector'", { tags: '@p1_
         cy.clickNavMenu(['Git Repos']);
         cy.wait(500);
 
-
-        // TODO: remove once this bug is fixed: 
-        // https://github.com/rancher/dashboard/issues/14295#issuecomment-2862105017
-        cy.closePopWindow('Warning')
-
         cy.clickButton('Add Repository');
         cy.contains('Git Repo:').should('be.visible');
         cy.clickButton('Edit as YAML');
@@ -564,11 +559,6 @@ describe("Test Application deployment based on 'clusterSelector'", { tags: '@p1_
       cy.clickNavMenu(['Git Repos']);
       cy.wait(500);
       
-      
-      // TODO: remove once this bug is fixed: 
-      // https://github.com/rancher/dashboard/issues/14295#issuecomment-2862105017
-      cy.closePopWindow('Warning')
-      
       cy.clickButton('Add Repository');
       cy.contains('Git Repo:').should('be.visible');
       cy.clickButton('Edit as YAML');
@@ -619,10 +609,6 @@ describe("Test Application deployment based on 'clusterGroupSelector'", { tags: 
         cy.removeClusterLabels(dsCluster, key, value);
       }
     )
-
-    // TODO: remove once this bug is fixed: 
-    // https://github.com/rancher/dashboard/issues/14295#issuecomment-2862105017
-    cy.closePopWindow('Warning')
 
     cy.deleteClusterGroups();
     cy.deleteAllFleetRepos();
@@ -682,10 +668,6 @@ describe("Test Application deployment based on 'clusterGroupSelector'", { tags: 
         // Create a GitRepo targeting cluster group created from YAML.
         cy.clickNavMenu(['Git Repos']);
         cy.wait(500);
-
-        // TODO: remove once this bug is fixed: 
-        // https://github.com/rancher/dashboard/issues/14295#issuecomment-2862105017
-        cy.closePopWindow('Warning')
 
         cy.clickButton('Add Repository');
         cy.contains('Git Repo:').should('be.visible');
