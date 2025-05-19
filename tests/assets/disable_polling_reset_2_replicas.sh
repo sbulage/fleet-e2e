@@ -26,11 +26,14 @@ git config user.email "fleet.qa.team@gmail.com"
 git config user.name "fleetqa"
 git add nginx.yaml
 
+git fetch origin
+
 if ! git diff --quiet origin/main; 
     then
         echo "Changes detected from original repo. Changing replicas to 2"
-        git commit -m 'Ensuring initial number of replicas is 2'
-        git push -u origin main
+        git commit -m 'Ensuring initial number of replicas is 2' && \
+        git push -u origin main || \
+        echo "Nothing to commit"
     else
         echo -e "Nothing to push, done"
-fi 
+fi
