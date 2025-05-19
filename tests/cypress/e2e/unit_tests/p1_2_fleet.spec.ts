@@ -370,6 +370,20 @@ describe('Test application deployment based on clusterGroup', { tags: '@p1_2'}, 
       // Check application is present on third cluster i.e. imported-2
       cy.checkApplicationStatus(appName, dsThirdClusterName, 'All Namespaces');
 
+      // Applying Force Update in 2.9 and 2.10 versions only as it doesn't have cluster sync logic
+      if (/\/2\.10/.test(Cypress.env('rancher_version')) || /\/2\.9/.test(Cypress.env('rancher_version'))) {
+        cy.accesMenuSelection('Continuous Delivery', 'Clusters');
+        cy.contains('.title', 'Clusters').should('be.visible');
+        dsFirstTwoClusterList.forEach(
+          (dsCluster) => {
+            cy.filterInSearchBox(dsCluster);
+            cy.open3dotsMenu(dsCluster, 'Force Update');
+            cy.wait(2000); // It take some time to Update.
+            cy.verifyTableRow(0, 'Active');
+          }
+        )
+      }
+
       // Check application status on first 2 clusters i.e. imported-0 and imported-1
       // Application should be removed from first 2 clusters i.e. imported-0 and imported-1
       dsFirstTwoClusterList.forEach(
