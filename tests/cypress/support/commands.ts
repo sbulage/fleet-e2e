@@ -530,7 +530,9 @@ Cypress.Commands.add('assignRoleToUser', (userName, roleName) => {
 
   cy.clickButton('Save');
   // Sortering by Age so first row is the desired user
-  cy.contains('Age').should('be.visible').click();
+  // cy.contains('Age').should('be.visible').click();
+  // Temporary fix by filtering the userName
+  cy.filterInSearchBox(userName);
   // Verifying name only given in 2.9 there is only icon
   cy.verifyTableRow(0, userName, '');
 })
