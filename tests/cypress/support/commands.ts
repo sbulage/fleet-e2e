@@ -59,6 +59,7 @@ Cypress.Commands.add('gitRepoAuth', (gitOrHelmAuth='Git', gitAuthType, userOrPub
 Cypress.Commands.add('importYaml', ({ clusterName, yamlFilePath }) => {
   cypressLib.burgerMenuToggle();
   cy.get('div.cluster-name').contains(clusterName).click();
+  cy.wait(250);
   cy.get('header').find('button').filter(':has(i.icon-upload)').click();
   cy.get('div.card-container').contains('Import YAML').should('be.visible');
 
@@ -255,8 +256,8 @@ Cypress.Commands.add('open3dotsMenu', (name, selection, checkNotInMenu=false) =>
   cy.wait(500);
   // Open 3 dots button
   cy.contains('tr.main-row', name).should('exist').within(() => {
-    cy.get('.icon.icon-actions', { timeout: 500 }).click({ force: true });
-    cy.wait(250)
+    cy.get('.icon.icon-actions').click({ force: true });
+    cy.wait(500)
   });
 
   if (checkNotInMenu === true) {
@@ -270,6 +271,7 @@ Cypress.Commands.add('open3dotsMenu', (name, selection, checkNotInMenu=false) =>
 
     // Close 3 dots button menu
     cy.get('body').should('exist').click({ force: true });
+    cy.wait(250);
   }
 
   else if (selection) {
@@ -348,9 +350,10 @@ Cypress.Commands.add('nameSpaceMenuToggle', (namespaceName) => {
 // Command to filter text in searchbox
 Cypress.Commands.add('filterInSearchBox', (filterText) => {
   cy.get('input.input-sm.search-box').should('be.visible');
-  // Added 5 seconds of wait, as element is hidden after it gets visible.
+  // Added 1/2 seconds of wait, as element is hidden after it gets visible.
   cy.wait(500);
   cy.get('input.input-sm.search-box').clear().type(filterText);
+  cy.wait(250); // Adding 1/4 second to ensure next action is executed more reliably
 });
 
 // Go to specific Sub Menu from Access Menu
