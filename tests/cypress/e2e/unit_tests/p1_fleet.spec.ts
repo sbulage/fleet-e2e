@@ -429,6 +429,9 @@ if (!/\/2\.9/.test(Cypress.env('rancher_version'))) {
               cy.nameSpaceMenuToggle(resourceNamespace);
               cy.filterInSearchBox(resourceName);
               cy.deleteAll(false);
+              cy.clickNavMenu(['Cluster', 'Projects/Namespaces']);
+              cy.filterInSearchBox(resourceNamespace);
+              cy.deleteAll(false);
             })
           })
         )
