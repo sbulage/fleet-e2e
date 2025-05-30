@@ -379,30 +379,50 @@ describe('Test gitrepos with cabundle', { tags: '@p0' }, () => {
 });
 
 if (!/\/2\.7/.test(Cypress.env('rancher_version')) && !/\/2\.8/.test(Cypress.env('rancher_version'))) {
+
   describe('Test Fleet with Webhook', { tags: '@p0' }, () => {
+
+    const gh_private_pwd = Cypress.env('gh_private_pwd');
+
+    before('Preparing Github Webhook', () => { 
+
+      // Prepare webhook in Github
+      cy.exec('bash assets/webhook-tests/webhook_setup.sh', { env: { gh_private_pwd } }).then((result) => {
+        cy.log(result.stdout, result.stderr);
+      })
+      
+      cy.login();
+
+      // Open local terminal in Rancher UI
+      cy.accesMenuSelection('local');
+      cy.get('#btn-kubectl').click();
+      cy.contains('Connected').should('be.visible');
+
+      // Add yaml file to the terminal to create ad-hoc ingress
+      cy.get('button > i.icon.icon-upload.icon-lg').click();
+      cy.addYamlFile('assets/webhook-tests/webhook_ingress.yaml');
+      cy.clickButton('Import');
+      cy.clickButton('Close');
+
+    });
+
     qase(152,
+
       it('Fleet-152: Test Fleet with Webhook and disable polling ', { tags: '@fleet-152' }, () => {
 
         const repoName = 'webhook-test-disable-polling';
-        const gh_private_pwd = Cypress.env('gh_private_pwd');
 
-        // Prepare webhook in Github
-        cy.exec('bash assets/webhook-tests/webhook_setup.sh', { env: { gh_private_pwd } }).then((result) => {
-          cy.log(result.stdout, result.stderr);
-        })
+        cy.exec('bash assets/webhook-tests/webhook_test_2_replicas.sh').then((result) => {
+        cy.log(result.stdout, result.stderr);
+        });
 
         // Open local terminal in Rancher UI
         cy.accesMenuSelection('local');
         cy.get('#btn-kubectl').click();
         cy.contains('Connected').should('be.visible');
 
-        // Add yaml file to the terminal to create ad-hoc ingress
-        cy.get('button > i.icon.icon-upload.icon-lg').click();
-        cy.addYamlFile('assets/webhook-tests/webhook_ingress.yaml');
-        cy.clickButton('Import');
-        cy.clickButton('Close');
-
         cy.typeIntoCanvasTermnal('\
+        kubectl delete secrets -n cattle-fleet-system gitjob-webhook{enter} \
         kubectl create secret generic gitjob-webhook -n cattle-fleet-system --from-literal=github=webhooksecretvalue{enter}');
 
         // Ensure webhook repo starts with 2 replicas
@@ -428,11 +448,6 @@ if (!/\/2\.7/.test(Cypress.env('rancher_version')) && !/\/2\.8/.test(Cypress.env
         cy.contains('tr.main-row', repoName, { timeout: 20000 }).should('be.visible');
         cy.verifyTableRow(0, 'Active', '2/2');
 
-        // Give extra time for job to finsih. 
-        // TODO: remove this wait once https://github.com/rancher/fleet/issues/3067  is fixed
-        // or find a way to wait for the job to finish
-        cy.wait(10000);
-
         // Change replicas to 5
         cy.exec('bash assets/webhook-tests/webhook_test_5_replicas.sh').then((result) => {
           cy.log(result.stdout, result.stderr);
@@ -442,6 +457,120 @@ if (!/\/2\.7/.test(Cypress.env('rancher_version')) && !/\/2\.8/.test(Cypress.env
         cy.verifyTableRow(0, 'Active', '5/5');
       })
     );
+    
+    if (!/\/2\.9/.test(Cypress.env('rancher_version')) && !/\/2\.10/.test(Cypress.env('rancher_version')) && !/\/2\.11/.test(Cypress.env('rancher_version'))) {
+  
+    qase(178,
+
+      it('Fleet-178: Test Fleet with Webhook and secret on gitrepo directly ', { tags: '@fleet-178' }, () => {
+
+        const repoName = 'test-disable-polling';
+
+        // Reset test to 2 replicas in case is not reset
+        cy.exec('bash assets/webhook-tests/webhook_test_2_replicas.sh').then((result) => {
+          cy.log(result.stdout, result.stderr);
+        });
+        
+        // Open local terminal in Rancher UI
+        cy.accesMenuSelection('local');
+        cy.get('#btn-kubectl').click();
+        cy.contains('Connected').should('be.visible');
+
+        // CHANGE TO REMOVE EXISTING SECRET
+        cy.typeIntoCanvasTermnal('\
+        kubectl delete secrets -n cattle-fleet-system gitjob-webhook{enter}');
+
+        // Gitrepo creation via YAML
+        cy.accesMenuSelection('Continuous Delivery', 'Git Repos');
+        cy.fleetNamespaceToggle('fleet-local');
+        cy.clickButton('Add Repository');
+        cy.clickButton('Edit as YAML');
+        
+        cy.addYamlFile('assets/webhook-tests/webhook_test_webhook_secret_in_repo.yaml');
+        cy.clickButton('Create');
+        cy.verifyTableRow(0, 'Active', '1/1');
+        cy.checkGitRepoStatus(repoName, '1 / 1', '1 / 1');
+
+        cy.verifyJobDeleted(repoName, false);
+
+        // Verify deployments have 2 replicas only
+        cy.accesMenuSelection('local', 'Workloads', 'Deployments');
+        cy.filterInSearchBox(repoName);
+        cy.wait(500);
+        cy.contains('tr.main-row', repoName, { timeout: 20000 }).should('be.visible');
+        cy.verifyTableRow(0, 'Active', '2/2');
+
+        // Change replicas to 5 in Github Webhook
+        cy.exec('bash assets/webhook-tests/webhook_test_5_replicas.sh').then((result) => {
+          cy.log(result.stdout, result.stderr);
+        });
+
+        // Verify deployments STILL HAVE 2 replicas and NOT 5
+        cy.verifyTableRow(0, 'Active', '2/2');
+
+        // Verify error on log
+        cy.accesMenuSelection('local', 'Workloads', 'Pods');
+        cy.filterInSearchBox('gitjob')
+        cy.open3dotsMenu('gitjob', 'View Logs')
+        cy.contains('"Webhook processing failed"').should('exist');
+      })
+    )
+
+    qase(177,
+
+      it('Fleet-177: Test Fleet with Webhook and secret using "gitjob-webhhook" on "cattle-fleet-system" ', { tags: '@fleet-177' }, () => {
+
+        const repoName = 'test-disable-polling';
+
+        // Reset test to 2 replicas in case is not reset
+        cy.exec('bash assets/webhook-tests/webhook_test_2_replicas.sh').then((result) => {
+          cy.log(result.stdout, result.stderr);
+        });
+
+        // Open local terminal in Rancher UI
+        cy.accesMenuSelection('local');
+        cy.get('#btn-kubectl').click();
+        cy.contains('Connected').should('be.visible');
+
+        // Adding wrong generic secret 
+        cy.typeIntoCanvasTermnal('\
+        kubectl create secret generic gitjob-webhook -n cattle-fleet-system --from-literal=github=wrong-webhook-secret{enter}');
+
+        // Gitrepo creation via YAML
+        cy.accesMenuSelection('Continuous Delivery', 'Git Repos');
+        cy.fleetNamespaceToggle('fleet-local');
+        cy.clickButton('Add Repository');
+        cy.clickButton('Edit as YAML');
+        
+        cy.addYamlFile('assets/webhook-tests/webhook_test_disable_polling.yaml');
+        cy.clickButton('Create');
+        cy.verifyTableRow(0, 'Active', '1/1');
+        cy.checkGitRepoStatus(repoName, '1 / 1', '1 / 1');
+
+        cy.verifyJobDeleted(repoName, false);
+
+        // Verify deployments has 2 replicas only
+        cy.accesMenuSelection('local', 'Workloads', 'Deployments');
+        cy.filterInSearchBox(repoName);
+        cy.wait(500);
+        cy.contains('tr.main-row', repoName, { timeout: 20000 }).should('be.visible');
+        cy.verifyTableRow(0, 'Active', '2/2');
+
+        // Change replicas to 5 in Github Webhook
+        cy.exec('bash assets/webhook-tests/webhook_test_5_replicas.sh').then((result) => {
+          cy.log(result.stdout, result.stderr);
+        });
+
+        // Verify deployments STILL HAVE 2 replicas and NOT 5
+        cy.verifyTableRow(0, 'Active', '2/2');
+
+        // Verify error on log
+        cy.accesMenuSelection('local', 'Workloads', 'Pods');
+        cy.filterInSearchBox('gitjob')
+        cy.open3dotsMenu('gitjob', 'View Logs')
+        cy.contains('HMAC verification failed').should('exist');
+      })
+    )}
   })
 };
 
@@ -552,6 +681,7 @@ if (!/\/2\.7/.test(Cypress.env('rancher_version')) && !/\/2\.8/.test(Cypress.env
       cy.get('table > tbody > tr').contains(repoName).should('be.visible');
     })
   )});
+  
 };
 
 if (!/\/2\.8/.test(Cypress.env('rancher_version')) && !/\/2\.9/.test(Cypress.env('rancher_version'))) {
