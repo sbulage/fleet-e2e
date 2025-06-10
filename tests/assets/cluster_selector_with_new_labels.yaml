@@ -1,0 +1,3 @@
+- clusterSelector:
+    matchLabels:
+      key_third_cluster: value_third_cluster

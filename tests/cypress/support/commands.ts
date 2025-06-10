@@ -248,6 +248,16 @@ Cypress.Commands.add('deployToClusterOrClusterGroup', (deployToTarget) => {
   cy.get('div.labeled-select.create.hoverable, div.labeled-select.edit.hoverable, [data-testid="fleet-gitrepo-target-cluster"]').first().should('be.visible');
   cy.get('div.labeled-select.create.hoverable, div.labeled-select.edit.hoverable, [data-testid="fleet-gitrepo-target-cluster"]').first().click({ force: true });
   cy.get('ul.vs__dropdown-menu > li').contains(deployToTarget).should("exist").click();
+
+  // TODO: Update this in future with better logic
+  // This is specific to Fleet-22 test cases
+  if (deployToTarget == "Advanced") {
+    cy.get('body').then((body) => {
+      if (body.find("div.yaml-editor")) {
+        cy.addYamlFile('assets/cluster_selector_with_new_labels.yaml')
+      }
+    })
+  }
 });
 
 // 3 dots menu selection
