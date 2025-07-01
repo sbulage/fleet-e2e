@@ -54,6 +54,10 @@ on:
         description: Qase API token to use for Qase reporting
         required: true
     inputs:
+      branch:
+        description: Specify branch name to run workflow on
+        type: string
+        required: false
       cluster_name:
         description: Name of the provisioned cluster
         type: string
@@ -250,6 +254,11 @@ jobs:
         with:
           cache: false
           go-version-file: tests/go.mod
+      - name: Checkout
+        if: ${{ inputs.branch }}
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.branch }}  
       - name: Install Node
         uses: actions/setup-node@v4
         with:
