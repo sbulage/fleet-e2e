@@ -15,7 +15,7 @@ on:
         type: boolean
       rancher_version:
         description: Rancher version channel/version/head_version latest/latest, latest/2.11.x[-rc1], prime/2.11.x, prime/devel/2.11, alpha/2.11.0-alpha1
-        default: latest/devel/2.11
+        default: head/2.11
         type: string
         required: true
       upstream_cluster_version:
@@ -55,6 +55,6 @@ jobs:
       # WARNING, VALUES BELOW ARE HARDCODED FOR RUNS SCHEDULED BY CRON
       destroy_runner: ${{ github.event_name == 'schedule' && true || inputs.destroy_runner }}
       upstream_cluster_version: ${{ inputs.upstream_cluster_version || 'v1.32.4+k3s1' }}
-      rancher_version: ${{ inputs.rancher_version || 'latest/devel/2.11' }}
+      rancher_version: ${{ inputs.rancher_version || 'head/2.11' }}
       qase_run_id: ${{ inputs.qase_run_id || 'auto' }}
       grep_test_by_tag: ${{ inputs.grep_test_by_tag || '@login @p0 @p1 @p1_2 @rbac' }}
