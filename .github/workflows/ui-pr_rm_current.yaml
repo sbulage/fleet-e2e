@@ -35,8 +35,8 @@ jobs:
       cluster_name: cluster-k3s
       # WARNING, VALUES BELOW ARE HARDCODED FOR RUNS SCHEDULED BY PULL_REQUEST EVENT
       destroy_runner: true
-      upstream_cluster_version: 'v1.30.3+k3s1'
-      rancher_version: 'latest/devel/2.11'
+      upstream_cluster_version: 'v1.32.4+k3s1'
+      rancher_version: 'head/2.11'
       # If qase_run_id is none the run is getting deleted in QASE
       qase_run_id: 'none'
       grep_test_by_tag: '@login @p0 @p1 @p1_2 @rbac'
