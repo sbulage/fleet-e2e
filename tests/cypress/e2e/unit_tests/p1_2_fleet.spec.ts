@@ -942,8 +942,8 @@ describe('Test move cluster to newly created workspace and deploy application to
 
       //Version check for 2.11 (head) onwards
       const rancherVersion = Cypress.env('rancher_version')
-      const alpha_or_prime_versions = [/^(prime|prime-optimus|alpha)\/2\.(1[1-9]|[2-9]\d*)(\..*)?$/];
-      const devel_or_head_versions = ["latest/devel/head", "latest/devel/2.11", "head/2.11"]
+      const alpha_or_prime_versions = [/^(prime|prime-optimus|prime-optimus-alpha|alpha)\/2\.(1[1-9]|[2-9]\d*)(\..*)?$/];;
+      const devel_or_head_versions = ["latest/devel/head", "latest/devel/2.11", "head/2.11", "head/2.12"]
 
       if (devel_or_head_versions.includes(rancherVersion) || alpha_or_prime_versions.some(regex => regex.test(rancherVersion))) {
         timeout = 60000
