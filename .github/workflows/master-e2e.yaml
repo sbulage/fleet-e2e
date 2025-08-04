@@ -258,7 +258,7 @@ jobs:
         if: ${{ inputs.branch }}
         uses: actions/checkout@v4
         with:
-          ref: ${{ inputs.branch }}  
+          ref: ${{ inputs.branch }}
       - name: Install Node
         uses: actions/setup-node@v4
         with:
@@ -267,6 +267,7 @@ jobs:
         env:
           PUBLIC_DNS: ${{ needs.create-runner.outputs.public_dns }}
           PUBLIC_DOMAIN: bc.googleusercontent.com
+          RANCHER_PASSWORD: ${{ secrets.rancher_password }}
         run: cd tests && make e2e-install-rancher
       - name: Extract component versions/informations
         id: component
@@ -330,7 +331,7 @@ jobs:
           fi
           cd tests && make start-cypress-tests
       - name: Upload Cypress screenshots (Basics)
-        if: failure() 
+        if: failure()
         uses: actions/upload-artifact@v4
         with:
           name: cypress-screenshots-basics-${{ inputs.cluster_name }}
@@ -438,7 +439,7 @@ jobs:
           path: tests/cypress/videos
           retention-days: 7
       - name: Upload webhook setup log
-        if: failure() 
+        if: failure()
         uses: actions/upload-artifact@v4
         with:
           name: webhook-setup-log-${{ inputs.cluster_name }}

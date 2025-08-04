@@ -1,5 +1,5 @@
 /*
-Copyright © 2023 - 2024 SUSE LLC
+Copyright © 2023 - 2025 SUSE LLC
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@ limitations under the License.
 package e2e_test
 
 import (
+	"encoding/json"
 	"fmt"
 	"os"
 	"os/exec"
@@ -55,16 +56,6 @@ var _ = Describe("E2E - Install Rancher Manager", Label("install"), func() {
 	}
 	// Define local Kubeconfig file
 	localKubeconfig := os.Getenv("HOME") + "/.kube/config"
-
-	// Used for creating downstream cluster(s)
-	type genericYAMLStruct struct {
-		APIVersion string `yaml:"apiVersion"`
-		Kind       string `yaml:"kind"`
-		Metadata   struct {
-			Name      string `yaml:"name"`
-			Namespace string `yaml:"namespace"`
-		} `yaml:"metadata"`
-	}
 
 	type downstreamCluster struct {
 		downstreamClusterName   string
@@ -131,6 +122,9 @@ var _ = Describe("E2E - Install Rancher Manager", Label("install"), func() {
 
 			err = os.Setenv("KUBECONFIG", localKubeconfig)
 			Expect(err).To(Not(HaveOccurred()))
+
+			// DEBUG
+			GinkgoWriter.Printf("KUBECONFIG environment variable value: %s\n", os.Getenv("KUBECONFIG"))
 		})
 
 		By("Installing CertManager", func() {
@@ -236,7 +230,11 @@ var _ = Describe("E2E - Install Rancher Manager", Label("install"), func() {
 			// NOTE: in fact move it, just to keep it in case of issue
 			// Also don't check the returned error, as it will always not equal 0
 			_ = exec.Command("bash", "-c", "sudo mv -f /etc/rancher/{k3s,rke2}/{k3s,rke2}.yaml ~/").Run()
+
+			// DEBUG
+			GinkgoWriter.Printf("KUBECONFIG environment variable value: %s\n", os.Getenv("KUBECONFIG"))
 		})
+
 		By("Create downstream cluster(s) resource for import into rancher", func() {
 			dsClusterCount := 1
 			if dsClusterCountStr != "" {
@@ -246,36 +244,62 @@ var _ = Describe("E2E - Install Rancher Manager", Label("install"), func() {
 				}
 			}
 
+			// Get API token for Rancher via Rancher API
+			login_payload := fmt.Sprintf(`{
+				"description": "Artificial UI session for CI",
+				"username": "admin",
+				"password": "%s"
+			}`, rancherPassword)
+
+			response_body_token, _, _, _ := makeHTTPPOSTRequest(rancherHostname, "/v3-public/localProviders/local?action=login", "", login_payload)
+
+			// DEBUG uncomment to see the response
+			GinkgoWriter.Printf("Complete response with Rancher API token: %s\n", response_body_token)
+
+			// Extract the token from the response
+			var responseData map[string]interface{}
+			err := json.Unmarshal(response_body_token, &responseData)
+			Expect(err).To(Not(HaveOccurred()))
+
+			token := responseData["token"].(string)
+			Expect(token).To(Not(BeEmpty()))
+
+			// DEBUG uncomment to see the extracted token
+			GinkgoWriter.Printf("Extracted Rancher API token: %s\n", token)
+
 			for i := 0; i < dsClusterCount; i++ {
 				downstreamClusterName := fmt.Sprintf("imported-%d", i)
 				internalClusterName := ""
 				insecureRegistrationCommand := ""
 
-				clusterDefinitionYaml := genericYAMLStruct{
-					APIVersion: "provisioning.cattle.io/v1",
-					Kind:       "Cluster",
-					Metadata: struct {
-						Name      string `yaml:"name"`
-						Namespace string `yaml:"namespace"`
-					}{
-						Name:      downstreamClusterName,
-						Namespace: "fleet-default",
-					},
-				}
+				// curl -k -u "$TOKEN" -X POST -H 'Accept: application/json' -H 'Content-Type: application/json' "https://$RANCHER_HOSTNAME/v3/clusters" --data '{"type":"cluster","agentEnvVars":[],"labels":{},"annotations":{"rancher.io/imported-cluster-version-management":"system-default"},"importedConfig":{"privateRegistryURL":null},"name":"cluster-to-import"}'
+				response_body, _, _, _ := makeHTTPPOSTRequest(rancherHostname, "/v3/clusters", token,
+					fmt.Sprintf(`{
+						"type": "cluster",
+						"agentEnvVars": [],
+						"labels": {},
+						"annotations": {
+							"rancher.io/imported-cluster-version-management": "system-default"
+						},
+						"importedConfig": {
+							"privateRegistryURL": null
+						},
+						"name": "%s"
+					}`, downstreamClusterName))
 
-				err := k.ApplyYAML("fleet-default", downstreamClusterName, clusterDefinitionYaml)
+				// DEBUG uncomment to see the response
+				GinkgoWriter.Printf("Complete response with Rancher API token: %s\n", response_body)
+
+				var response map[string]interface{}
+				err := json.Unmarshal(response_body, &response)
 				Expect(err).To(Not(HaveOccurred()))
 
-				// Get and store internal cluster name
-				// INTERNAL_CLUSTER_NAME=$(kubectl get clusters.provisioning.cattle.io -n fleet-default $CLUSTER_NAME -o jsonpath='{..status.clusterName}')
-				Eventually(func() string {
-					internalClusterName, _ = kubectl.Run("get", "clusters.provisioning.cattle.io",
-						"--namespace", "fleet-default",
-						downstreamClusterName,
-						"-o", "jsonpath={.status.clusterName}",
-					)
-					return internalClusterName
-				}, tools.SetTimeout(2*time.Minute), 10*time.Second).Should(ContainSubstring("c-m-"))
+				// Get and store internal cluster name from the response
+				internalClusterName = response["id"].(string)
+				Expect(internalClusterName).Should(ContainSubstring("c-"))
+
+				// DEBUG uncomment to see the internal cluster name
+				GinkgoWriter.Printf("Extracted internal cluster name: %s\n", internalClusterName)
 
 				// Get insecureCommand for importing cluster
 				// INSECURE_COMMAND=$(kubectl get ClusterRegistrationToken.management.cattle.io -n $INTERNAL_CLUSTER_NAME -o jsonpath='{.items[0].status.insecureCommand}')
@@ -372,9 +396,8 @@ var _ = Describe("E2E - Install Rancher Manager", Label("install"), func() {
 			for _, cluster := range downstreamClusters {
 				count := 1
 				Eventually(func() string {
-					downstreamClusterStatus, _ := kubectl.Run("get", "clusters.provisioning.cattle.io",
-						"--namespace", "fleet-default",
-						cluster.downstreamClusterName,
+					downstreamClusterStatus, _ := kubectl.Run("get", "clusters.management.cattle.io",
+						cluster.InternalClusterName,
 						"-o", "jsonpath={.status.conditions[?(@.type==\"Ready\")].status}",
 					)
 					GinkgoWriter.Printf("Waiting for Active state of %s, loop %d\n", cluster.downstreamClusterName, count)

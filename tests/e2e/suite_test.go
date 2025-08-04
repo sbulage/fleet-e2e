@@ -15,6 +15,10 @@ limitations under the License.
 package e2e_test
 
 import (
+	"crypto/tls"
+	"fmt"
+	"io"
+	"net/http"
 	"os"
 	"strings"
 	"testing"
@@ -36,15 +40,16 @@ const (
 )
 
 var (
-	arch                 			string
-	clusterName          			string
-	dsClusterCountStr    			string
-	k8sDownstreamVersion 			string
-	rancherChannel       			string
-	rancherHeadVersion   			string
-	rancherHostname      			string
-	rancherUpgrade       			string
-	rancherVersion       			string
+	arch                      string
+	clusterName               string
+	dsClusterCountStr         string
+	k8sDownstreamVersion      string
+	rancherChannel            string
+	rancherHeadVersion        string
+	rancherHostname           string
+	rancherUpgrade            string
+	rancherVersion            string
+	rancherPassword           string
 	rancherUpgradeChannel     string
 	rancherUpgradeHeadVersion string
 	rancherUpgradeVersion     string
@@ -67,6 +72,43 @@ func FailWithReport(message string, callerSkip ...int) {
 	Fail(message, callerSkip[0]+1)
 }
 
+func makeHTTPPOSTRequest(host, endpoint, token, payload string) ([]byte, http.Header, int, error) {
+	url := fmt.Sprintf("https://%s%s", host, endpoint)
+
+	req, err := http.NewRequest("POST", url, strings.NewReader(payload))
+	if err != nil {
+		return nil, nil, 0, err
+	}
+
+	req.Header.Set("Accept", "application/json")
+	req.Header.Set("Content-Type", "application/json")
+
+	// Use token if provided, otherwise use auth from payload
+	if token != "" {
+		req.Header.Set("Authorization", "Bearer "+token)
+	}
+
+	client := &http.Client{
+		Transport: &http.Transport{
+			TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+		},
+		Timeout: time.Second * 15,
+	}
+
+	resp, err := client.Do(req)
+	if err != nil {
+		return nil, nil, 0, err
+	}
+	defer resp.Body.Close()
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, nil, 0, err
+	}
+
+	return body, resp.Header, resp.StatusCode, nil
+}
+
 func TestE2E(t *testing.T) {
 	RegisterFailHandler(FailWithReport)
 	RunSpecs(t, "Fleet End-To-End Test Suite")
@@ -81,6 +123,7 @@ var _ = BeforeSuite(func() {
 	rancherVersion = os.Getenv("RANCHER_VERSION")
 	dsClusterCountStr = os.Getenv("DS_CLUSTER_COUNT")
 	rancherUpgrade = os.Getenv("RANCHER_UPGRADE")
+	rancherPassword = os.Getenv("RANCHER_PASSWORD")
 
 	// Convert k3s version to a tag usable by k3d
 	k8sDownstreamVersion = strings.Replace(k8sDownstreamVersion, "+", "-", 1)
