@@ -408,6 +408,7 @@ jobs:
           GREPTAGS: ${{ inputs.grep_test_by_tag }}
           UPGRADE: ${{ inputs.upgrade }}
           FLEET_APP_VERSION: ${{ steps.component.outputs.fleet_app_version }}
+          RANCHER_VERSION: ${{ inputs.rancher_upgrade }}
           K8S_VERSION_UPGRADE_DS_CLUSTER: ${{ inputs.k8s_version_upgrade_ds_cluster }}
           K8S_VERSION_UPGRADE_DS_CLUSTER_TO: ${{ inputs.k8s_version_to_upgrade_ds_cluster_to }}
           SPEC: |

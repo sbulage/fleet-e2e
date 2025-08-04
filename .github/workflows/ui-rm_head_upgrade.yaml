@@ -1,6 +1,6 @@
 # This workflow calls the master E2E workflow with custom variables
 name: UI-RM_head_upgrade
-run-name: ${{ github.event_name == 'workflow_dispatch' && format('`{0}` on `{1}` - `{2}` destroy={3}', inputs.rancher_version, inputs.upstream_cluster_version, inputs.grep_test_by_tag, inputs.destroy_runner) || github.workflow }}
+run-name: ${{ github.event_name == 'workflow_dispatch' && format('Upgrade from `{0}` to `{1}` on `{2}` - `{3}` destroy={4}', inputs.rancher_version, inputs.rancher_upgrade, inputs.upstream_cluster_version, inputs.grep_test_by_tag, inputs.destroy_runner) || github.workflow }}
 
 on:
   workflow_dispatch:
