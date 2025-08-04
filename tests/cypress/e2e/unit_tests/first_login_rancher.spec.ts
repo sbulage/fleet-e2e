@@ -14,6 +14,12 @@ limitations under the License.
 import * as cypressLib from '@rancher-ecp-qa/cypress-library';
 import { qase } from 'cypress-qase-reporter/dist/mocha';
 
+export const rancherVersion = Cypress.env('rancher_version');
+export const supported_versions_212_and_above = [
+  /^(prime|prime-optimus|prime-optimus-alpha|alpha)\/2\.(1[2-9]|\d{2,})(\..*)?$/,
+  /^head\/2\.(1[2-9]|\d{3,})$/
+];
+
 Cypress.config();
 describe('First login on Rancher', { tags: '@login' }, () => {
   qase(120,
@@ -32,7 +38,14 @@ describe('First login on Rancher', { tags: '@login' }, () => {
       cypressLib.accesMenu('Clusters');
       cy.fleetNamespaceToggle('fleet-local');
       cy.verifyTableRow(0, 'Active', ' ' );
-      cy.get("td[data-testid='sortable-cell-0-2']", { timeout: 300000 }).should("not.contain", '0');
+      // In 2.12 forth column contains Bundle Ready count
+      // Check Bundle Ready count should not be '0'
+      if (supported_versions_212_and_above.some(r => r.test(rancherVersion))) {
+        cy.get("td[data-testid='sortable-cell-0-4']", { timeout: 300000 }).should("not.contain", '0');
+      }
+      else {
+        cy.get("td[data-testid='sortable-cell-0-2']", { timeout: 300000 }).should("not.contain", '0');
+      }
     })
   );
 });

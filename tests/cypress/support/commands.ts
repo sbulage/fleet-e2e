@@ -18,7 +18,12 @@ import 'cypress-file-upload';
 import * as cypressLib from '@rancher-ecp-qa/cypress-library';
 
 export const noRowsMessages = ['There are no rows to show.', 'There are no rows which match your search query.']
+export const NoAppBundleOrGitRepoPresentMessages = ['No repositories have been added', 'No App Bundles have been created']
 export const rancherVersion = Cypress.env('rancher_version');
+export const supported_versions_212_and_above = [
+  /^(prime|prime-optimus|prime-optimus-alpha|alpha)\/2\.(1[2-9]|\d{2,})(\..*)?$/,
+  /^head\/2\.(1[2-9]|\d{3,})$/
+];
 // Generic commands
 
 // Fleet commands
@@ -27,7 +32,7 @@ export const rancherVersion = Cypress.env('rancher_version');
 Cypress.Commands.add('addPathOnGitRepoCreate', (path, index=0) => {
   //Index defaulting to 0, for first input box.
   cy.clickButton('Add Path');
-  cy.get(`[data-testid="array-list-box${ index }"] input[placeholder="e.g. /directory/in/your/repo"]`).type(path);
+  cy.get(`[data-testid="array-list-box${ index }"] input[placeholder="e.g. /directory/in/your/repo"], [data-testid="array-list-box${ index }"] input[placeholder="e.g. /directory/in/your/repo"]`).type(path);
 })
 
 Cypress.Commands.add('gitRepoAuth', (gitOrHelmAuth='Git', gitAuthType, userOrPublicKey, pwdOrPrivateKey, helmUrlRegex ) => {
@@ -84,111 +89,76 @@ Cypress.Commands.add('importYaml', ({ clusterName, yamlFilePath }) => {
   });
 });
 
-// Command add and edit Fleet Git Repository
-// TODO: Rename this command name to 'addEditFleetGitRepo'
-Cypress.Commands.add('addFleetGitRepo', ({ repoName, repoUrl, branch, path, path2, gitOrHelmAuth, gitAuthType, userOrPublicKey, pwdOrPrivateKey, tlsOption, tlsCertificate, keepResources, correctDrift, fleetNamespace='fleet-local', editConfig=false, helmUrlRegex, deployToTarget, allowedTargetNamespace="" }) => {
-
-  //Version check for 2.11 (head) onwards
-  const alpha_or_prime_versions = [/^(prime|prime-optimus|prime-optimus-alpha|alpha)\/2\.(1[1-9]|[2-9]\d*)(\..*)?$/];
-  const devel_or_head_versions = ["latest/devel/head", "latest/devel/2.11", "head/2.11", "head/2.12"]
-
-  // TODO: re-work on regex more to include 2.11 onwards and not before versions in it.
-  if (devel_or_head_versions.includes(rancherVersion) || alpha_or_prime_versions.some(regex => regex.test(rancherVersion))){
-    cy.addFleetGitRepoNew({ repoName, repoUrl, branch, path, path2, gitOrHelmAuth, gitAuthType, userOrPublicKey, pwdOrPrivateKey, tlsOption, tlsCertificate, keepResources, correctDrift, fleetNamespace, editConfig, helmUrlRegex, deployToTarget, allowedTargetNamespace})
+// This new navigation enables access to App Bundles and can be extended to HelmOps too.
+Cypress.Commands.add('continuousDeliveryMenuSelection', () => {
+  let navToAppBundles = false
+  if (supported_versions_212_and_above.some(r => r.test(rancherVersion))) {
+    navToAppBundles = true
   }
-  else{
+  if (navToAppBundles){
+    cy.accesMenuSelection('Continuous Delivery', 'App Bundles');
+    cy.contains("App Bundles").should('be.visible')
+  }
+  else {
     cy.accesMenuSelection('Continuous Delivery', 'Git Repos');
-    if (editConfig === true) {
-      cy.fleetNamespaceToggle(fleetNamespace);
-      // Check 'Error' state only to allowedTargetNamespace test only
-      cy.verifyTableRow(0, /Active|Modified|Error/, repoName);
-      cy.open3dotsMenu(repoName, 'Edit Config');
-      cy.contains('Git Repo:').should('be.visible');
-    } 
-    else {
-      cy.clickButton('Add Repository');
-      cy.contains('Git Repo:').should('be.visible');
-      cy.typeValue('Name', repoName);
-      cy.typeValue('Repository URL', repoUrl);
-      cy.typeValue('Branch Name', branch);
-    }
-    // Path is not required when git repo contains 1 application folder only.
-    if (path) {
-      cy.addPathOnGitRepoCreate(path);
-    }
-    if (path2) {
-      cy.addPathOnGitRepoCreate(path2, 1);
-    }
-    if (gitAuthType) {
-      cy.gitRepoAuth(gitOrHelmAuth, gitAuthType, userOrPublicKey, pwdOrPrivateKey, helmUrlRegex);
-    }
-
-    if (tlsOption) {
-      cy.contains(`TLS Certificate Verification`).click();
-      // Select the TLS option
-      cy.get('ul.vs__dropdown-menu > li > div', { timeout: 15000 })
-        .contains(tlsOption, { matchCase: false })
-        .should('be.visible')
-        .click();
-
-      if (tlsOption = 'Specify additional certificates') {
-        cy.readFile(tlsCertificate).then((content) => {
-          cy.get('textarea[placeholder="Paste in one or more certificates, starting with -----BEGIN CERTIFICATE----"]').type(content);
-        });
-      }
-    }
-
-    // Check the checkbox of keepResources if option 'yes' is given.
-    // After checked check-box, `keepResources: true` is set
-    // in the GitRepo YAML.
-    if (keepResources === 'yes') {
-      cy.get('.checkbox-outer-container.check').contains('Always Keep Resources').click();
-    }
-    if (correctDrift === 'yes') {
-      cy.get('[data-testid="GitRepo-correctDrift-checkbox"] > .checkbox-container > .checkbox-custom').click();
-    }
-    cy.clickButton('Next');
-    cy.get('button.btn').contains('Previous').should('be.visible');
-    // Target to any cluster or group or no cluster.
-    if (deployToTarget) {
-      cy.deployToClusterOrClusterGroup(deployToTarget);
-    }
-
-    // Type allowed namespace name in the Target Namespace while creating GitRepo.
-    if (allowedTargetNamespace !== "") {
-      cy.get('input[placeholder="Optional: Require all resources to be in this namespace"]').type(allowedTargetNamespace);
-    }
+    cy.contains("Git Repos").should('be.visible')
   }
 });
 
-Cypress.Commands.add('addFleetGitRepoNew', ({ repoName, repoUrl, branch, path, path2, gitOrHelmAuth, gitAuthType, userOrPublicKey, pwdOrPrivateKey, tlsOption, tlsCertificate, keepResources, correctDrift, fleetNamespace='fleet-local', editConfig=false, helmUrlRegex, deployToTarget, allowedTargetNamespace="" }) => {
+Cypress.Commands.add('continuousDeliveryWorkspacesMenu', () => {
+  cy.get('body', { timeout: 15000 }).then(($body) => {
+    if ($body.text().includes('App Bundles')) {
+      cy.contains('App Bundles').should('be.visible');
+      cy.clickNavMenu(['Workspaces']);
+    } else if ($body.text().includes('Git Repos')) {
+      cy.contains('Git Repos').should('be.visible');
+      cy.clickNavMenu(['Advanced', 'Workspaces']);
+    } else {
+      throw new Error('Neither "App Bundles" nor "Git Repos" found');
+    }
+  });
+});
 
-  cy.accesMenuSelection('Continuous Delivery', 'Git Repos');
+Cypress.Commands.add('continuousDeliveryBundlesMenu', () => {
+  cy.get('body', { timeout: 15000 }).then(($body) => {
+    if ($body.text().includes('App Bundles')) {
+      cy.contains('App Bundles').should('be.visible');
+      cy.clickNavMenu(['Resources']);
+      cy.get('nav').contains(/^Bundles$/).click();
+    } else if ($body.text().includes('Git Repos')) {
+      cy.contains('Git Repos').should('be.visible');
+      cy.clickNavMenu(['Advanced', 'Bundles']);
+    } else {
+      throw new Error('Neither "App Bundles" nor "Git Repos" found');
+    }
+  });
+});
+
+// Command add and edit Fleet Git Repository
+// TODO: Rename this command name to 'addEditFleetGitRepo'
+Cypress.Commands.add('addFleetGitRepo', ({ repoName, repoUrl, branch, path, path2, gitOrHelmAuth, gitAuthType, userOrPublicKey, pwdOrPrivateKey, tlsOption, tlsCertificate, keepResources, correctDrift, fleetNamespace='fleet-local', editConfig=false, helmUrlRegex, deployToTarget, allowedTargetNamespace="", local=false }) => {
+
+  cy.continuousDeliveryMenuSelection();
 
   if (editConfig === true) {
     cy.fleetNamespaceToggle(fleetNamespace);
     // Check 'Error' state only to allowedTargetNamespace test only
     cy.verifyTableRow(0, /Active|Modified|Error/, repoName);
     cy.open3dotsMenu(repoName, 'Edit Config');
-    cy.contains('Git Repo:').should('be.visible');
-    // This new 'Create: Step 1' is present on new UI 2.11 onwards
+    cy.contains(/App Bundle|Git Repo/).should('be.visible');
     cy.clickButton('Next');
   } 
 
-  // PART 1 - METADATA + PART 2 REPOSITORY DETAILS (a)
   else {
-    cy.clickButton('Add Repository');
-    cy.contains('Git Repo:').should('be.visible');
+    cy.clickCreateGitRepo(local);
     cy.typeValue('Name', repoName);
 
-    // This new 'Create: Step 1' is present on new UI 2.11 onwards
     cy.clickButton('Next');
 
     cy.typeValue('Repository URL', repoUrl);
     cy.typeValue('Branch Name', branch);
   }
 
-  // PART 2b - REPOSITORY DETAILS
   if (path) {
     cy.addPathOnGitRepoCreate(path);
   }
@@ -196,23 +166,18 @@ Cypress.Commands.add('addFleetGitRepoNew', ({ repoName, repoUrl, branch, path, p
     cy.addPathOnGitRepoCreate(path2, 1);
   }
 
-  // This new 'Create: Step 2' is present on new UI 2.11 onwards
   cy.clickButton('Next');
 
-  // PART 3 - TARGET DETAILS
-  // This new 'Create: Step 3' is present on new UI 2.11 onwards
   if (deployToTarget) {
     cy.deployToClusterOrClusterGroup(deployToTarget);
   }
 
-  // Type allowed namespace name in the Target Namespace while creating GitRepo.
   if (allowedTargetNamespace !== "") {
     cy.get('input[placeholder="Optional: Require all resources to be in this namespace"]').type(allowedTargetNamespace);
   }
 
   cy.clickButton('Next');
 
-  // PART 4 -ADVANCED
   if (gitAuthType) {
     cy.gitRepoAuth(gitOrHelmAuth, gitAuthType, userOrPublicKey, pwdOrPrivateKey, helmUrlRegex);
   }
@@ -257,6 +222,26 @@ Cypress.Commands.add('deployToClusterOrClusterGroup', (deployToTarget) => {
         cy.addYamlFile('assets/cluster_selector_with_new_labels.yaml')
       }
     })
+  }
+});
+
+Cypress.Commands.add('clickCreateGitRepo', (local) => {
+  if (supported_versions_212_and_above.some(r => r.test(rancherVersion))) {
+    cy.clickButton('Create App Bundle');
+    if (local){
+      cy.fleetNamespaceToggle('fleet-local');
+    }
+    cy.contains('App Bundle: Create').should('be.visible');
+    cy.contains('Git Repos').should('be.visible').click();
+    cy.wait(1000);
+    cy.contains('App Bundle: Create').should('be.visible');
+  }
+  else {
+    if (local){
+      cy.fleetNamespaceToggle('fleet-local');
+    }
+    cy.clickButton('Add Repository');
+    cy.contains('Git Repo:').should('be.visible');
   }
 });
 
@@ -406,7 +391,7 @@ Cypress.Commands.add('deleteAll', (fleetCheck=true) => {
       cy.get('[width="30"] > .checkbox-outer-container.check', { timeout: 50000 }).click();
       cy.get('.btn').contains('Delete').click({ctrlKey: true});
       if (fleetCheck === true) {
-        cy.contains('No repositories have been added', { timeout: 20000 }).should('be.visible')
+        cy.contains(new RegExp(NoAppBundleOrGitRepoPresentMessages.join('|')), { timeout: 20000 }).should('be.visible')
       } else {
         cy.get('td > span, td.text-center > span').invoke('text').should('be.oneOf', noRowsMessages)
       }
@@ -416,7 +401,7 @@ Cypress.Commands.add('deleteAll', (fleetCheck=true) => {
 
 // Command to delete all repos pressent in Fleet local and default
 Cypress.Commands.add('deleteAllFleetRepos', (namespaceName) => {
-  cy.accesMenuSelection('Continuous Delivery', 'Git Repos');
+  cy.continuousDeliveryMenuSelection();
   cy.fleetNamespaceToggle('fleet-local')
   cy.deleteAll();
   cy.fleetNamespaceToggle('fleet-default')
@@ -430,22 +415,22 @@ Cypress.Commands.add('deleteAllFleetRepos', (namespaceName) => {
 });
 
 // Check Git repo deployment status
-Cypress.Commands.add('checkGitRepoStatus', (repoName, bundles, resources) => {
+Cypress.Commands.add('checkGitRepoStatus', (repoName, bundles, resources, timeout=30000) => {
   cy.verifyTableRow(0, 'Active', repoName);
   cy.contains(repoName).click()
-  cy.get('.primaryheader > h1').contains(repoName).should('be.visible')
+  cy.get('.primaryheader > h1, h1 > span.resource-name.masthead-resource-title').contains(repoName).should('be.visible')
   cy.log(`Checking ${bundles} Bundles and Resources`)
   if (bundles) {
-    cy.get('div.fleet-status', { timeout: 30000 }).eq(0).contains(` ${bundles} Bundles ready `, { timeout: 30000 }).should('be.visible')
+    cy.get('div.fleet-status', { timeout: timeout }).eq(0).contains(` ${bundles} Bundles ready `, { timeout: timeout }).should('be.visible')
   }
   // Ensure this check is performed only for tests in 'fleet-local' namespace.
   if (resources) {
-      cy.get('div.fleet-status', { timeout: 30000 }).eq(1).contains(` ${resources} Resources ready `, { timeout: 30000 }).should('be.visible')
+      cy.get('div.fleet-status', { timeout: timeout }).eq(1).contains(` ${resources} Resources ready `, { timeout: timeout }).should('be.visible')
   } else {
     // On downstream clusters (v2.9+), resources are affected by cluster count.
     // Avoid specifying 'resources' for tests in 'fleet-default' to allow automatic verification.
     // This checks for the presence of a matching "X / X Resources ready" pattern.
-    cy.get('div.fleet-status', { timeout: 30000 }).eq(1).should(($div) => {
+    cy.get('div.fleet-status', { timeout: timeout }).eq(1).should(($div) => {
       // Replace whitespaces by a space and trim the string
       const text = $div.text().replace(/\s+/g, ' ').trim();
       // Perform the match check within .should callback as .then breaks retry ability
@@ -488,12 +473,27 @@ Cypress.Commands.add('modifyDeployedApplication', (appName, clusterName='local')
   cypressLib.accesMenu(clusterName);
   cy.clickNavMenu(['Workloads', 'Deployments']);
   // Modify deployment of given application
-  cy.wait(500);
-  cy.get('#trigger').click({ force: true });
-  cy.contains('Scale').should('be.visible');
-  // TODO: Add logic to increase resource count to given no.
-  cy.get('.icon-plus').click();
-  cy.get('#trigger > .icon.icon-chevron-up').click({ force: true });
+  if (supported_versions_212_and_above.some(r => r.test(rancherVersion))) {
+    cy.get('[data-testid="button-group-child-0"]').then(($button) => {
+      if ($button.hasClass('bg-disabled')){
+        $button.trigger('click');
+      }
+    })
+    cy.filterInSearchBox(appName);
+    cy.contains(appName).click();
+    cy.get('div.plus-minus.text-right > .value').should('be.visible').contains('1');
+    cy.get('div.plus-minus.text-right > .btn > .icon-plus').should('be.visible').click();
+    cy.get('div.plus-minus.text-right > .value').should('be.visible').contains('2');
+    cy.clickNavMenu(['Deployments']);
+  }
+  else {
+    cy.wait(500);
+    cy.get('#trigger').click({ force: true });
+    cy.contains('Scale').should('be.visible');
+    // TODO: Add logic to increase resource count to given no.
+    cy.get('.icon-plus').click();
+    cy.get('#trigger > .icon.icon-chevron-up').click({ force: true });
+  }
 });
 
 // Create Role Template (User & Authentication)
@@ -701,17 +701,17 @@ Cypress.Commands.add('deleteClusterGroups', () => {
 // Remove added labels from the cluster(s)
 Cypress.Commands.add('removeClusterLabels', (clusterName, key, value) => {
 
-  cy.accesMenuSelection('Continuous Delivery', 'Git Repos');
+  cy.continuousDeliveryMenuSelection();
   cy.clickNavMenu(['Clusters']);
   cy.contains('.title', 'Clusters').should('be.visible');
   cy.filterInSearchBox(clusterName);
   cy.open3dotsMenu(clusterName, 'Edit Config');
   cy.contains('.title', 'Cluster:').should('be.visible');
-
   cy.get('div.labels div.row div.key-value div.kv-container').invoke('attr', 'aria-rowcount').then((count) => {
     if (Number(count) > 0) {
       cy.get('div[class="row"] div[class="key-value"] button.role-link').first().click();
-    } else {
+    }
+    else {
       cy.log("There is no new label for remove.");
     }
   });
@@ -727,15 +727,27 @@ Cypress.Commands.add('removeClusterLabels', (clusterName, key, value) => {
   cy.contains('.title', 'Clusters').should('be.visible');
   cy.filterInSearchBox(clusterName);
   cy.get('td.col-link-detail > span').contains(clusterName).click();
-  cy.get('div.tags > span').then(($el) =>{
-    if ($el.length === 2) {
-      cy.log("Cluster Label get removed successfully.")
-    }
-    else {
-      cy.removeClusterLabels(clusterName, key, value)
-    }
-  })
-
+  if (supported_versions_212_and_above.some(r => r.test(rancherVersion))) {
+    cy.get('div.labels > .key-value > .heading > span.count').then($spanLabelCount => {
+      const labelCount = parseInt($spanLabelCount.text().trim());
+      if (labelCount === 1) {
+        cy.log("Cluster Label get removed successfully.")
+      } 
+      else {
+        cy.removeClusterLabels(clusterName, key, value)
+      }
+    })
+  } 
+  else {
+    cy.get('div.tags > span').then(($el) =>{
+      if ($el.length === 2) {
+        cy.log("Cluster Label get removed successfully.")
+      }
+      else {
+        cy.removeClusterLabels(clusterName, key, value)
+      }
+    })
+  }
   // Navigate back to all clusters page.
   cy.clickNavMenu(['Clusters']);
 })
@@ -789,7 +801,7 @@ Cypress.Commands.add('typeIntoCanvasTermnal', (textToType) => {
 });
 
 Cypress.Commands.add('checkGitRepoAfterUpgrade', (repoName, fleetNamespace='fleet-local') => {
-  cy.accesMenuSelection('Continuous Delivery', 'Git Repos');
+  cy.continuousDeliveryMenuSelection();
   cy.fleetNamespaceToggle(fleetNamespace);
   cy.filterInSearchBox(repoName);
   cy.verifyTableRow(0, /Active|Modified/, repoName);
@@ -812,13 +824,13 @@ Cypress.Commands.add('currentClusterResourceCount', (clusterName) => {
 })
 
 Cypress.Commands.add('gitRepoResourceCountAsInteger', (repoName, fleetNamespace='fleet-local') => {
-  cy.accesMenuSelection('Continuous Delivery', 'Git Repos');
+  cy.continuousDeliveryMenuSelection();
   cy.fleetNamespaceToggle(fleetNamespace);
   cy.verifyTableRow(0, 'Active', repoName);
   cy.contains(repoName).click()
-  cy.get('.primaryheader > h1').contains(repoName).should('be.visible')
+  cy.get('.primaryheader > h1, h1 > span.resource-name.masthead-resource-title').contains(repoName).should('be.visible')
 
-  cy.get("div[data-testid='gitrepo-deployment-summary'] div[class='count']")
+  cy.get("div[data-testid='gitrepo-deployment-summary'] div[class='count'], div[data-testid='resource-deployment-summary'] div[class=count]")
   .invoke('text')
   .then((gitRepoResourceCountText) => {
     const gitRepoTotalResourceCount = parseInt(gitRepoResourceCountText.trim(), 10);
@@ -905,7 +917,8 @@ Cypress.Commands.add('createNewUser', (username, password, role, uncheckStandard
 
 Cypress.Commands.add('createNewFleetWorkspace', (newWorkspaceName) => {
   // Create new workspace
-  cy.accesMenuSelection('Continuous Delivery', 'Advanced', 'Workspaces');
+  cy.continuousDeliveryMenuSelection();
+  cy.continuousDeliveryWorkspacesMenu()
   cy.clickButton('Create')
   cy.contains('Workspace:').should('be.visible');
   cy.typeValue('Name', newWorkspaceName);
@@ -967,7 +980,7 @@ Cypress.Commands.add('checkModalCardTitle', (expectedText, waitForRestart=true, 
   });
 })
 
-Cypress.Commands.add('moveClusterToWorkspace', (clusterName, workspaceName, timeout) => {
+Cypress.Commands.add('moveClusterToWorkspace', (clusterName, workspaceName, timeout, restore=false) => {
   // Navigate to Clusters page when other navigation is present.
   cy.get('body').then((body) => {
     if (body.find('.title').text().includes('Clusters')) {
@@ -977,6 +990,9 @@ Cypress.Commands.add('moveClusterToWorkspace', (clusterName, workspaceName, time
       cy.accesMenuSelection('Continuous Delivery', 'Clusters');
     }
   })
+  if (restore) {
+    cy.fleetNamespaceToggle("new-fleet-workspace");
+  }
 
   cy.filterInSearchBox(clusterName);
   cy.verifyTableRow(0, 'Active', clusterName);
@@ -991,7 +1007,7 @@ Cypress.Commands.add('moveClusterToWorkspace', (clusterName, workspaceName, time
   ).click();
   cy.contains(workspaceName, { matchCase: false })
     .should('be.visible')
-    .click();
+    .click({ force: true });
   cy.clickButton('Apply');
 
   // It automatically switches to Newly created workspace.
@@ -1006,8 +1022,8 @@ Cypress.Commands.add('moveClusterToWorkspace', (clusterName, workspaceName, time
   cy.verifyTableRow(0, 'Active', clusterName);
 })
 
-Cypress.Commands.add('restoreClusterToDefaultWorkspace', (clusterName, timeout, defaultWorkspaceName='fleet-default', ) => {
-  cy.moveClusterToWorkspace(clusterName, defaultWorkspaceName, timeout);
+Cypress.Commands.add('restoreClusterToDefaultWorkspace', (clusterName, timeout, defaultWorkspaceName='fleet-default', restore=true) => {
+  cy.moveClusterToWorkspace(clusterName, defaultWorkspaceName, timeout, restore);
 })
 
 Cypress.Commands.add('createConfigMap', (configMapName) => {
@@ -1015,6 +1031,7 @@ Cypress.Commands.add('createConfigMap', (configMapName) => {
   cy.clickButton('Create');
   cy.clickButton('Edit as YAML');
   cy.addYamlFile('assets/helm-app-test-map-configmap.yaml');
+  cy.wait(1000);
   cy.clickButton('Create');
   cy.filterInSearchBox(configMapName);
   cy.verifyTableRow(0, configMapName);
@@ -1024,7 +1041,17 @@ Cypress.Commands.add('createConfigMap', (configMapName) => {
 Cypress.Commands.add('deleteConfigMap', (configMapName) => {
     cy.accesMenuSelection('local', 'Storage', 'ConfigMaps');
     cy.filterInSearchBox(configMapName);
-    cy.deleteAll(false);
+    cy.wait(1000);
+    cy.get('body').then(($body) => {
+      const button = $body.find('[data-testid="sortable-table-promptRemove"]');
+      if (button.length > 0) {
+        cy.wrap(button).should('be.visible').then(() => {
+          cy.deleteAll(false);
+        });
+      } else {
+        cy.log("No ConfigMap available for Delete.");
+      }
+    })
   })
 
 // Command to remove pop-ups if they appear
@@ -1089,3 +1116,16 @@ Cypress.Commands.add('k8sUpgradeInRancher', (clusterName) => {
   cy.verifyTableRow(0, 'Upgrading');
   cy.verifyTableRow(0, 'Active', k8s_version_for_upgrade_ds_cluster, timeout);
 })
+
+// Below function will ensure that there is no Access to the Create GitRepos. Used in RBAC tests only.
+Cypress.Commands.add('checkAccessToCreateGitRepoPage', () => {
+  if (supported_versions_212_and_above.some(r => r.test(rancherVersion))) {
+    cy.clickButton('Create App Bundle');
+    cy.get('[data-testid="subtype-banner-item-fleet.cattle.io.gitrepo"]').should('be.visible').trigger('mouseenter', { force: true });
+    cy.contains('You have no permissions to create Git Repos').should('be.visible');
+    cy.clickButton('Cancel');
+  }
+  else {
+    cy.get('.btn.role-primary').contains('Add Repository').should('not.exist');
+  }
+});
