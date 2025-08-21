@@ -60,3 +60,4 @@ jobs:
       # QASE RUN ID, 'auto' WILL CREATE RANDOM RUN ID.
       qase_run_id: ${{ inputs.qase_run_id }}
       grep_test_by_tag: ${{ inputs.grep_test_by_tag }}
+      branch: ${{ inputs.branch }}
