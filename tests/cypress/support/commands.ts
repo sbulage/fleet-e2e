@@ -21,8 +21,8 @@ export const noRowsMessages = ['There are no rows to show.', 'There are no rows 
 export const NoAppBundleOrGitRepoPresentMessages = ['No repositories have been added', 'No App Bundles have been created']
 export const rancherVersion = Cypress.env('rancher_version');
 export const supported_versions_212_and_above = [
-  /^(prime|prime-optimus|prime-optimus-alpha|alpha)\/2\.(1[2-9]|\d{2,})(\..*)?$/,
-  /^head\/2\.(1[2-9]|\d{3,})$/
+  /^(prime|prime-optimus|prime-optimus-alpha|alpha)\/2\.(1[2-9]|[2-9]\d+)(\..*)?$/,
+  /^head\/2\.(1[2-9])$/
 ];
 // Generic commands
 
