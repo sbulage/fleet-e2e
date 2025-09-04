@@ -84,6 +84,11 @@ on:
         required: false
         type: string
         default: '@login @p0 @p1 @p1_2 @rbac'
+      hardening:
+        description: Select if desired hardened cluster (if 'true' use only @login @hardening-tests)
+        required: false
+        type: boolean
+        default: false
       runner_template:
         description: Runner template to use
         # Another template available on GCP: fleet-qa-e2e-ci-runner-spot-leap-15-4-x86-64-template-v1
@@ -268,7 +273,12 @@ jobs:
           PUBLIC_DNS: ${{ needs.create-runner.outputs.public_dns }}
           PUBLIC_DOMAIN: bc.googleusercontent.com
           RANCHER_PASSWORD: ${{ secrets.rancher_password }}
-        run: cd tests && make e2e-install-rancher
+        run: |
+          if ${{ inputs.hardening != '' }}; then
+            cd tests && make e2e-install-rke2-hardened-cluster && make e2e-install-only-certs-and-rancher
+          else
+            cd tests && make e2e-install-rancher
+          fi
       - name: Extract component versions/informations
         id: component
         run: |
@@ -322,6 +332,7 @@ jobs:
             cypress/e2e/unit_tests/p1_2_fleet.spec.ts
             cypress/e2e/unit_tests/rbac_fleet.spec.ts
             cypress/e2e/unit_tests/upgrade_fleet.spec.ts
+            cypress/e2e/unit_tests/hardened_fleet.spec.ts
         run: |
           if ${{ inputs.qase_run_id == 'none' }}; then
             # Unset default QASE_* variables when reporting is disabled
