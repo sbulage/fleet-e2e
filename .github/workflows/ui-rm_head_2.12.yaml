@@ -1,14 +1,10 @@
 # This workflow calls the master E2E workflow with custom variables
-name: UI-RM_head_2.10
+name: UI-RM_head_2.12
 run-name: ${{ github.event_name == 'workflow_dispatch' && format('`{0}` on `{1}` - `{2}` destroy={3}', inputs.rancher_version, inputs.upstream_cluster_version, inputs.grep_test_by_tag, inputs.destroy_runner) || github.workflow }}
 
 on:
   workflow_dispatch:
     inputs:
-      branch:
-        description: 'Branch to run the workflow on'
-        required: true
-        default: '2.10-stable'
       qase_run_id:
         description: Qase run ID where the results will be reported
         default: auto
@@ -18,13 +14,13 @@ on:
         default: true
         type: boolean
       rancher_version:
-        description: Rancher version channel/version/head_version latest/latest, latest/2.10.x[-rc1], prime/2.10.x, prime/devel/2.10, alpha/2.10.0-alpha1
-        default: head/2.10
+        description: Rancher version channel/version/head_version latest/latest, latest/2.11.x[-rc1], prime/2.11.x, prime/devel/2.11, alpha/2.11.0-alpha1
+        default: head/2.12
         type: string
         required: true
       upstream_cluster_version:
         description: K3s upstream cluster version where to install Rancher
-        default: 'v1.31.9+k3s1'
+        default: 'v1.33.2+k3s1'
         type: string
         required: true
       grep_test_by_tag:
@@ -33,7 +29,7 @@ on:
         type: string
         default: '@login @p0 @p1 @p1_2 @rbac'
   schedule:
-    - cron: '30 5 * * *'
+    - cron: '40 3 * * *'
 
 jobs:
   ui:
@@ -58,8 +54,7 @@ jobs:
       cluster_name: cluster-k3s
       # WARNING, VALUES BELOW ARE HARDCODED FOR RUNS SCHEDULED BY CRON
       destroy_runner: ${{ github.event_name == 'schedule' && true || inputs.destroy_runner }}
-      upstream_cluster_version: ${{ inputs.upstream_cluster_version || 'v1.31.9+k3s1' }}
-      rancher_version: ${{ inputs.rancher_version || 'head/2.10' }}
+      upstream_cluster_version: ${{ inputs.upstream_cluster_version || 'v1.33.2+k3s1' }}
+      rancher_version: ${{ inputs.rancher_version || 'head/2.12' }}
       qase_run_id: ${{ inputs.qase_run_id || 'auto' }}
       grep_test_by_tag: ${{ inputs.grep_test_by_tag || '@login @p0 @p1 @p1_2 @rbac' }}
-      branch: ${{ inputs.branch || '2.10-stable' }}

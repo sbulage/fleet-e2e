@@ -6,9 +6,9 @@ Automation Repository for Fleet i.e. Rancher Continuous Delivery.
 # CI status
 
 ## Daily CI runs
-|Lint| Rancher Head | Rancher v2.11-Head | Rancher v2.10-Head
+|Lint| Rancher Head | Rancher v2.12-Head | Rancher v2.11-Head | Rancher v2.10-Head
 |---|---|---|---|
-|TBA|[![Rancher-head_CI](https://github.com/rancher/fleet-e2e/actions/workflows/ui-rm_head.yaml/badge.svg?branch=main)](https://github.com/rancher/fleet-e2e/actions/workflows/ui-rm_head.yaml)|[![Rancher-2.11-head_CI](https://github.com/rancher/fleet-e2e/actions/workflows/ui-rm_head_2.11.yaml/badge.svg?branch=main)](https://github.com/rancher/fleet-e2e/actions/workflows/ui-rm_head_2.11.yaml)| [![Rancher-2.10-head_CI](https://github.com/rancher/fleet-e2e/actions/workflows/ui-rm_head_2.10.yaml/badge.svg?branch=main)](https://github.com/rancher/fleet-e2e/actions/workflows/ui-rm_head_2.10.yaml)|
+|TBA|[![Rancher-head_CI](https://github.com/rancher/fleet-e2e/actions/workflows/ui-rm_head.yaml/badge.svg?branch=main)](https://github.com/rancher/fleet-e2e/actions/workflows/ui-rm_head.yaml)|[![Rancher-2.12-head_CI](https://github.com/rancher/fleet-e2e/actions/workflows/ui-rm_head_2.12.yaml/badge.svg?branch=main)](https://github.com/rancher/fleet-e2e/actions/workflows/ui-rm_head_2.12.yaml)|[![Rancher-2.11-head_CI](https://github.com/rancher/fleet-e2e/actions/workflows/ui-rm_head_2.11.yaml/badge.svg?branch=main)](https://github.com/rancher/fleet-e2e/actions/workflows/ui-rm_head_2.11.yaml)| [![Rancher-2.10-head_CI](https://github.com/rancher/fleet-e2e/actions/workflows/ui-rm_head_2.10.yaml/badge.svg?branch=main)](https://github.com/rancher/fleet-e2e/actions/workflows/ui-rm_head_2.10.yaml)|
 
 ## Weekly CI Runs
 | Rancher v2.9-Head | Rancher v2.8-head |
