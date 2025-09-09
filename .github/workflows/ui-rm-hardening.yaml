@@ -19,7 +19,7 @@ on:
         type: string
         required: true
       upstream_cluster_version:
-        description: Upstream cluster version where to install Rancher
+        description: Cluster version where to install Rancher (here for Downstream clusters)
         default: 'v1.32.4+k3s1'
         type: string
         required: true
@@ -28,6 +28,11 @@ on:
         required: false
         type: boolean
         default: true
+      hardening_cluster_version:
+        description: Upstream cluster version for HARDENING where to install Rancher
+        default: 'v1.32.8+rke2r1'
+        type: string
+        required: true
       grep_test_by_tag:
         description: Grep tags. For hardened tests, use @hardening-tests Keep always @login
         required: false
