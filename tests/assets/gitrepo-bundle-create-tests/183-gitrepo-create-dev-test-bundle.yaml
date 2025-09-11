@@ -1,0 +1,19 @@
+apiVersion: fleet.cattle.io/v1alpha1
+kind: GitRepo
+metadata:
+  name: test-bundle-dev-test
+  namespace: fleet-default
+spec:
+  branch: master
+  bundles:
+    - base: driven/helm
+    - base: driven/simple
+    - base: driven/kustomize
+      options: dev.yaml
+    - base: driven/kustomize
+      options: test.yaml
+  paths:
+    - driven
+  repo: https://github.com/rancher/fleet-test-data
+  targets:
+    - clusterSelector: {}
