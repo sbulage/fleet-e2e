@@ -637,7 +637,7 @@ Cypress.Commands.add('upgradeFleet', () => {
 
 // Add label to the imported cluster(s)
 Cypress.Commands.add('assignClusterLabel', (clusterName, key, value) => {
-  
+  cy.clickNavMenu(['Clusters']);
   cy.filterInSearchBox(clusterName);
   cy.open3dotsMenu(clusterName, 'Edit Config');
   cy.clickButton('Add Label');
@@ -648,12 +648,30 @@ Cypress.Commands.add('assignClusterLabel', (clusterName, key, value) => {
   cy.contains('Save').should('not.exist');
   // Navigate back to all clusters page.
   cy.clickNavMenu(['Clusters']);
+
+  // Below block will ensure cluster Label is added if not added,
+  // it will re-add it.
+  cy.contains('.title', 'Clusters').should('be.visible');
+  cy.filterInSearchBox(clusterName);
+  cy.get('td.col-link-detail > span').contains(clusterName).click();
+  if (supported_versions_212_and_above.some(r => r.test(rancherVersion))) {
+    cy.get('div.labels > .key-value > .heading > span.count').then($spanLabelCount => {
+      const labelCount = parseInt($spanLabelCount.text().trim());
+      if (labelCount === 2) {
+        cy.log("Cluster Label is Added successfully.")
+      } 
+      else {
+        cy.assignClusterLabel(clusterName, key, value)
+      }
+    })
+  }
+  cy.clickNavMenu(['Clusters']);
 })
 
 // Create clusterGroup based on label assigned to the cluster
 Cypress.Commands.add('createClusterGroup', (clusterGroupName, key, value, bannerMessageToAssert, assignClusterGroupLabel=false, clusterGroupLabelKey, clusterGroupLabelValue) => {
   cy.fleetNamespaceToggle('fleet-default');
-
+  cy.wait(1000);
   cy.clickButton('Create');
   cy.get('input[placeholder="A unique name"]').type(clusterGroupName);
   cy.clickButton('Add Rule');
@@ -700,8 +718,6 @@ Cypress.Commands.add('deleteClusterGroups', () => {
 
 // Remove added labels from the cluster(s)
 Cypress.Commands.add('removeClusterLabels', (clusterName, key, value) => {
-
-  cy.continuousDeliveryMenuSelection();
   cy.clickNavMenu(['Clusters']);
   cy.contains('.title', 'Clusters').should('be.visible');
   cy.filterInSearchBox(clusterName);

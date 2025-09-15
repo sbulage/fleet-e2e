@@ -127,6 +127,7 @@ describe('Test GitRepo Bundle name validation and max character trimming behavio
       beforeEach('Cleanup leftover GitRepo, ClusterGroup or label etc. if any.', () => {
         cy.login();
         cy.visit('/');
+        cy.deleteAllFleetRepos();
         // Remove labels from the clusters.
         dsAllClusterList.forEach(
           (dsCluster) => {
@@ -136,7 +137,6 @@ describe('Test GitRepo Bundle name validation and max character trimming behavio
           }
         )
         cy.deleteClusterGroups();
-        cy.deleteAllFleetRepos();
       })
 
       const clusterGroup: testData[] = [
@@ -199,6 +199,7 @@ describe('Test GitRepo Bundle name validation and max character trimming behavio
 
                 // Remove label from the third cluster i.e. imported-2
                 cy.wait(500);
+                cy.accesMenuSelection('Continuous Delivery', 'Clusters');
                 cy.removeClusterLabels(dsThirdClusterName, key, value);
               }
 
@@ -257,6 +258,7 @@ describe('Test GitRepo Bundle name validation and max character trimming behavio
           })
 
           // Remove labels from the clusters i.e. imported-0 and imported-1
+          cy.accesMenuSelection('Continuous Delivery', 'Clusters');
           dsFirstTwoClusterList.forEach(
             (dsCluster) => {
               // Adding wait to load page correctly to avoid interference with hamburger-menu.
@@ -313,6 +315,7 @@ describe('Test GitRepo Bundle name validation and max character trimming behavio
           // Check application is available on first cluster i.e. imported-0
 
           // Remove labels from the clusters.
+          cy.accesMenuSelection('Continuous Delivery', 'Clusters');
           dsFirstTwoClusterList.forEach(
             (dsCluster) => {
               // Adding wait to load page correctly to avoid interference with hamburger-menu.
@@ -426,6 +429,7 @@ describe("Test Application deployment based on 'clusterSelector'", { tags: '@p1_
   beforeEach('Cleanup leftover GitRepo if any.', () => {
     cy.login();
     cy.visit('/');
+    cy.deleteAllFleetRepos();
     // Remove labels from the clusters.
     dsAllClusterList.forEach(
       (dsCluster) => {
@@ -434,9 +438,6 @@ describe("Test Application deployment based on 'clusterSelector'", { tags: '@p1_
         cy.removeClusterLabels(dsCluster, key, value);
       }
     )
-    
-
-    cy.deleteAllFleetRepos();
   })
 
   const clusterSelector: testData[] = [
@@ -467,7 +468,6 @@ describe("Test Application deployment based on 'clusterSelector'", { tags: '@p1_
         cy.continuousDeliveryMenuSelection();
         cy.clickNavMenu(['Clusters']);
         cy.contains('.title', 'Clusters').should('be.visible');
-  
         // Assign label to the clusters 
         dsFirstTwoClusterList.forEach(
           (dsCluster) => {
@@ -491,9 +491,11 @@ describe("Test Application deployment based on 'clusterSelector'", { tags: '@p1_
           cy.clickNavMenu(['Resources']);
         }
         cy.clickNavMenu(['Git Repos']);
-        cy.wait(500);
+        cy.wait(1000);
 
         cy.clickButton('Add Repository');
+        // Cypress too fast to click on button.
+        cy.wait(1000);
         cy.clickButton('Edit as YAML');
         cy.addYamlFile(gitRepoFile);
         cy.clickButton('Create');
@@ -520,6 +522,7 @@ describe("Test Application deployment based on 'clusterSelector'", { tags: '@p1_
 
           // Remove label from the third cluster.
           cy.wait(500);
+          cy.accesMenuSelection('Continuous Delivery', 'Clusters');
           cy.removeClusterLabels(dsThirdClusterName, key, value);
         }
 
@@ -539,6 +542,8 @@ describe("Test Application deployment based on 'clusterSelector'", { tags: '@p1_
         }
 
         // Remove labels from the clusters.
+        cy.wait(5000);
+        cy.accesMenuSelection('Continuous Delivery', 'Clusters');
         dsFirstTwoClusterList.forEach(
           (dsCluster) => {
             // Adding wait to load page correctly to avoid interference with hamburger-menu.
@@ -570,8 +575,9 @@ describe("Test Application deployment based on 'clusterSelector'", { tags: '@p1_
         cy.clickNavMenu(['Resources']);
       }
       cy.clickNavMenu(['Git Repos']);
-      cy.wait(500);
+      cy.wait(1000);
       cy.clickButton('Add Repository');
+      cy.wait(1000);
       cy.clickButton('Edit as YAML');
       cy.addYamlFile(gitRepoFile);
       cy.clickButton('Create');
@@ -584,6 +590,7 @@ describe("Test Application deployment based on 'clusterSelector'", { tags: '@p1_
 
       // Remove label from the Second cluster i.e. imported-1
       cy.wait(500);
+      cy.accesMenuSelection('Continuous Delivery', 'Clusters');
       cy.removeClusterLabels(dsSecondClusterName, key, value);
 
       // Check application is absent i.e. removed from second cluster i.e. imported-1
@@ -593,6 +600,7 @@ describe("Test Application deployment based on 'clusterSelector'", { tags: '@p1_
       cy.checkApplicationStatus(appName, dsFirstClusterName, 'All Namespaces');
 
       // Remove labels from the clusters.
+      cy.accesMenuSelection('Continuous Delivery', 'Clusters');
       dsFirstTwoClusterList.forEach(
         (dsCluster) => {
           // Adding wait to load page correctly to avoid interference with hamburger-menu.
@@ -629,8 +637,9 @@ describe("Test Application deployment based on 'clusterSelector'", { tags: '@p1_
           cy.clickNavMenu(['Resources']);
         }
         cy.clickNavMenu(['Git Repos']);
-        cy.wait(500);
+        cy.wait(1000);
         cy.clickButton('Add Repository');
+        cy.wait(1000);
         cy.clickButton('Edit as YAML');
         cy.addYamlFile(gitRepoFile);
         cy.clickButton('Create');
@@ -677,6 +686,7 @@ describe("Test Application deployment based on 'clusterSelector'", { tags: '@p1_
         )
 
         // Remove labels from the clusters i.e. imported-0 and imported-1
+        cy.accesMenuSelection('Continuous Delivery', 'Clusters');
         dsFirstTwoClusterList.forEach(
           (dsCluster) => {
             // Adding wait to load page correctly to avoid interference with hamburger-menu.
@@ -700,6 +710,7 @@ describe("Test Application deployment based on 'clusterGroupSelector'", { tags: 
   beforeEach('Cleanup leftover GitRepo if any.', () => {
     cy.login();
     cy.visit('/');
+    cy.deleteAllFleetRepos();
     // Remove labels from the clusters.
     dsAllClusterList.forEach(
       (dsCluster) => {
@@ -710,7 +721,6 @@ describe("Test Application deployment based on 'clusterGroupSelector'", { tags: 
     )
 
     cy.deleteClusterGroups();
-    cy.deleteAllFleetRepos();
   })
 
   const clusterSelector: testData[] = [
@@ -748,6 +758,9 @@ describe("Test Application deployment based on 'clusterGroupSelector'", { tags: 
           }
         )
 
+        // Adding explicit wait here till the labels are reflected on Clusters.
+        cy.wait(5000);
+
         // Create group of cluster consists of same label.
         cy.clickNavMenu(['Cluster Groups']);
         cy.contains('.title', 'Cluster Groups').should('be.visible');
@@ -769,9 +782,10 @@ describe("Test Application deployment based on 'clusterGroupSelector'", { tags: 
           cy.clickNavMenu(['Resources']);
         }
         cy.clickNavMenu(['Git Repos']);
-        cy.wait(500);
+        cy.wait(1000);
 
         cy.clickButton('Add Repository');
+        cy.wait(1000);
         cy.clickButton('Edit as YAML');
         cy.addYamlFile(clusterGroupSelectorFile);
         cy.clickButton('Create');
@@ -803,6 +817,7 @@ describe("Test Application deployment based on 'clusterGroupSelector'", { tags: 
 
           // Remove label from the third cluster.
           cy.wait(500);
+          cy.accesMenuSelection('Continuous Delivery', 'Clusters');
           cy.removeClusterLabels(dsThirdClusterName, key, value);
         }
 
@@ -822,6 +837,7 @@ describe("Test Application deployment based on 'clusterGroupSelector'", { tags: 
         }
 
         // Remove labels from the clusters.
+        cy.accesMenuSelection('Continuous Delivery', 'Clusters');
         dsFirstTwoClusterList.forEach(
           (dsCluster) => {
             // Adding wait to load page correctly to avoid interference with hamburger-menu.
