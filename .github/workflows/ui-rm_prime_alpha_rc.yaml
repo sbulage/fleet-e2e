@@ -8,7 +8,6 @@ on:
       branch:
         description: 'Branch to run the workflow on (Update when using 2.10 or less)'
         required: false
-        default: '2.10-stable'
       qase_run_id:
         description: Qase run ID where the results will be reported. (Please update with custom run ID.)
         default: none
