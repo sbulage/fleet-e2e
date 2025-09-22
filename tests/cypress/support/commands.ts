@@ -393,7 +393,7 @@ Cypress.Commands.add('deleteAll', (fleetCheck=true) => {
       if (fleetCheck === true) {
         cy.contains(new RegExp(NoAppBundleOrGitRepoPresentMessages.join('|')), { timeout: 20000 }).should('be.visible')
       } else {
-        cy.get('td > span, td.text-center > span').invoke('text').should('be.oneOf', noRowsMessages)
+        cy.get('td > span, td.text-center > span', { timeout: 25000 }).invoke('text').should('be.oneOf', noRowsMessages)
       }
     };
   });
@@ -1145,3 +1145,67 @@ Cypress.Commands.add('checkAccessToCreateGitRepoPage', () => {
     cy.get('.btn.role-primary').contains('Add Repository').should('not.exist');
   }
 });
+
+// Command to create cloud credential
+Cypress.Commands.add('createCloudCredential', (cloudProvider='Amazon', credentialName, accessKey, secretKey, region='eu-central-1') => {
+  // Create cloud credential
+  cy.accesMenuSelection('Cluster Management', 'Cloud Credentials');
+  cy.wait(1000); // Wait to avoid overlaying issue
+  cy.clickButton('Create');
+  cy.contains('Cloud Credential: Create Amazon').should('be.visible');
+  cy.contains(cloudProvider).should('exist').click();
+  cy.byLabel('Credential Name').type(credentialName);
+  cy.byLabel('Access Key').type(accessKey);
+  cy.byLabel('Secret Key').type(secretKey);
+  cy.contains('Default Region').should('be.visible').click().then(() => {
+    cy.contains(region).should('exist').click();
+  });
+  cy.clickButton('Create');
+  cy.wait(1000);
+
+  // Verify cloud credential is created
+  cy.verifyTableRow(0, credentialName, accessKey);
+});
+
+// Command to create a cloud cluster via Rancher UI
+Cypress.Commands.add('createCloudCluster', (cloudInstanceType, clusterName, subnetId ) => {
+
+  // Note: Currently, the command assumes cloud credential is already created and there is one available. Implement logic to choose different one if multiple present..
+
+  cy.accesMenuSelection('Cluster Management', 'Clusters');
+  cy.clickButton('Create');
+  cy.wait(1000); // Wait to avoid overlaying issue
+  cy.contains('Loading...', { timeout: 20000 }).should('not.exist');
+  cy.contains('Cluster: Create').should('be.visible');
+  cy.contains(cloudInstanceType).should('be.visible').click();
+  cy.byLabel('Cluster Name').type(clusterName);
+  cy.contains('VPC/Subnet').should('be.visible').click().then(() => {
+    cy.contains(subnetId).should('be.visible').click();
+  });
+
+  cy.clickButton('Create');
+  cy.wait(2000);
+
+  // Verify cluster is created
+  cy.contains('Clusters').should('be.visible');
+  cy.get('td.col-cluster-link').contains(clusterName, { timeout: 60000 }).should('be.visible');
+  cy.log('Cluster created');
+
+  // Wait until cluster is active
+  cy.contains('tr', clusterName).within(() => {
+    cy.get('td').eq(1).then(($status) => {
+      if ($status.text() !== 'Active') {
+        cy.wrap($status, { timeout: 600000 }).should('contain.text', 'Active'); // Wait up to 10 minutes for the cluster to become Active
+      }
+    });
+  });
+});
+
+Cypress.Commands.add('deleteDownstreamCluster', (clusterName, deleteOption=false) => {
+    
+  cy.accesMenuSelection('Cluster Management', 'Clusters');
+  cy.filterInSearchBox(clusterName);
+  cy.deleteAll(deleteOption);
+
+  }
+);

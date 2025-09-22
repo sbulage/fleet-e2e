@@ -53,6 +53,13 @@ on:
       qase_api_token:
         description: Qase API token to use for Qase reporting
         required: true
+      aws_access_key_id:
+        description: AWS Access Key ID to use to create EC2 instances
+        required: false
+      aws_secret_access_key:
+        description: AWS Secret Access Key to use to create EC2 instances
+        required: false 
+
     inputs:
       branch:
         description: Specify branch name to run workflow on
@@ -83,7 +90,7 @@ on:
         description: Grep tags. For multiple selection separate with spaces
         required: false
         type: string
-        default: '@login @p0 @p1 @p1_2 @rbac'
+        default: '@login @p0 @p1 @p1_2 @rbac @special_tests'
       hardening:
         description: Select if desired hardened cluster (if 'true' use only @login @hardening-tests)
         required: false
@@ -328,6 +335,8 @@ jobs:
           AZURE_PRIVATE_PWD: ${{ secrets.azure_private_pwd }}
           RSA_PRIVATE_KEY_QA: ${{ secrets.rsa_private_key_qa }}
           RSA_PUBLIC_KEY_QA: ${{ secrets.rsa_public_key_qa }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.aws_access_key_id }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.aws_secret_access_key }}
           GREPTAGS: ${{ inputs.grep_test_by_tag }}
           UPGRADE: 'false'
           # Add cypress/e2e/unit_tests/user.spec.ts again when implementing RBAC tests.
@@ -339,6 +348,7 @@ jobs:
             cypress/e2e/unit_tests/rbac_fleet.spec.ts
             cypress/e2e/unit_tests/upgrade_fleet.spec.ts
             cypress/e2e/unit_tests/hardened_fleet.spec.ts
+            cypress/e2e/unit_tests/special_fleet_tests.spec.ts
         run: |
           if ${{ inputs.qase_run_id == 'none' }}; then
             # Unset default QASE_* variables when reporting is disabled
@@ -423,6 +433,8 @@ jobs:
           AZURE_PRIVATE_PWD: ${{ secrets.azure_private_pwd }}
           RSA_PRIVATE_KEY_QA: ${{ secrets.rsa_private_key_qa }}
           RSA_PUBLIC_KEY_QA: ${{ secrets.rsa_public_key_qa }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.aws_access_key_id }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.aws_secret_access_key }}
           GREPTAGS: ${{ inputs.grep_test_by_tag }}
           UPGRADE: ${{ inputs.upgrade }}
           FLEET_APP_VERSION: ${{ steps.component.outputs.fleet_app_version }}

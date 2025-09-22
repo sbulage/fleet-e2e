@@ -764,3 +764,4 @@ if (!/\/2\.8/.test(Cypress.env('rancher_version'))) {
     )
   })
 };
+

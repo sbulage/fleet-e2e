@@ -73,6 +73,9 @@ declare global {
       continuousDeliveryBundlesMenu(): Chainable<Element>;
       checkAccessToCreateGitRepoPage(): Chainable<Element>;
       clickCreateGitRepo(local?: boolean): Chainable<Element>;
+      createCloudCredential(cloudProvider: string, credentialName: string, accessKey: string, secretKey: string, region?: string): Chainable<Element>;
+      createCloudCluster(cloudInstanceType: string, clusterName: string, subnetId: string): Chainable<Element>;
+      deleteDownstreamCluster(clusterName: string, deleteOption?: boolean): Chainable<Element>;
     }
   }
 }

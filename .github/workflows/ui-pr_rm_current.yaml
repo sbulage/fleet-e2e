@@ -30,6 +30,8 @@ jobs:
       rsa_private_key_qa: ${{ secrets.RSA_PRIVATE_KEY_QA }}
       rsa_public_key_qa: ${{ secrets.RSA_PUBLIC_KEY_QA }}
       qase_api_token: ${{ secrets.QASE_API_TOKEN }}
+      aws_access_key_id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
     with:
       test_description: "CI test for PR#${{ github.event.pull_request.number }} with K3s"
       cluster_name: cluster-k3s
@@ -39,4 +41,4 @@ jobs:
       rancher_version: 'head/2.11'
       # If qase_run_id is none the run is getting deleted in QASE
       qase_run_id: 'none'
-      grep_test_by_tag: '@login @p0 @p1 @p1_2 @rbac'
+      grep_test_by_tag: '@login @p0 @p1 @p1_2 @rbac @special_tests'
