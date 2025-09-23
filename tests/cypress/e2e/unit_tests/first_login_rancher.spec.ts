@@ -52,11 +52,12 @@ describe('First login on Rancher', { tags: '@login' }, () => {
 
 // Upgrade Fleet from chart to latest when this is not the default one.
 describe('Upgrade Fleet via UI', { tags: '@upgrade-fleet-chart' }, () => {
-        
-  it('Upgrade Fleet chart to latest', () => {
+  qase(189,
+    it('Upgrade Fleet chart to latest', () => {
       cy.login();
       cy.visit('/');
       cy.allowRancherPreReleaseVersions();
       cy.upgradeFleet();
-  });
+    })
+  );
 })
