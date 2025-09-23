@@ -1191,3 +1191,27 @@ describe('Create specified bundles from GitRepo', { tags: '@p1_2' }, () => {
     });
   }
 });
+
+describe('Test Fleet bundle status for longhorn-crd', { tags: '@p1_2'}, () => {
+
+  qase(139,
+
+    it("Fleet-139: Test CRD's for longhorn application should be in active state not in modified state when correctDrift enabled", { tags: '@fleet-139' }, () => {
+
+      const repoName = 'default-longhorn-crd-bundle-status'
+      const path = "qa-test-apps/longhorn-crd"
+
+      cy.addFleetGitRepo({ repoName, repoUrl, branch, path, correctDrift: 'yes' });
+      cy.clickButton('Create');
+      cy.checkGitRepoStatus(repoName, '1 / 1', '66 / 66');
+
+      // Check bundle status of longhorn-crd
+      cy.continuousDeliveryBundlesMenu();
+      cy.filterInSearchBox(repoName);
+      cy.verifyTableRow(0, 'Active', repoName);
+
+      cy.deleteAllFleetRepos();
+
+    })
+  )
+});
