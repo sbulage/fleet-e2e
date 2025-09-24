@@ -23,10 +23,10 @@
   "dependencies": {
     "@rancher-ecp-qa/cypress-library": "1.2.3",
     "cy-verify-downloads": "^0.1.17",
-    "cypress": "^13.16.0",
+    "cypress": "^15.2.0",
     "cypress-dark": "^1.8.3",
     "cypress-file-upload": "^5.0.8",
-    "cypress-mochawesome-reporter": "^3.8.2",
+    "cypress-mochawesome-reporter": "^4.0.2",
     "cypress-multi-reporters": "^1.6.4",
     "cypress-plugin-tab": "^1.0.5",
     "cypress-qase-reporter": "1.4.1",
