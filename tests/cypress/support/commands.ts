@@ -440,8 +440,9 @@ Cypress.Commands.add('checkGitRepoStatus', (repoName, bundles, resources, timeou
 });
 
 // Check deployed application status (present or not)
-Cypress.Commands.add('checkApplicationStatus', (appName, clusterName='local', appNamespace='Only User Namespaces', present=true) => {
-  cy.accesMenuSelection(clusterName, 'Workloads', 'Pods');
+Cypress.Commands.add('checkApplicationStatus', (appName, clusterName='local', appNamespace='Only User Namespaces', present=true, firstNav='Workloads', resourceToCheck='Pods') => {
+
+  cy.accesMenuSelection(clusterName, firstNav, resourceToCheck);
   cy.nameSpaceMenuToggle(appNamespace);
   cy.filterInSearchBox(appName);
   if (present === true) {
