@@ -1405,3 +1405,64 @@ describe('Test GitRepoRestrictions scenarios for GitRepo application deployment.
     })
   )
 });
+
+describe('Test Fleet `doNotDeploy: true` skips deploying resources to clusters.', { tags: '@p1_2'}, () => {
+
+  const key = "key_resources"
+  const value = "deploy_true"
+
+  beforeEach('Cleanup leftover Cluster labels if any.', () => {
+    cy.login();
+    cy.visit('/');
+    // Remove labels from the clusters.
+    cy.accesMenuSelection('Continuous Delivery', 'Clusters');
+    dsAllClusterList.forEach(
+      (dsCluster) => {
+        // Adding wait to load page correctly to avoid interference with hamburger-menu.
+        cy.wait(500);
+        cy.removeClusterLabels(dsCluster, key, value);
+      }
+    )
+  })
+
+  qase(88,
+
+    it("Fleet-88: Test bundle did not get deployed when 'doNotDeploy' value set to `true` option is used in the 'fleet.yaml' file.", { tags: '@fleet-88' }, () => {
+
+      const repoName = 'test-donot-deploy-true'
+      const path = "qa-test-apps/do-not-deploy/true"
+      let gitRepoWord = "git repo"
+
+      if (supported_versions_212_and_above.some(r => r.test(rancherVersion))) {
+        gitRepoWord = "GitRepo"
+      }
+
+      // Assign label (similar to label mentioned in fleet.yaml file.) to All the clusters
+      dsAllClusterList.forEach(
+        (dsCluster) => {
+          cy.assignClusterLabel(dsCluster, key, value);
+        }
+      )
+
+      cy.addFleetGitRepo({ repoName, repoUrl, branch, path });
+      cy.clickButton('Create');
+
+      // Verify GitRepo is not targeting to any clusters as doNotDeploy is set true.
+      cy.verifyTableRow(0, 'Active', repoName);
+      cy.contains(repoName).click()
+      cy.get('.primaryheader > h1, h1 > span.resource-name.masthead-resource-title').contains(repoName).should('be.visible')
+      cy.get("[data-testid='banner-content']").should('exist').contains(`This ${gitRepoWord} is not targeting any clusters`);
+
+      // Verify nginx application not deployed clusters as doNotDeploy is set true.
+      dsAllClusterList.forEach(
+        (dsCluster) => {
+          // 'false' option in below command is used to check the absence of given resource.
+          cy.checkApplicationStatus("nginx-donot-deploy", dsCluster, 'All Namespaces', false);
+        }
+      )
+
+      cy.deleteAllFleetRepos();
+
+    })
+  )
+});
