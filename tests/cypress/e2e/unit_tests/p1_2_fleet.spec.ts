@@ -1064,6 +1064,25 @@ describe('Test move cluster to newly created workspace and deploy application to
   )
 });
 
+
+describe('Test no HTML error messages in HelmOps', { tags: '@p1_2' }, () => {
+
+  qase(190,
+    it('FLEET-190: Test Faulty Helm Ops display short error message', { tags: '@fleet-190' }, () => { 
+
+      cy.addHelmOp({ 
+        fleetNamespace: 'fleet-local', 
+        repoName: 'faulty-helm-ops',
+        repoUrl: 'https://github.com/rancher',
+        chart: 'fleet-examples/tree/master/single-cluster/helm',
+      });
+
+      cy.contains('Could not get a chart version: failed to read helm repo from https://github.com/rancher/index.yaml, error code: 404').should('be.visible');      
+
+    })
+  );
+});
+
 describe('Test Helm app with Custom Values', { tags: '@p1_2' }, () => {
   const configMapName = "test-map"
   const repoTestData: testData[] = [

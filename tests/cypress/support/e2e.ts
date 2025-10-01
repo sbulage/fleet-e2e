@@ -76,6 +76,7 @@ declare global {
       createCloudCredential(cloudProvider: string, credentialName: string, accessKey: string, secretKey: string, region?: string): Chainable<Element>;
       createCloudCluster(cloudInstanceType: string, clusterName: string, subnetId: string): Chainable<Element>;
       deleteDownstreamCluster(clusterName: string, deleteOption?: boolean): Chainable<Element>;
+      addHelmOp(fleetNamespace: string?, repoName: string, repoUrl: string, chart: string, version?: string, values?: string, deployTo?: string, serviceAccountName?: string, targetNamespace?: string, helmAuth?: string): Chainable<Element>;
     }
   }
 }
