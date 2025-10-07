@@ -78,6 +78,22 @@ describe('Test Fleet deployment on PRIVATE repos with HTTP auth', { tags: '@p0' 
       })
     );
   });
+
+  if (!/\/2\.11/.test(Cypress.env('rancher_version'))) {
+  qase(191, 
+    it('FLEET-191: Test Fleet can be deployed in private Github repo using solely private token', {tags : `@fleet-191` }, () => {
+
+      const repoName = '191-test-private-gh-only-token'  
+      const repoUrl = 'https://github.com/fleetqa/fleet-qa-examples.git'
+      const pwdOrPrivateKey = Cypress.env('gh_private_pwd')
+  
+        cy.addFleetGitRepo({ repoName, repoUrl, branch, path, gitAuthType, pwdOrPrivateKey, local:true });
+        cy.clickButton('Create');
+        cy.checkGitRepoStatus(repoName, '1 / 1');
+        cy.deleteAllFleetRepos();
+    })
+  )}
+
 });
 
 describe('Test Fleet deployment on PRIVATE repos with SSH auth', { tags: '@p0' }, () => {

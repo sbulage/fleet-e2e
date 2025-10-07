@@ -46,7 +46,9 @@ Cypress.Commands.add('gitRepoAuth', (gitOrHelmAuth='Git', gitAuthType, userOrPub
   }
 
   if (gitAuthType === 'http') {
-    cy.typeValue('Username', userOrPublicKey, false,  false );
+    if (userOrPublicKey) {
+      cy.typeValue('Username', userOrPublicKey, false,  false );
+    }
     cy.typeValue('Password', pwdOrPrivateKey, false,  false );
   }
   
