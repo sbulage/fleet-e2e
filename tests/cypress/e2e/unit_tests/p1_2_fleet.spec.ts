@@ -1467,3 +1467,30 @@ describe('Test Fleet `doNotDeploy: true` skips deploying resources to clusters.'
     })
   )
 });
+
+describe('Test Fleet `doNotDeploy: false` will deploy resources to all clusters.', { tags: '@p1_2'}, () => {
+
+  qase(89,
+
+    it("Fleet-89: Test bundle gets deploy to all clusters when `doNotDeploy: false` is used in the fleet.yaml.", { tags: '@fleet-89' }, () => {
+
+      const repoName = 'test-donot-deploy-false'
+      const path = "qa-test-apps/do-not-deploy/false"
+
+      cy.addFleetGitRepo({ repoName, repoUrl, branch, path });
+      cy.clickButton('Create');
+      cy.verifyTableRow(0, 'Active', repoName);
+      cy.checkGitRepoStatus(repoName, '1 / 1', '3 / 3');
+
+      // Verify nginx application is deployed on all clusters as doNotDeploy is set false.
+      dsAllClusterList.forEach(
+        (dsCluster) => {
+          cy.checkApplicationStatus("nginx-donot-deploy", dsCluster, 'All Namespaces');
+        }
+      )
+
+      cy.deleteAllFleetRepos();
+
+    })
+  )
+});
