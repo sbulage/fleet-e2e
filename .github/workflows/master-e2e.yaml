@@ -321,7 +321,7 @@ jobs:
       - name: Cypress tests - Basics
         env:
           BROWSER: chrome
-          CYPRESS_DOCKER: 'cypress/included:15.2.0'
+          CYPRESS_DOCKER: 'cypress/included:15.5.0'
           RANCHER_URL: https://${{ needs.create-runner.outputs.public_dns }}/dashboard
           RANCHER_USER: admin
           RANCHER_PASSWORD: ${{ secrets.rancher_password }}
@@ -419,7 +419,7 @@ jobs:
         if: ${{ inputs.rancher_upgrade != '' }}
         env:
           BROWSER: chrome
-          CYPRESS_DOCKER: 'cypress/included:15.2.0'
+          CYPRESS_DOCKER: 'cypress/included:15.5.0'
           RANCHER_URL: https://${{ needs.create-runner.outputs.public_dns }}/dashboard
           RANCHER_USER: admin
           RANCHER_PASSWORD: ${{ secrets.rancher_password }}
