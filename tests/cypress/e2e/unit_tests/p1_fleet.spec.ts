@@ -563,3 +563,29 @@ if (!/\/2\.7/.test(Cypress.env('rancher_version')) && !/\/2\.8/.test(Cypress.env
     );
   });
 }
+
+describe('Test GitRepo Bundle do not show hash mismatch error.', { tags: '@p1'}, () => {
+
+  qase(195,
+    it("Fleet-195: Test GitRepo bundle hash is not mismatch.", { tags: '@fleet-195' }, () => {
+
+      const repoName = "test-bundle-hash-mistmatch"
+      const path = "qa-test-apps/bundle-hash-test"
+
+      cy.addFleetGitRepo({ repoName, repoUrl, branch, path });
+      cy.clickButton('Create');
+      cy.verifyTableRow(0, 'Active', repoName);
+      cy.checkGitRepoStatus(repoName, '1 / 1', '3 / 3');
+
+      // Bundle hash mismatch error will occurs when bundle reconciler, 
+      // reconciles bundle which has long description in Chart.yaml and/or
+      // resource contains escape chars in there specs.
+      // See fixed issue: https://github.com/rancher/fleet/issues/3807#issuecomment-3376900740
+      // Verify that bundle is showing Active state and not showing hash mismatch error.
+      cy.continuousDeliveryBundlesMenu();
+      cy.filterInSearchBox(repoName);
+      cy.verifyTableRow(0, 'Active', repoName);
+
+    })
+  )
+});
