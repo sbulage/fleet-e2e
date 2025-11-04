@@ -320,8 +320,44 @@ Cypress.Commands.add('open3dotsMenu', (name, selection, checkNotInMenu=false) =>
       cy.wait(500);
       cy.get('body', { timeout: 10000 }).then(($body) => {
         if ($body.find('.card-title > h4').text().includes('Force Update')) {
-          cy.get('[data-testid="deactivate-driver-confirm"] > span').should('be.visible').click();
-        }    
+          const buttonSelector = '[data-testid="deactivate-driver-confirm"] > span';
+
+          cy.get(buttonSelector)
+            .should('be.visible')
+            .and('contain.text', 'Update')
+            .click();
+          // Below code repeat the Update process when object is modified.
+          // When there is no object modified state, then it will work as expected.
+          cy.wait(500);
+
+          cy.get('body').then(($body) => {
+            if ($body.find(buttonSelector).length === 0) {
+              cy.log('Button disappeared after click — Success');
+            } else {
+              cy.get(buttonSelector, { timeout: 30000 }).then(($btn) => {
+                const text = $btn.text().trim();
+
+                // Button label changed when object modified,
+                // it shows Update --> Updating... --> Error --> Update
+                if (text === 'Update') {
+                  cy.log('No need to click on Update again');
+                } else {
+                  cy.get(buttonSelector, { timeout: 30000 })
+                    .should(($btn) => {
+                      expect($btn.text().trim()).to.eq('Update');
+                    });
+
+                  cy.get(buttonSelector)
+                    .should('be.visible')
+                    .and('contain.text', 'Update')
+                    .click();
+
+                  cy.log('Second click complete');
+                }
+              });
+            }
+          });
+        }
       })
     };
     // Ensure dropdown is not present

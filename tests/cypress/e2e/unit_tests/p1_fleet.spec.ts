@@ -110,9 +110,11 @@ describe('Test Self-Healing of resource modification when correctDrift option us
 
           if (correctDrift === 'yes') {
             // Resources will be restored, hence count will be 1/1.
+            cy.filterInSearchBox(appName);
             cy.verifyTableRow(0, appName, '1/1');
           } else {
             // Resource count will get increased as resource will not be restored
+            cy.filterInSearchBox(appName);
             cy.verifyTableRow(0, appName, '2/2');
           }
           cy.deleteAllFleetRepos();
@@ -135,6 +137,7 @@ describe('Test Self-Healing of resource modification when correctDrift option us
       cy.modifyDeployedApplication(appName);
 
       // Resource count will get increased as resource will not be restored
+      cy.filterInSearchBox(appName);
       cy.verifyTableRow(0, appName, '2/2');
 
       // Update exising GitRepo by enabling 'correctDrift'
@@ -154,6 +157,7 @@ describe('Test Self-Healing of resource modification when correctDrift option us
       cy.modifyDeployedApplication(appName);
 
       // Resources will be restored, hence count will be 1/1.
+      cy.filterInSearchBox(appName);
       cy.verifyTableRow(0, appName, '1/1');
 
       cy.deleteAllFleetRepos();
