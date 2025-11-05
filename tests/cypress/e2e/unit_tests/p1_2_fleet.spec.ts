@@ -1065,7 +1065,53 @@ describe('Test move cluster to newly created workspace and deploy application to
 });
 
 if (!/\/2\.11/.test(Cypress.env('rancher_version'))) {
-  describe('Test no HTML error messages in HelmOps', { tags: '@p1_2' }, () => {
+  describe('Test HelmOps', { tags: '@p1_2' }, () => {
+
+    qase(165, 
+      it('FLEET-165: Test basic HelmOps creation', { tags: '@fleet-165' }, () => {
+
+        cy.addHelmOp({ 
+          fleetNamespace: 'fleet-local', 
+          repoName: 'helmapp-grafana',
+          repoUrl: 'https://grafana.github.io/helm-charts',
+          chart: 'grafana',
+        });
+
+        cy.verifyTableRow(0, 'Active', '1/1');
+      })
+    );
+
+    qase(197,
+      it('FLEET-197: Test Helmops creation with a fixed version', { tags: '@fleet-197' }, () => {
+
+        cy.addHelmOp({ 
+          fleetNamespace: 'fleet-default', 
+          repoName: 'helmapp-grafana-fixed-version',
+          repoUrl: 'https://grafana.github.io/helm-charts',
+          chart: 'grafana',
+          version: '10.1.0',
+          deployTo: 'All Clusters'
+        });
+
+        cy.verifyTableRow(0, 'Active', '10.1.0');
+      })
+    );
+        
+    qase(198,
+      it('FLEET-198: Test incorrect chart version cannot be installed', { tags: '@fleet-198' }, () => {
+
+        cy.addHelmOp({ 
+          fleetNamespace: 'fleet-local', 
+          repoName: 'helmapp-grafana-bad-version',
+          repoUrl: 'https://grafana.github.io/helm-charts',
+          chart: 'grafana',
+          version: '999999999'
+        });
+
+        cy.verifyTableRow(0, 'Error', '0/0');
+        cy.contains('Could not get a chart version: no chart version found for grafana-999999999').should('be.visible');
+      })
+    );
 
     qase(190,
       it('FLEET-190: Test Faulty Helm Ops display short error message', { tags: '@fleet-190' }, () => { 
@@ -1078,6 +1124,7 @@ if (!/\/2\.11/.test(Cypress.env('rancher_version'))) {
         });
 
         cy.contains('Could not get a chart version: failed to read helm repo from https://github.com/rancher/index.yaml, error code: 404').should('be.visible');      
+        cy.contains('DOCTYPE html').should('not.exist');
 
       })
     );

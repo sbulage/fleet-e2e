@@ -215,7 +215,6 @@ Cypress.Commands.add('addHelmOp', ({ fleetNamespace='fleet-local', repoName, rep
   cy.accesMenuSelection('Continuous Delivery', 'Resources', 'Helm Ops');
   cy.fleetNamespaceToggle(fleetNamespace);
   cy.clickButton('Create Helm Op');
-
     
   cy.typeValue('Name', repoName);
   cy.clickButton('Next');
@@ -231,14 +230,19 @@ Cypress.Commands.add('addHelmOp', ({ fleetNamespace='fleet-local', repoName, rep
     cy.typeIntoCanvasTermnal(values);
     cy.clickButton('Next');
   }
-  
+
   // TODO: add logic if we want to select specific cluster.
   if (deployTo) {
-    cy.contains(deployTo).should('be.visible').click();
-    cy.typeValue('Service Account Name', serviceAccountName);
-    cy.typeValue('Target Namespace', targetNamespace);
-    // Here we do not add click Next as is present in the follosing step
-  }
+    cy.contains('Target details').should('be.visible').click();
+    if (deployTo === 'Manually selected clusters') {
+      cy.typeValue('Service Account Name', serviceAccountName);
+      cy.typeValue('Target Namespace', targetNamespace);
+      }
+    else {
+      cy.get('div[data-testid="fleet-target-cluster-radio-button"]').contains(deployTo).should('be.visible').click();
+      }
+      // Here we do not add click Next as is present in the following step
+    }
 
   cy.get('span.controls').contains('Advanced').should('be.visible').click();
 
