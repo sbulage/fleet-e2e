@@ -59,6 +59,15 @@ on:
       aws_secret_access_key:
         description: AWS Secret Access Key to use to create EC2 instances
         required: false 
+      github_app_id:
+        description: GitHub App ID for github app connection
+        required: false
+      github_app_installation_id:
+        description: GitHub App Installation ID for github app connection
+        required: false
+      github_app_private_key:
+        description: GitHub App Private Key for github app connection
+        required: false
 
     inputs:
       branch:
@@ -337,6 +346,9 @@ jobs:
           RSA_PUBLIC_KEY_QA: ${{ secrets.rsa_public_key_qa }}
           AWS_ACCESS_KEY_ID: ${{ secrets.aws_access_key_id }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.aws_secret_access_key }}
+          GH_APP_ID: ${{ secrets.github_app_id }}
+          GH_APP_INSTALLATION_ID: ${{ secrets.github_app_installation_id }}
+          GH_APP_PRIVATE_KEY: ${{ secrets.github_app_private_key }}
           GREPTAGS: ${{ inputs.grep_test_by_tag }}
           UPGRADE: 'false'
           # Add cypress/e2e/unit_tests/user.spec.ts again when implementing RBAC tests.
@@ -435,6 +447,9 @@ jobs:
           RSA_PUBLIC_KEY_QA: ${{ secrets.rsa_public_key_qa }}
           AWS_ACCESS_KEY_ID: ${{ secrets.aws_access_key_id }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.aws_secret_access_key }}
+          GH_APP_ID: ${{ secrets.github_app_id }}
+          GH_APP_INSTALLATION_ID: ${{ secrets.github_app_installation_id }}
+          GH_APP_PRIVATE_KEY: ${{ secrets.github_app_private_key }}
           GREPTAGS: ${{ inputs.grep_test_by_tag }}
           UPGRADE: ${{ inputs.upgrade }}
           FLEET_APP_VERSION: ${{ steps.component.outputs.fleet_app_version }}

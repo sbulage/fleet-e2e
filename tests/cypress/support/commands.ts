@@ -136,6 +136,17 @@ Cypress.Commands.add('continuousDeliveryBundlesMenu', () => {
   });
 });
 
+// Command to add Fleet Repo from YAML file
+Cypress.Commands.add('addFleetRepoFromYaml', (yamlFilePath, fleetNamespace='fleet-local') => {
+  cy.continuousDeliveryMenuSelection();
+  cy.fleetNamespaceToggle(fleetNamespace);
+  cy.clickButton('Create App Bundle');
+  cy.get('[data-testid="subtype-banner-item-fleet.cattle.io.gitrepo"]').should('be.visible').click();
+  cy.clickButton('Edit as YAML');
+  cy.addYamlFile(yamlFilePath);
+  cy.clickButton('Create');
+});
+
 // Command add and edit Fleet Git Repository
 // TODO: Rename this command name to 'addEditFleetGitRepo'
 Cypress.Commands.add('addFleetGitRepo', ({ repoName, repoUrl, branch, path, path2, gitOrHelmAuth, gitAuthType, userOrPublicKey, pwdOrPrivateKey, tlsOption, tlsCertificate, keepResources, correctDrift, fleetNamespace='fleet-local', editConfig=false, helmUrlRegex, deployToTarget, allowedTargetNamespace="", local=false }) => {

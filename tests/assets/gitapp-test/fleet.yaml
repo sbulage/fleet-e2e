@@ -1,0 +1,12 @@
+apiVersion: fleet.cattle.io/v1alpha1
+kind: GitRepo
+metadata:
+  name: gitapp-test
+  namespace: fleet-local
+spec:
+  branch: master
+  clientSecretName: github-app-secret
+  repo: https://github.com/fleetrepoci/test
+  pollingInterval: 1m0s
+
+  

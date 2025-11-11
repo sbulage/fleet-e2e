@@ -32,6 +32,9 @@ jobs:
       qase_api_token: ${{ secrets.QASE_API_TOKEN }}
       aws_access_key_id: ${{ secrets.AWS_ACCESS_KEY_ID }}
       aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      github_app_id: ${{ secrets.GH_APP_ID }}
+      github_app_installation_id: ${{ secrets.GH_APP_INSTALLATION_ID }}
+      github_app_private_key: ${{ secrets.GH_APP_PRIVATE_KEY }}
     with:
       test_description: "CI test for PR#${{ github.event.pull_request.number }} with K3s"
       cluster_name: cluster-k3s

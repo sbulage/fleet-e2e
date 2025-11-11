@@ -1541,3 +1541,45 @@ describe('Test Fleet `doNotDeploy: false` will deploy resources to all clusters.
     })
   )
 });
+
+if (!/\/2\.11/.test(Cypress.env('rancher_version')) && !/\/2\.12/.test(Cypress.env('rancher_version'))) {
+  
+  describe('Test Git App with Fleet', { tags: '@p1_2'}, () => {
+    qase(199,
+      it("Fleet-199: Test Git App deployment using Fleet.", { tags: '@fleet-199' }, () => {
+
+        const github_app_id = Cypress.env("gh_app_id")
+        const github_app_installation_id = Cypress.env("gh_app_installation_id")
+        const github_app_private_key = Cypress.env("gh_app_private_key")
+
+        // Create secret from UI
+        cy.accesMenuSelection('local', 'Storage', 'Secrets');
+        cy.nameSpaceMenuToggle('All Namespaces');
+        cy.clickButton('Create');
+        cy.get('div.title.with-description').contains('Opaque').should('be.visible').click();
+        cy.get('div[data-testid="name-ns-description-namespace"]').should('exist').click();
+  
+        // This is necessary to select 'fleet-local' from the dropdown and not 'cattle-fleet-local-system' option
+        cy.contains("div.vs__option-kind", "fleet-local ").should('exist').click();
+        cy.typeValue('Name', 'github-app-secret');  
+
+        cy.get("section[id='data'] input[placeholder='e.g. foo']").type('github_app_id');
+        cy.get("section[id='data'] textarea[placeholder='e.g. bar']").type(github_app_id);
+        cy.clickButton('Add');
+        
+        cy.get("section[id='data'] input[placeholder='e.g. foo']").eq(1).type('github_app_installation_id');
+        cy.get("section[id='data'] textarea[placeholder='e.g. bar']").eq(1).type(github_app_installation_id);
+        cy.clickButton('Add');
+
+        cy.get("section[id='data'] input[placeholder='e.g. foo']").eq(2).type('github_app_private_key');
+        cy.get("section[id='data'] textarea[placeholder='e.g. bar']").eq(2).type(github_app_private_key, false);
+        cy.wait(2000);
+        cy.clickButton('Create');
+
+        // Create GitRepo and validate active status
+        cy.addFleetRepoFromYaml('assets/gitapp-test/fleet.yaml');
+        cy.verifyTableRow(0, 'Active', '1/1');
+      })
+    )
+  }); 
+};

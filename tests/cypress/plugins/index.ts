@@ -52,6 +52,9 @@ module.exports = (on: Cypress.PluginEvents, config: Cypress.PluginConfigOptions)
   config.env.k8s_version_upgrade_ds_cluster_to = process.env.K8S_VERSION_UPGRADE_DS_CLUSTER_TO
   config.env.aws_access_key_id = process.env.AWS_ACCESS_KEY_ID;
   config.env.aws_secret_access_key = process.env.AWS_SECRET_ACCESS_KEY;
+  config.env.gh_app_id = process.env.GH_APP_ID;
+  config.env.gh_app_installation_id = process.env.GH_APP_INSTALLATION_ID;
+  config.env.gh_app_private_key = process.env.GH_APP_PRIVATE_KEY;
   
   return config;
 };

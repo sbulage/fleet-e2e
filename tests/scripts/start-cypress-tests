@@ -32,6 +32,9 @@ docker run --init -v $PWD:/workdir -w /workdir              \
     -e "K8S_VERSION_UPGRADE_DS_CLUSTER_TO=$K8S_VERSION_UPGRADE_DS_CLUSTER_TO"               \
     -e "AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID"               \
     -e "AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY"       \
+    -e "GH_APP_ID=$GH_APP_ID"                       \
+    -e "GH_APP_INSTALLATION_ID=$GH_APP_INSTALLATION_ID"     \
+    -e "GH_APP_PRIVATE_KEY=$GH_APP_PRIVATE_KEY"     \
     --add-host host.docker.internal:host-gateway            \
     --ipc=host                                              \
     $CYPRESS_DOCKER                                         \
