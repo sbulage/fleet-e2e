@@ -75,6 +75,49 @@ describe('Test Fleet on AWS EC2 imported cluster', { tags: '@cloud_ds' }, () => 
     );
 });
 
+if (!/\/2\.11/.test(Cypress.env('rancher_version')) && !/\/2\.12/.test(Cypress.env('rancher_version'))) {
+
+describe('Agent Scheduling Customization', { tags: '@special_tests' }, () => {
+  qase(200,
+    it('FLEET-200: Test agent scheduling customization for PDB and PriorityClass', { tags: '@fleet-200' }, () => {
+      // Go to the cluster and edit it as YAML
+      cy.accesMenuSelection('Continuous Delivery', 'Clusters ');
+      cy.fleetNamespaceToggle('fleet-local');
+      cy.open3dotsMenu('local', 'Edit Config');
+      cy.clickButton('Edit as YAML');
+
+      // Append the agent scheduling customization
+      cy.get('.CodeMirror').then((codeMirrorElement) => {
+        const cm = (codeMirrorElement[0] as any).CodeMirror;
+        const currentYaml = cm.getValue();
+        const snippet = `\
+  agentSchedulingCustomization:
+    priorityClass:
+      value: 888
+    podDisruptionBudget:
+      minAvailable: "3"`;
+        const newYaml = currentYaml.replace(/(\nspec:)/, `$1\n${snippet}`);
+        cm.setValue(newYaml);
+      });
+      cy.clickButton('Save');
+      
+      // Verify the cluster is still Active
+      cy.accesMenuSelection('Continuous Delivery', 'Clusters ');
+      cy.fleetNamespaceToggle('fleet-local');
+      cy.wait(2000); // Wait to allow time to the status to reach "Wait" before verifying"
+      cy.verifyTableRow(0, 'Active', '1');
+
+      // Verify PriorityClass and PodDisruptionBudget
+      cy.accesMenuSelection('local', 'Policy', 'Pod Disruption Budgets');
+      cy.nameSpaceMenuToggle('All Namespaces');
+      cy.verifyTableRow(0, 'fleet-agent', '3');
+      cy.accesMenuSelection('local', 'More Resources', 'Scheduling');
+      cy.contains('PriorityClasses').click();
+      cy.verifyTableRow(0, 'fleet-agent', '888');
+    }))
+  });
+};
+
 // Note: to be executed after the above test cases
 // to avoid any interference (i.e: if continuous-delivery feature is not correctly enabled.)
 // To be replaced into other spec file when required.
