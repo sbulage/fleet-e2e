@@ -29,7 +29,7 @@ on:
         type: string
         default: '@login @p0 @p1 @p1_2 @rbac @special_tests'
   schedule:
-    - cron: '50 2 * * *'
+    - cron: '0 3 * * 1-5'
 
 jobs:
   ui:

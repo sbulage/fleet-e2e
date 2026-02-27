@@ -6,15 +6,21 @@ Automation Repository for Fleet i.e. Rancher Continuous Delivery.
 # CI status
 
 ## Daily CI runs
-|Lint| Rancher Head | Rancher v2.13-Head | Rancher v2.12-Head | Rancher v2.11-Head | Rancher v2.10-Head
-|---|---|---|---|---|---|
-|TBA|[![Rancher-head_CI](https://github.com/rancher/fleet-e2e/actions/workflows/ui-rm_head.yaml/badge.svg?branch=main)](https://github.com/rancher/fleet-e2e/actions/workflows/ui-rm_head.yaml)|[![Rancher-2.13-head_CI](https://github.com/rancher/fleet-e2e/actions/workflows/ui-rm_head_2.13.yaml/badge.svg?branch=main)](https://github.com/rancher/fleet-e2e/actions/workflows/ui-rm_head_2.13.yaml)|[![Rancher-2.12-head_CI](https://github.com/rancher/fleet-e2e/actions/workflows/ui-rm_head_2.12.yaml/badge.svg?branch=main)](https://github.com/rancher/fleet-e2e/actions/workflows/ui-rm_head_2.12.yaml)|[![Rancher-2.11-head_CI](https://github.com/rancher/fleet-e2e/actions/workflows/ui-rm_head_2.11.yaml/badge.svg?branch=main)](https://github.com/rancher/fleet-e2e/actions/workflows/ui-rm_head_2.11.yaml)| [![Rancher-2.10-head_CI](https://github.com/rancher/fleet-e2e/actions/workflows/ui-rm_head_2.10.yaml/badge.svg?branch=main)](https://github.com/rancher/fleet-e2e/actions/workflows/ui-rm_head_2.10.yaml)|
+|Lint| Rancher Head | Rancher v2.13-Head | Rancher v2.12-Head 
+|---|---|---|---|
+|TBA|[![Rancher-head_CI](https://github.com/rancher/fleet-e2e/actions/workflows/ui-rm_head.yaml/badge.svg?branch=main)](https://github.com/rancher/fleet-e2e/actions/workflows/ui-rm_head.yaml)|[![Rancher-2.13-head_CI](https://github.com/rancher/fleet-e2e/actions/workflows/ui-rm_head_2.13.yaml/badge.svg?branch=main)](https://github.com/rancher/fleet-e2e/actions/workflows/ui-rm_head_2.13.yaml)|[![Rancher-2.12-head_CI](https://github.com/rancher/fleet-e2e/actions/workflows/ui-rm_head_2.12.yaml/badge.svg?branch=main)](https://github.com/rancher/fleet-e2e/actions/workflows/ui-rm_head_2.12.yaml)|
 
 ## Weekly CI Runs
-| Rancher v2.9-Head | Rancher v2.8-head |
+| Rancher v2.11-Head | Rancher v2.10-head |
 |---|---|
-| [![Rancher-2.9-head_CI](https://github.com/rancher/fleet-e2e/actions/workflows/ui-rm_head_2.9.yaml/badge.svg?branch=main)](https://github.com/rancher/fleet-e2e/actions/workflows/ui-rm_head_2.9.yaml) |[![Rancher-2.8-head_CI](https://github.com/rancher/fleet-e2e/actions/workflows/ui-rm_head_2.8.yaml/badge.svg?branch=main)](https://github.com/rancher/fleet-e2e/actions/workflows/ui-rm_head_2.8.yaml)|
+| [![Rancher-2.11-head_CI](https://github.com/rancher/fleet-e2e/actions/workflows/ui-rm_head_2.11.yaml/badge.svg?branch=main)](https://github.com/rancher/fleet-e2e/actions/workflows/ui-rm_head_2.11.yaml) |[![Rancher-2.10-head_CI](https://github.com/rancher/fleet-e2e/actions/workflows/ui-rm_head_2.10.yaml/badge.svg?branch=main)](https://github.com/rancher/fleet-e2e/actions/workflows/ui-rm_head_2.10.yaml)|
 
+## EOL CI Runs
+| Rancher Versions | EOL |
+|---|---|
+|v2.9-head | :heavy_check_mark:
+|v2.8-head | :heavy_check_mark:
+|v2.7-head | :heavy_check_mark:
 ---
 
 # What is Fleet?
@@ -33,8 +39,17 @@ Currently, we divide our tests by priority (`p0`, `p1`,...). Aside of this we ha
 - `first_login_rancher.spec.ts` 
 - `p0_fleet.spec.ts`
 - `p1_fleet.spec.ts`
+- `p1_2_fleet.spec.ts`
 - `rbac_fleet.spec.ts`
-- `upgrade_fleet.spec.ts` (This only run in Upgrade Scenario not in Daily run.)
+- `hardened_fleet.spec.`
+  - RKE2 Hardening tests
+- `upgrade_fleet.spec.ts`
+  - This only run in Upgrade Scenario not in Daily run.
+- `special_fleet_tests.spec.ts`
+  - Tests related to AWS Cluster as a Downstream cluster.
+  - Agent Scheduling (PDB & PC)
+  - Cluster move from one workspace to another.
+  - Tests related to Global Settings.
 
 By default, all these spec files will be executed every day in our nightly runs in the different Rancher versions.
 

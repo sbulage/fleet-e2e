@@ -17,20 +17,20 @@ on:
         default: true
         type: boolean
       rancher_version:
-        description: Rancher version channel/version/head_version latest/2.9.x[-rc1], prime/2.9.x, prime/devel/2.9, alpha/2.x.x-alphaX, prime-optimus-alpha/2.x.x-alphaX
+        description: Rancher version channel/version/head_version latest/latest, latest/2.13.x[-rc1], prime/2.13.x, prime/devel/2.13, alpha/2.14.0-alpha1, prime-alpha/2.x.x-alphaX
         default: prime/2.9.1
         type: string
         required: true
       upstream_cluster_version:
-        description: K3s upstream cluster version where to install Rancher (change this to 'v1.30.8+k3s1' when use 2.10 onwards)
-        default: 'v1.29.12+k3s1'
+        description: K3s upstream cluster version where to install Rancher
+        default: 'v1.30.8+k3s1'
         type: string
         required: true
       grep_test_by_tag:
         description: Grep tags. For multiple selection separate with spaces. Keep always @login
         required: false
         type: string
-        default: '@login @p0 @p1 @p1_2 @rbac'
+        default: '@login @p0 @p1 @p1_2 @rbac @special_tests'
 
 jobs:
   ui:

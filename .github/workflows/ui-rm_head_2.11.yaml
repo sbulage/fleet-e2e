@@ -14,7 +14,7 @@ on:
         default: true
         type: boolean
       rancher_version:
-        description: Rancher version channel/version/head_version latest/latest, latest/2.11.x[-rc1], prime/2.11.x, prime/devel/2.11, alpha/2.11.0-alpha1
+        description: Rancher version channel/version/head_version latest/latest, latest/2.11.x[-rc1], prime/2.11.x, prime/devel/2.11, alpha/2.11.0-alpha1, prime-alpha/2.11.x-alphaX
         default: head/2.11
         type: string
         required: true
@@ -29,7 +29,7 @@ on:
         type: string
         default: '@login @p0 @p1 @p1_2 @rbac @special_tests'
   schedule:
-    - cron: '30 4 * * *'
+    - cron: '30 2 * * 6'
 
 jobs:
   ui:
