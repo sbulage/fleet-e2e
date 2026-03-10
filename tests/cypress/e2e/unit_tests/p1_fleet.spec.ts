@@ -200,7 +200,11 @@ describe('Test resource behavior after deleting GitRepo using keepResources opti
     )
   });
 
-  describe('Imagescan tests', { tags: '@p1'}, () => {
+  // Imagescan are disabled by default after: https://github.com/rancher/fleet-product-docs/pull/175/changes
+  // To enable we must redeploy Fleet using `--set imagescan.enabled=true`
+  // This is currently tricky via yaml, hence skipping for now. 
+  // We can re-enable and improve the test later when we have better way to enable imagescan for testing.
+  describe.skip('Imagescan tests', { tags: '@p1'}, () => {
     qase(112,
       it("Fleet-112: Test imagescan app without expected semver range does not break fleet controller", { tags: '@fleet-112' }, () => {;
         const repoName = 'local-cluster-imagescan-112'
