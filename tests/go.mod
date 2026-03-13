@@ -1,13 +1,13 @@
 module github.com/rancher/fleet-e2e/tests
 
-go 1.20
+go 1.24
 
 replace go.qase.io/client => github.com/rancher/qase-go/client v0.0.0-20231114201952-65195ec001fa
 
 require (
 	github.com/onsi/ginkgo/v2 v2.15.0
 	github.com/onsi/gomega v1.31.1
-	github.com/rancher-sandbox/ele-testhelpers v0.0.0-20260107120126-3929b482ca9f
+	github.com/rancher-sandbox/ele-testhelpers v0.0.0-20260121133442-5e31628d3dc7
 	github.com/rancher-sandbox/qase-ginkgo v1.0.1
 	github.com/sirupsen/logrus v1.9.3
 )
