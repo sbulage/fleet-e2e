@@ -266,6 +266,9 @@ describe('Test Fleet deployment on PRIVATE repos with SSH auth', { tags: '@p0' }
           cy.continuousDeliveryMenuSelection();
           cy.addFleetGitRepo({ repoName, repoUrl, branch, path, local: true});
           cy.clickButton('Create');
+          // Adding 15 seconds wait after latest changes in UI and BE in 2.14
+          // If this tests fails after this extended timeout let's consider opening an issue.
+          cy.wait(15000) 
           cy.verifyTableRow(0, /Error|Git Updating/, '0/0');
       })
     );  
