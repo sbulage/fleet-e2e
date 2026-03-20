@@ -712,17 +712,32 @@ describe('Test Fleet job cleanup', { tags: '@p0' }, () => {
           .should("be.visible")
           .click()
 
-        // Check Run as Non-Root
-        cy.get('input[name="runasNonRoot"]:checked')
-          .should('have.value', 'false');
+        if (/\/2\.14/.test(Cypress.env('rancher_version')) && /\/2\.15/.test(Cypress.env('rancher_version'))) {
+          // Check Run as Non-Root
+          cy.get('[data-testid="input-security-runasNonRoot"] [role="checkbox"]')
+            .should('have.attr', 'aria-checked', 'false');
+          
+          // Check Privilege Escalation
+          cy.get('[data-testid="input-security-allowPrivilegeEscalation"] [role="checkbox"]')
+            .should('have.attr', 'aria-checked', 'false');
 
-        // Check Privilege Escalation
-        cy.get('input[name="allowPrivilegeEscalation"]:checked')
-          .should('have.value', 'false');
+          // Check Read Only Root File System
+          cy.get('[data-testid="input-security-readOnlyRootFilesystem"] [role="checkbox"]')
+          .should('have.attr', 'aria-checked', 'true');
+        }
+        else {
+          // Check Run as Non-Root
+          cy.get('input[name="runasNonRoot"]:checked')
+            .should('have.value', 'false');
 
-        // Check Read Only Root File System
-        cy.get('input[name="readOnlyRootFilesystem"]:checked')
+          // Check Privilege Escalation
+          cy.get('input[name="allowPrivilegeEscalation"]:checked')
+            .should('have.value', 'false');
+
+          // Check Read Only Root File System
+          cy.get('input[name="readOnlyRootFilesystem"]:checked')
           .should('have.value', 'true');
+        }
 
         // Check Drop Capabilities
         cy.get('[data-testid="input-security-drop"] .labeled-select .v-select span.vs__selected')
