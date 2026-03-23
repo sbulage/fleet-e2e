@@ -714,8 +714,7 @@ describe('Test Fleet job cleanup', { tags: '@p0' }, () => {
           .contains('Security Context')
           .should("be.visible")
           .click()
-
-        if (/\/2\.14/.test(Cypress.env('rancher_version')) && /\/2\.15/.test(Cypress.env('rancher_version'))) {
+        if (/\/2\.14/.test(Cypress.env('rancher_version')) || /\/2\.15/.test(Cypress.env('rancher_version'))) {
           // Check Run as Non-Root
           cy.get('[data-testid="input-security-runasNonRoot"] [role="checkbox"]')
             .should('have.attr', 'aria-checked', 'false');
