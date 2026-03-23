@@ -543,6 +543,7 @@ describe('Test resource behavior after deleting GitRepo using keepResources opti
           cy.verifyTableRow(0, 'Paused');
           cy.wait(2000); // Wait to let time for pause to take effect.
           cy.open3dotsMenu(repoName, 'Unpause');
+          cy.wait(2000); // Wait also time for unpause to take effect.
 
           cy.verifyTableRow(0, 'Active');
           // Verify deployment changes to 5?
