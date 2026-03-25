@@ -329,7 +329,10 @@ Cypress.Commands.add('open3dotsMenu', (name, selection, checkNotInMenu=false) =>
   else if (selection) {
     // Open edit config and select option
     cy.get('.list-unstyled.menu > li > span, div.dropdownTarget', { timeout: 15000 }).contains(selection).should('be.visible');
+    cy.wait(500);
     cy.get('.list-unstyled.menu > li > span, div.dropdownTarget', { timeout: 15000 }).contains(selection).click({ force: true });
+    cy.wait(500);
+    
     if (selection === 'Force Update') {
       // Wait for the 'Force Update' pop-up box open.
       cy.wait(500);

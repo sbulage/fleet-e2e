@@ -28,12 +28,16 @@ git add nginx.yaml
 
 git fetch origin
 
-if ! git diff --quiet origin/main; 
-    then
-        echo "Changes detected from original repo. Changing replicas to 2"
-        git commit -m 'Ensuring initial number of replicas is 2' && \
-        git push -u origin main || \
-        echo "Nothing to commit"
-    else
-        echo -e "Nothing to push, done"
+LOCAL_AHEAD=$(git rev-list origin/main..HEAD --count)
+HAS_STAGED=$(git diff --cached --quiet; echo $?)
+
+if [ "$HAS_STAGED" -ne 0 ] || [ "$LOCAL_AHEAD" -gt 0 ]; then
+    echo "Changes detected. Committing and pushing replicas to 2"
+    if [ "$HAS_STAGED" -ne 0 ]; then
+        git commit -m 'Ensuring initial number of replicas is 2'
+    fi
+    sleep 1
+    git push -u origin main
+else
+    echo -e "Nothing to push, done"
 fi

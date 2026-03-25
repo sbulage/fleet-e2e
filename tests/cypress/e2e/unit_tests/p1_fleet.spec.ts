@@ -466,10 +466,6 @@ describe('Test resource behavior after deleting GitRepo using keepResources opti
       cy.clickButton('Create');
       cy.checkGitRepoStatus('test-disable-polling', '1 / 1', '1 / 1');
 
-      // Change replicas to 5
-      cy.exec('bash assets/disable_polling_setting_5_replicas.sh').then((result) => {
-        cy.log(result.stdout, result.stderr);
-      });
     }
 
     qase(126,
@@ -478,10 +474,8 @@ describe('Test resource behavior after deleting GitRepo using keepResources opti
         { tags: '@fleet-126', retries: 1 }, // TODO: Retry added to avoid intermittent failures. Remove once fixed.
         () => {
 
+          // Setting replicas to 2 in Github repo and creating GitRepo with disablePolling=true
           prepareGithubRepoReplicas()
-          
-          // Forcing 15 seconds of wait to check if changes occur after this time.
-          cy.wait(15000);
 
           // Verify deployment is 2 despite having changed to 5 in original repo
           cy.accesMenuSelection('local', 'Workloads', 'Deployments');
@@ -490,11 +484,22 @@ describe('Test resource behavior after deleting GitRepo using keepResources opti
 
           cy.log('HERE WE SHOULD SEE 2/2');
           cy.contains('tr.main-row', 'nginx-test-polling', { timeout: 20000 }).should('be.visible');
-          cy.screenshot('Screenshot BEFORE reloading should be 2/2');
-          cy.contains('tr.main-row', 'nginx-test-polling', { timeout: 20000 }).should('be.visible');
-          cy.screenshot('Screenshot AFTER reloading should be 2/2');
           cy.verifyTableRow(0, 'Active', '2/2');
 
+          // Change replicas to 5 in Github repo and then force update to sync changes immediately
+          cy.log('Changing replicas to 5 in Github repo and then force update to sync changes immediately');
+          cy.exec('bash assets/disable_polling_setting_5_replicas.sh').then((result) => {
+            cy.log(result.stdout, result.stderr);
+          });
+
+          // Forcing 15 seconds of wait to check if changes occur after this time.
+          cy.wait(15000);
+
+          cy.log('HERE WE SHOULD KEEP SEEING 2/2');
+          cy.contains('tr.main-row', 'nginx-test-polling', { timeout: 20000 }).should('be.visible');
+          cy.verifyTableRow(0, 'Active', '2/2');
+
+          // Now after force update, changes should be there and deployment should be 5/5
           cy.continuousDeliveryMenuSelection();
           cy.fleetNamespaceToggle('fleet-local');
           cy.open3dotsMenu('test-disable-polling', 'Force Update');
@@ -515,7 +520,13 @@ describe('Test resource behavior after deleting GitRepo using keepResources opti
         { tags: '@fleet-124' },
         () => {
 
+          // Setting replicas to 2 in Github repo and creating GitRepo with disablePolling=true
           prepareGithubRepoReplicas()
+
+          // Now change replicas to 5 in Github repo
+          cy.exec('bash assets/disable_polling_setting_5_replicas.sh').then((result) => {
+            cy.log(result.stdout, result.stderr);
+          });
 
           // Forcing 15 seconds of wait to check if changes occur after this time.
           cy.wait(15000);
@@ -534,19 +545,46 @@ describe('Test resource behavior after deleting GitRepo using keepResources opti
         { tags: '@fleet-125' },
         () => {
 
+          // Setting replicas to 2 in Github repo and creating GitRepo with disablePolling=true
           prepareGithubRepoReplicas()
 
+          // Verify deployment is 2 despite having changed to 5 in original repo
+          cy.accesMenuSelection('local', 'Workloads', 'Deployments');
+          cy.filterInSearchBox('nginx-test-polling');
+          cy.wait(500);
+
+          cy.log('HERE WE SHOULD SEE 2/2');
+          cy.contains('tr.main-row', 'nginx-test-polling', { timeout: 20000 }).should('be.visible');
+          cy.verifyTableRow(0, 'Active', '2/2');
+
+          // Change replicas to 5 in Github repo and then force update to sync changes immediately
+          cy.log('Changing replicas to 5 in Github repo and then force update to sync changes immediately');
+          cy.exec('bash assets/disable_polling_setting_5_replicas.sh').then((result) => {
+            cy.log(result.stdout, result.stderr);
+          });
+
+          // Forcing 15 seconds of wait to check if changes occur after this time.
+          cy.wait(15000);
+
+          cy.log('HERE WE SHOULD KEEP SEEING 2/2');
+          cy.contains('tr.main-row', 'nginx-test-polling', { timeout: 20000 }).should('be.visible');
+          cy.verifyTableRow(0, 'Active', '2/2');
+
+          // Now after pause / unpause update, changes should be there and deployment should be 5/5
           cy.continuousDeliveryMenuSelection();
           cy.fleetNamespaceToggle('fleet-local');
           cy.open3dotsMenu(repoName, 'Pause');
-
           cy.verifyTableRow(0, 'Paused');
           cy.wait(2000); // Wait to let time for pause to take effect.
-          cy.open3dotsMenu(repoName, 'Unpause');
+          // Unpausing using checkbox to avoid problems with dropdown in 3dots menu when state is paused.
+          cy.get('[width="30"] > .checkbox-outer-container.check', { timeout: 50000 }).click();
+          cy.wait(500);
+          cy.clickButton('Unpause');
           cy.wait(2000); // Wait also time for unpause to take effect.
-
           cy.verifyTableRow(0, 'Active');
-          // Verify deployment changes to 5?
+          cy.checkGitRepoStatus('test-disable-polling', '1 / 1', '1 / 1');
+
+          // Verify deployment changes to 5
           cy.accesMenuSelection('local', 'Workloads', 'Deployments');
           cy.filterInSearchBox('nginx-test-polling');
           cy.verifyTableRow(0, 'Active', '5/5');
