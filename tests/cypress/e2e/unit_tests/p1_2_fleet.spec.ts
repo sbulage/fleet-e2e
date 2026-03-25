@@ -1541,13 +1541,13 @@ describe('Test helm chart dependency download with `disableDependencyUpdate: tru
       cy.verifyTableRow(0, 'Active', repoName);
 
       // Dependency will not installed, due to which resources count does not include dependencies in it.
-      cy.checkGitRepoStatus(repoName, '1 / 1', '18 / 18');
+      cy.checkGitRepoStatus(repoName, '1 / 1', '3 / 3');
 
-      // Verify `postgresql` dependency is not installed as `disableDependencyUpdate` is set to `true`.
+      // Verify `nginx` dependency is not installed as `disableDependencyUpdate` is set to `true`.
       dsAllClusterList.forEach(
         (dsCluster) => {
           // 'false' option in below command is used to check the absence of given resource.
-          cy.checkApplicationStatus("no-dependency-download-postgresql", dsCluster, 'All Namespaces', false);
+          cy.checkApplicationStatus("no-dependency-download-nginx", dsCluster, 'All Namespaces', false);
         }
       )
     })
@@ -1565,12 +1565,12 @@ describe('Test helm chart dependency download with `disableDependencyUpdate: tru
       cy.verifyTableRow(0, 'Active', repoName);
 
       // Dependency will get installed, due to which resources count includes dependencies in it.
-      cy.checkGitRepoStatus(repoName, '1 / 1', '39 / 39', { timeout: timeout });
+      cy.checkGitRepoStatus(repoName, '1 / 1', '18 / 18', { timeout: timeout });
 
-      // Verify `postgresql` dependency is installed as `disableDependencyUpdate` is set to `false`.
+      // Verify `nginx` dependency is installed as `disableDependencyUpdate` is set to `false`.
       dsAllClusterList.forEach(
         (dsCluster) => {
-          cy.checkApplicationStatus("no-dependency-download-postgresql", dsCluster, 'All Namespaces');
+          cy.checkApplicationStatus("no-dependency-download-nginx", dsCluster, 'All Namespaces');
         }
       )
     })
