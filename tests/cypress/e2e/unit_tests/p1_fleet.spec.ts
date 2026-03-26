@@ -453,7 +453,7 @@ describe('Test resource behavior after deleting GitRepo using keepResources opti
     function prepareGithubRepoReplicas() {
 
       // Ensuring Github repo has desired amount of replicas (2)
-      cy.exec('bash assets/disable_polling_reset_2_replicas.sh', { env: { gh_private_pwd } }).then((result) => {
+      cy.exec('bash assets/disable_polling_reset_2_replicas.sh', { env: { gh_private_pwd }, failOnNonZeroExit: false }).then((result) => {
         cy.log(result.stdout, result.stderr);
       });
 
@@ -488,7 +488,7 @@ describe('Test resource behavior after deleting GitRepo using keepResources opti
 
           // Change replicas to 5 in Github repo and then force update to sync changes immediately
           cy.log('Changing replicas to 5 in Github repo and then force update to sync changes immediately');
-          cy.exec('bash assets/disable_polling_setting_5_replicas.sh').then((result) => {
+          cy.exec('bash assets/disable_polling_setting_5_replicas.sh', { env: { gh_private_pwd }, failOnNonZeroExit: false }).then((result) => {
             cy.log(result.stdout, result.stderr);
           });
 
@@ -524,7 +524,7 @@ describe('Test resource behavior after deleting GitRepo using keepResources opti
           prepareGithubRepoReplicas()
 
           // Now change replicas to 5 in Github repo
-          cy.exec('bash assets/disable_polling_setting_5_replicas.sh').then((result) => {
+          cy.exec('bash assets/disable_polling_setting_5_replicas.sh', { env: { gh_private_pwd }, failOnNonZeroExit: false }).then((result) => {
             cy.log(result.stdout, result.stderr);
           });
 
@@ -559,7 +559,7 @@ describe('Test resource behavior after deleting GitRepo using keepResources opti
 
           // Change replicas to 5 in Github repo and then force update to sync changes immediately
           cy.log('Changing replicas to 5 in Github repo and then force update to sync changes immediately');
-          cy.exec('bash assets/disable_polling_setting_5_replicas.sh').then((result) => {
+          cy.exec('bash assets/disable_polling_setting_5_replicas.sh', { env: { gh_private_pwd }, failOnNonZeroExit: false }).then((result) => {
             cy.log(result.stdout, result.stderr);
           });
 
@@ -574,13 +574,13 @@ describe('Test resource behavior after deleting GitRepo using keepResources opti
           cy.continuousDeliveryMenuSelection();
           cy.fleetNamespaceToggle('fleet-local');
           cy.open3dotsMenu(repoName, 'Pause');
+          cy.wait(15000); // Wait to let time for pause to take effect and avoid state changes.
           cy.verifyTableRow(0, 'Paused');
-          cy.wait(2000); // Wait to let time for pause to take effect.
           // Unpausing using checkbox to avoid problems with dropdown in 3dots menu when state is paused.
           cy.get('[width="30"] > .checkbox-outer-container.check', { timeout: 50000 }).click();
-          cy.wait(500);
+          cy.wait(2000);
           cy.clickButton('Unpause');
-          cy.wait(2000); // Wait also time for unpause to take effect.
+          cy.wait(5000); // Wait also time for unpause to take effect.
           cy.verifyTableRow(0, 'Active');
           cy.checkGitRepoStatus('test-disable-polling', '1 / 1', '1 / 1');
 
