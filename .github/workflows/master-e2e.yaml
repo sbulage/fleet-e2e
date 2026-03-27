@@ -58,7 +58,7 @@ on:
         required: false
       aws_secret_access_key:
         description: AWS Secret Access Key to use to create EC2 instances
-        required: false 
+        required: false
       github_app_id:
         description: GitHub App ID for github app connection
         required: false
@@ -112,8 +112,7 @@ on:
         required: false
       runner_template:
         description: Runner template to use
-        # Another template available on GCP: fleet-qa-e2e-ci-runner-spot-leap-15-4-x86-64-template-v1
-        default: fleet-qa-e2e-ci-runner-spot-leap-15-5-x86-64-template-v1
+        default: fleet-e2e-ci-runner-spot-x86-64-template-v3
         type: string
       test_description:
         description: Short description of the test
