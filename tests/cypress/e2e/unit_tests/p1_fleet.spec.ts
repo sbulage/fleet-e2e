@@ -314,8 +314,8 @@ describe('Test resource behavior after deleting GitRepo using keepResources opti
         const path = 'helm-oci-auth'
         const gitOrHelmAuth = 'Helm'
         const gitAuthType = "http"
-        const userOrPublicKey = Cypress.env("gh_private_user")
-        const pwdOrPrivateKey = Cypress.env("gh_private_pwd")
+        const userOrPublicKey = Cypress.expose("gh_private_user")
+        const pwdOrPrivateKey = Cypress.expose("gh_private_pwd")
     
         cy.fleetNamespaceToggle('fleet-default');
         cy.addFleetGitRepo({ repoName, repoUrl, branch, path, gitOrHelmAuth, gitAuthType, userOrPublicKey, pwdOrPrivateKey});
@@ -444,7 +444,7 @@ describe('Test resource behavior after deleting GitRepo using keepResources opti
 
   describe('Tests with disablePolling', { tags: '@p1' }, () => {
   
-    const gh_private_pwd = Cypress.env('gh_private_pwd');
+    const gh_private_pwd = Cypress.expose('gh_private_pwd');
     const repoName = 'test-disable-polling';
 
     // Function to prepare Github repo used in the test
@@ -619,7 +619,7 @@ describe('Test GitRepo Bundle do not show hash mismatch error.', { tags: '@p1'},
   )
 });
 
-if (!/\/2\.11/.test(Cypress.env('rancher_version')) && !/\/2\.12/.test(Cypress.env('rancher_version')) && !/\/2\.13/.test(Cypress.env('rancher_version'))) {
+if (!/\/2\.11/.test(Cypress.expose('rancher_version')) && !/\/2\.12/.test(Cypress.expose('rancher_version')) && !/\/2\.13/.test(Cypress.expose('rancher_version'))) {
 
   describe('Test `dependsON` functionality in Fleet GitRepo', { tags: '@p1'}, () => {
 

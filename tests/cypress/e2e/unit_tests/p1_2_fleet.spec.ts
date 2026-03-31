@@ -28,7 +28,7 @@ export const dsFirstClusterName = dsAllClusterList[0]
 export const dsFirstTwoClusterList = dsAllClusterList.slice(0, 2)
 export const dsThirdClusterName = dsAllClusterList[2]
 export const NoAppBundleOrGitRepoPresentMessages = ['No repositories have been added', 'No App Bundles have been created']
-export const rancherVersion = Cypress.env('rancher_version')
+export const rancherVersion = Cypress.expose('rancher_version')
 export const supported_versions_212_and_above = [
   /^(prime|prime-optimus|prime-optimus-alpha|prime-alpha|prime-rc|alpha)\/2\.(1[2-9]|[2-9]\d+)(\..*)?$/,
   /^head\/2\.(1[2-9])$/
@@ -961,7 +961,7 @@ describe('Test Fleet Resource Count', { tags: '@p1_2'}, () => {
   )
 });
 
-if (!/\/2\.11/.test(Cypress.env('rancher_version'))) {
+if (!/\/2\.11/.test(Cypress.expose('rancher_version'))) {
   describe('Test HelmOps', { tags: '@p1_2' }, () => {
 
     qase(165, 
@@ -1439,15 +1439,15 @@ describe('Test Fleet `doNotDeploy: false` will deploy resources to all clusters.
   )
 });
 
-if (!/\/2\.11/.test(Cypress.env('rancher_version')) && !/\/2\.12/.test(Cypress.env('rancher_version'))) {
+if (!/\/2\.11/.test(Cypress.expose('rancher_version')) && !/\/2\.12/.test(Cypress.expose('rancher_version'))) {
   
   describe('Test Git App with Fleet', { tags: '@p1_2'}, () => {
     qase(199,
       it("Fleet-199: Test Git App deployment using Fleet.", { tags: '@fleet-199' }, () => {
 
-        const github_app_id = Cypress.env("gh_app_id")
-        const github_app_installation_id = Cypress.env("gh_app_installation_id")
-        const github_app_private_key = Cypress.env("gh_app_private_key")
+        const github_app_id = Cypress.expose("gh_app_id")
+        const github_app_installation_id = Cypress.expose("gh_app_installation_id")
+        const github_app_private_key = Cypress.expose("gh_app_private_key")
 
         // Create secret from UI
         cy.accesMenuSelection('local', 'Storage', 'Secrets');
@@ -1481,7 +1481,7 @@ if (!/\/2\.11/.test(Cypress.env('rancher_version')) && !/\/2\.12/.test(Cypress.e
   }); 
 };
 
-if (!/\/2\.11/.test(Cypress.env('rancher_version'))) {
+if (!/\/2\.11/.test(Cypress.expose('rancher_version'))) {
   describe('Test availability of annotation created-by-user-id in YAML not in UI.', { tags: '@p1_2'}, () => {
 
   qase(192,

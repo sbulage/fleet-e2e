@@ -66,8 +66,8 @@ describe('Test Fleet deployment on PRIVATE repos with HTTP auth', { tags: '@p0' 
       it(`FLEET-${qase_id}: Test to install "NGINX" app using "HTTP" auth on "${provider}" PRIVATE repository`, { tags: `@fleet-${qase_id}`, retries: 1 }, () => {
 
         const repoName = `default-cluster-fleet-${qase_id}`
-        const userOrPublicKey = Cypress.env(`${provider.toLowerCase()}_private_user`)
-        const pwdOrPrivateKey = Cypress.env(`${provider.toLowerCase()}_private_pwd`)
+        const userOrPublicKey = Cypress.expose(`${provider.toLowerCase()}_private_user`)
+        const pwdOrPrivateKey = Cypress.expose(`${provider.toLowerCase()}_private_pwd`)
 
         cy.fleetNamespaceToggle('fleet-default')
         cy.addFleetGitRepo({ repoName, repoUrl, branch, path, gitAuthType, userOrPublicKey, pwdOrPrivateKey });
@@ -79,13 +79,13 @@ describe('Test Fleet deployment on PRIVATE repos with HTTP auth', { tags: '@p0' 
     );
   });
 
-  if (!/\/2\.11/.test(Cypress.env('rancher_version'))) {
+  if (!/\/2\.11/.test(Cypress.expose('rancher_version'))) {
   qase(191, 
     it('FLEET-191: Test Fleet can be deployed in private Github repo using solely private token', {tags : `@fleet-191` }, () => {
 
       const repoName = '191-test-private-gh-only-token'  
       const repoUrl = 'https://github.com/fleetqa/fleet-qa-examples.git'
-      const pwdOrPrivateKey = Cypress.env('gh_private_pwd')
+      const pwdOrPrivateKey = Cypress.expose('gh_private_pwd')
   
         cy.addFleetGitRepo({ repoName, repoUrl, branch, path, gitAuthType, pwdOrPrivateKey, local:true });
         cy.clickButton('Create');
@@ -99,8 +99,8 @@ describe('Test Fleet deployment on PRIVATE repos with HTTP auth', { tags: '@p0' 
 describe('Test Fleet deployment on PRIVATE repos with SSH auth', { tags: '@p0' }, () => {
   //TODO: Commented Azure tests due to token expired, once restored uncomment it.
   const gitAuthType = "ssh"
-  const userOrPublicKey = Cypress.env("rsa_public_key_qa")
-  const pwdOrPrivateKey = Cypress.env("rsa_private_key_qa")
+  const userOrPublicKey = Cypress.expose("rsa_public_key_qa")
+  const pwdOrPrivateKey = Cypress.expose("rsa_private_key_qa")
   const repoTestData: testData[] = [
     {qase_id: 2, provider: 'GitLab', repoUrl: 'git@gitlab.com:fleetqa/fleet-qa-examples.git'},
     {qase_id: 3, provider: 'Bitbucket', repoUrl: 'git@bitbucket.org:fleetqa-bb/fleet-qa-examples.git'},
@@ -132,8 +132,8 @@ describe('Test Fleet deployment on PRIVATE repos with SSH auth', { tags: '@p0' }
 
     const repoUrl = 'git@github.com:fleetqa/fleet-qa-examples.git';
     const secretKnownHostsKeys = ['assets/known-host.yaml', 'assets/known-host-missmatch.yaml'];
-    const userOrPublicKey = Cypress.env("rsa_public_key_qa")
-    const pwdOrPrivateKey = Cypress.env("rsa_private_key_qa")
+    const userOrPublicKey = Cypress.expose("rsa_public_key_qa")
+    const pwdOrPrivateKey = Cypress.expose("rsa_private_key_qa")
 
     before('Preparing known hosts secrets via UI', () => {
 
@@ -402,7 +402,7 @@ describe('Test gitrepos with cabundle', { tags: '@p0' }, () => {
 
   describe('Test Fleet with Webhook', { tags: '@p0' }, () => {
 
-    const gh_private_pwd = Cypress.env('gh_private_pwd');
+    const gh_private_pwd = Cypress.expose('gh_private_pwd');
 
     before('Preparing Github Webhook', () => { 
 
@@ -478,7 +478,7 @@ describe('Test gitrepos with cabundle', { tags: '@p0' }, () => {
       })
     );
     
-    if (!/\/2\.11/.test(Cypress.env('rancher_version'))) {
+    if (!/\/2\.11/.test(Cypress.expose('rancher_version'))) {
   
     qase(178,
 
@@ -639,7 +639,7 @@ describe('Test Fleet job cleanup', { tags: '@p0' }, () => {
   qase(147,
     it('Fleet-147: Test Fleet job clean-up works upon commit change', { tags: '@fleet-147' }, () => {
 
-      const gh_private_pwd = Cypress.env('gh_private_pwd');
+      const gh_private_pwd = Cypress.expose('gh_private_pwd');
       const repoName = 'test-disable-polling';
 
       cy.exec('bash assets/disable_polling_reset_2_replicas.sh', { env: { gh_private_pwd } }).then((result) => {
@@ -714,7 +714,7 @@ describe('Test Fleet job cleanup', { tags: '@p0' }, () => {
           .contains('Security Context')
           .should("be.visible")
           .click()
-        if (/\/2\.14/.test(Cypress.env('rancher_version')) || /\/2\.15/.test(Cypress.env('rancher_version'))) {
+        if (/\/2\.14/.test(Cypress.expose('rancher_version')) || /\/2\.15/.test(Cypress.expose('rancher_version'))) {
           // Check Run as Non-Root
           cy.get('[data-testid="input-security-runasNonRoot"] [role="checkbox"]')
             .should('have.attr', 'aria-checked', 'false');

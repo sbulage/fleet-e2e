@@ -14,6 +14,10 @@ limitations under the License.
 
 import './commands';
 
+// This ensures the qase() function exists globally before ANY spec file loads
+(window as any).qase = (id: any, fn: any) => fn;
+console.log('Qase global initialized');
+
 declare global {
   // In Cypress functions should be declared with 'namespace'
   // eslint-disable-next-line @typescript-eslint/no-namespace
@@ -103,5 +107,5 @@ require('cypress-dark');
 require('cy-verify-downloads').addCustomCommand();
 require('cypress-plugin-tab');
 require('@rancher-ecp-qa/cypress-library');
-import registerCypressGrep from '@cypress/grep'
-registerCypressGrep()
+import { register as registerCypressGrep } from '@cypress/grep'
+registerCypressGrep();

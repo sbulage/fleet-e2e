@@ -34,7 +34,7 @@ export const customRoleName_4 = "gitrepo-list-delete-fleetworkspaces-bundles-all
 export const customRoleName_5 = "fleetworkspace-list-create-gitrepo-bundles-all-role"
 export const customRoleName_6 = "fleetworkspace-all-except-delete-gitrepo-bundles-all-role"
 export const customRoleName_7 = "fleetworkspace-list-delete-gitrepo-bundles-all-role"
-export const rancherVersion = Cypress.env('rancher_version');
+export const rancherVersion = Cypress.expose('rancher_version');
 export const supported_versions_212_and_above = [
   /^(prime|prime-optimus|prime-optimus-alpha|prime-alpha|prime-rc|alpha)\/2\.(1[2-9]|[2-9]\d+)(\..*)?$/,
   /^head\/2\.(1[2-9])$/

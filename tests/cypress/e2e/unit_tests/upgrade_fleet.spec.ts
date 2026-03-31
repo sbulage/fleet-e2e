@@ -16,7 +16,7 @@ import 'cypress/support/commands';
 import { qase } from 'cypress-qase-reporter/dist/mocha';
 
 export const branch = "master";
-export let upgrade = Cypress.env('upgrade') === 'true'
+export let upgrade = Cypress.expose('upgrade') === 'true'
 
 beforeEach(() => {
   cy.login();
@@ -29,8 +29,8 @@ describe('Test Fleet deployment on PRIVATE repos with SSH auth', { tags: '@upgra
     it(`FLEET-157: Test to install "NGINX" app using "SSH" auth on "GitLab" PRIVATE repository`, { tags: '@fleet-157', retries: 1 }, () => {
       const repoName = 'default-cluster-fleet-157'
       const gitAuthType = "ssh"
-      const userOrPublicKey = Cypress.env("rsa_public_key_qa")
-      const pwdOrPrivateKey = Cypress.env("rsa_private_key_qa")
+      const userOrPublicKey = Cypress.expose("rsa_public_key_qa")
+      const pwdOrPrivateKey = Cypress.expose("rsa_private_key_qa")
       const repoUrl = "git@gitlab.com:fleetqa/fleet-qa-examples.git"
       const appName = "nginx-keep"
       const branch = "main"
@@ -142,7 +142,7 @@ describe('Test "fleet-agent" image version on each downstream cluster',  { tags:
       // For example 'fleet_app_version' is fleet-105.0.3+up0.11.3, after splitting
       // we get 'fleet_agent_version' is '0.11.3'.
       if (upgrade) {
-        const fleetAgentVersionBeforeUpgrade = Cypress.env('fleet_app_version').split('+up')[1];
+        const fleetAgentVersionBeforeUpgrade = Cypress.expose('fleet_app_version').split('+up')[1];
         cy.log('Fleet Agent image version BEFORE upgrade:' + fleetAgentVersionBeforeUpgrade)
 
         // Check fleet-agent version of the downstream clusters.

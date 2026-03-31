@@ -19,7 +19,7 @@ import * as cypressLib from '@rancher-ecp-qa/cypress-library';
 
 export const noRowsMessages = ['There are no rows to show.', 'There are no rows which match your search query.']
 export const NoAppBundleOrGitRepoPresentMessages = ['No repositories have been added', 'No App Bundles have been created']
-export const rancherVersion = Cypress.env('rancher_version');
+export const rancherVersion = Cypress.expose('rancher_version');
 export const supported_versions_212_and_above = [
   /^(prime|prime-optimus|prime-optimus-alpha|prime-alpha|prime-rc|alpha)\/2\.(1[2-9]|[2-9]\d+)(\..*)?$/,
   /^head\/2\.(1[2-9])$/
@@ -579,7 +579,7 @@ Cypress.Commands.add('modifyDeployedApplication', (appName, clusterName='local')
     cy.filterInSearchBox(appName);
     cy.contains(appName).click();
     
-    if (/\/2\.11/.test(Cypress.env('rancher_version')) || /\/2\.12/.test(Cypress.env('rancher_version')) || /\/2\.13/.test(Cypress.env('rancher_version'))) {
+    if (/\/2\.11/.test(Cypress.expose('rancher_version')) || /\/2\.12/.test(Cypress.expose('rancher_version')) || /\/2\.13/.test(Cypress.expose('rancher_version'))) {
       cy.get('div.plus-minus.text-right > .value') .should('be.visible').contains('1');
       cy.get('div.plus-minus.text-right > .btn > .icon-plus').should('be.visible').click();
       cy.get('div.plus-minus.text-right > .value').should('be.visible').contains('2');
@@ -1204,7 +1204,7 @@ Cypress.Commands.add('closePopWindow', (windowMessage, retries = 5, delay = 1000
 });
 
 Cypress.Commands.add('k8sUpgradeInRancher', (clusterName) => {
-  const k8s_version_for_upgrade_ds_cluster = Cypress.env('k8s_version_upgrade_ds_cluster_to');
+  const k8s_version_for_upgrade_ds_cluster = Cypress.expose('k8s_version_upgrade_ds_cluster_to');
   const timeout = 420000
   cy.accesMenuSelection('Cluster Management' , 'Clusters');
   cy.wait(500);
@@ -1232,7 +1232,7 @@ Cypress.Commands.add('k8sUpgradeInRancher', (clusterName) => {
   expect(k8s_version_for_upgrade_ds_cluster).to.be.a('string');
   cy.contains(k8s_version_for_upgrade_ds_cluster)
     .should('be.visible')
-    .and('not.equal', Cypress.env('k8s_version'))
+    .and('not.equal', Cypress.expose('k8s_version'))
     .click();
   cy.clickButton('Save');
   cy.filterInSearchBox(clusterName);

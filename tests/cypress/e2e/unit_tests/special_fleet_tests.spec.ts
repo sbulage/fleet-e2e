@@ -19,7 +19,7 @@ export const clusterName = "imported-0";
 export const branch = "main";
 export const path  = "nginx"
 export const sshString = ["Public key and private key for SSH", "Public key and private key for SSH authentication"]
-export const rancherVersion = Cypress.env('rancher_version')
+export const rancherVersion = Cypress.expose('rancher_version')
 export const supported_versions_212_and_above = [
   /^(prime|prime-optimus|prime-optimus-alpha|prime-alpha|prime-rc|alpha)\/2\.(1[2-9]|[2-9]\d+)(\..*)?$/,
   /^head\/2\.(1[2-9])$/
@@ -42,8 +42,8 @@ describe('Test Fleet on AWS EC2 imported cluster', { tags: '@cloud_ds' }, () => 
             const cloudProvider = 'Amazon';
             const credentialName = 'qa-fleet-ec2-cloud-cred';
             const clusterName = 'qa-fleet-ec2-cluster';
-            const accessKey = Cypress.env('aws_access_key_id');
-            const secretKey = Cypress.env('aws_secret_access_key');
+            const accessKey = Cypress.expose('aws_access_key_id');
+            const secretKey = Cypress.expose('aws_secret_access_key');
             const region = 'eu-central-1';
             const subnetId = 'fleetqa-mmt-subnet-public1-eu-central-1a';
             const cloudInstance = 'Amazon EC2';
@@ -80,7 +80,7 @@ describe('Test Fleet on AWS EC2 imported cluster', { tags: '@cloud_ds' }, () => 
     );
 });
 
-if (!/\/2\.11/.test(Cypress.env('rancher_version')) && !/\/2\.12/.test(Cypress.env('rancher_version'))) {
+if (!/\/2\.11/.test(Cypress.expose('rancher_version')) && !/\/2\.12/.test(Cypress.expose('rancher_version'))) {
 
 describe('Agent Scheduling Customization', { tags: '@special_tests' }, () => {
   qase(200,
