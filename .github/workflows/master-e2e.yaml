@@ -138,7 +138,7 @@ jobs:
     steps:
       # actions/checkout MUST come before auth
       - name: Checkout
-        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
+        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
       - name: Generate UUID and Runner hostname
         id: generator
         run: |
@@ -148,11 +148,11 @@ jobs:
           echo "uuid=${UUID//-}" >> ${GITHUB_OUTPUT}
           echo "runner=${GH_REPO//\//-}-ci-${UUID//-}" >> ${GITHUB_OUTPUT}
       - name: Authenticate to GCP
-        uses: google-github-actions/auth@7c6bc770dae815cd3e89ee6cdf493a5fab2cc093 # v3
+        uses: google-github-actions/auth@7c6bc770dae815cd3e89ee6cdf493a5fab2cc093 # v3.0.0
         with:
           credentials_json: ${{ secrets.credentials }}
       - name: Setup gcloud
-        uses: google-github-actions/setup-gcloud@aa5489c8933f4cc7a4f7d45035b3b1440c9c10db # v3
+        uses: google-github-actions/setup-gcloud@aa5489c8933f4cc7a4f7d45035b3b1440c9c10db # v3.0.1
       - name: Create runner
         run: |
           gcloud compute instances create ${{ steps.generator.outputs.runner }} \
@@ -192,10 +192,10 @@ jobs:
       qase_run_name: ${{ steps.qase.outputs.qase_run_name }}
     steps:
       - name: Checkout
-        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
+        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
 
       - name: Setup Go
-        uses: actions/setup-go@4a3601121dd01d1626a1e23e37211e3254c1c06c # v6
+        uses: actions/setup-go@4a3601121dd01d1626a1e23e37211e3254c1c06c # v6.4.0
         with:
           cache-dependency-path: tests/go.sum
           go-version-file: tests/go.mod
@@ -274,19 +274,19 @@ jobs:
           curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-4 | bash
           echo "::endgroup::"
       - name: Checkout
-        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
+        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
       - name: Install Go
-        uses: actions/setup-go@4a3601121dd01d1626a1e23e37211e3254c1c06c # v6
+        uses: actions/setup-go@4a3601121dd01d1626a1e23e37211e3254c1c06c # v6.4.0
         with:
           cache: false
           go-version-file: tests/go.mod
       - name: Checkout
         if: ${{ inputs.branch }}
-        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
+        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
         with:
           ref: ${{ inputs.branch }}
       - name: Install Node
-        uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5
+        uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0
         with:
           node-version: current
       - name: Install prerequisite components
@@ -370,7 +370,7 @@ jobs:
           cd tests && make start-cypress-tests
       - name: Upload Cypress screenshots (Basics)
         if: failure()
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: cypress-screenshots-basics-${{ inputs.cluster_name }}
           path: tests/cypress/screenshots
@@ -379,7 +379,7 @@ jobs:
       - name: Upload Cypress videos (Basics)
         # Test run video is always captured, so this action uses "always()" condition
         if: always()
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: cypress-videos-basics-${{ inputs.cluster_name }}
           path: tests/cypress/videos
@@ -468,7 +468,7 @@ jobs:
           cd tests && make start-cypress-tests
       - name: Upload Cypress screenshots (after-upgrade)
         if: failure() && ${{ inputs.rancher_upgrade != '' }}
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: cypress-screenshots-after-upgrade-${{ inputs.cluster_name }}
           path: tests/cypress/screenshots
@@ -476,14 +476,14 @@ jobs:
           if-no-files-found: ignore
       - name: Upload Cypress videos (after-upgrade)
         if: ${{ inputs.rancher_upgrade != '' }}
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: cypress-videos-after-upgrade-${{ inputs.cluster_name }}
           path: tests/cypress/videos
           retention-days: 7
       - name: Upload webhook setup log
         if: failure()
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: webhook-setup-log-${{ inputs.cluster_name }}
           path: tests/assets/webhook-tests/webhook_setup.log
@@ -523,13 +523,13 @@ jobs:
     steps:
       # actions/checkout MUST come before auth
       - name: Checkout
-        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
+        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
       - name: Authenticate to GCP
-        uses: google-github-actions/auth@7c6bc770dae815cd3e89ee6cdf493a5fab2cc093 # v3
+        uses: google-github-actions/auth@7c6bc770dae815cd3e89ee6cdf493a5fab2cc093 # v3.0.0
         with:
           credentials_json: ${{ secrets.credentials }}
       - name: Setup gcloud
-        uses: google-github-actions/setup-gcloud@aa5489c8933f4cc7a4f7d45035b3b1440c9c10db # v3
+        uses: google-github-actions/setup-gcloud@aa5489c8933f4cc7a4f7d45035b3b1440c9c10db # v3.0.1
       - name: Delete PAT token secrets
         run: |
           gcloud --quiet secrets delete PAT_TOKEN_${{ needs.create-runner.outputs.uuid }} || true
@@ -552,10 +552,10 @@ jobs:
       QASE_RUN_ID: ${{ needs.pre-qase.outputs.qase_run_id }}
     steps:
       - name: Checkout
-        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
+        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
 
       - name: Setup Go
-        uses: actions/setup-go@4a3601121dd01d1626a1e23e37211e3254c1c06c # v6
+        uses: actions/setup-go@4a3601121dd01d1626a1e23e37211e3254c1c06c # v6.4.0
         with:
           cache-dependency-path: tests/go.sum
           go-version-file: tests/go.mod
