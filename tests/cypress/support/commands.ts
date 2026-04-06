@@ -481,17 +481,34 @@ cy.contains(toggleOption).should('be.visible').click({force: true});
 // Note: This function may be substituted by 'cypressLib.deleteAllResources' 
 // when hardcoded texts present can be parameterized
 Cypress.Commands.add('deleteAll', (fleetCheck=true) => {
+
   cy.get('body').then(($body) => {
+
+    if ($body.text().match('/Actions/')) {
+      cy.wait(250) // Add small wait to give time for things to settle
+      cy.get('[width="30"] > .checkbox-outer-container.check', { timeout: 50000 }).click();
+      cy.get('.btn').contains('Actions').click().then(() => {
+          cy.wait(250) // Add small wait to allow dropdown to open and be interactable
+          cy.get('li.action > span, div.dropdownTarget, .list-unstyled.menu > li > span')
+            cy.contains('Delete')
+            .should('exist')
+            .click({ctrlKey: true, force: true});
+      });
+    };
+
     if ($body.text().includes('Delete')) {
       cy.wait(250) // Add small wait to give time for things to settle
       cy.get('[width="30"] > .checkbox-outer-container.check', { timeout: 50000 }).click();
-      cy.get('.btn').contains('Delete').click({ctrlKey: true});
-      if (fleetCheck === true) {
+      cy.get('.btn').contains('Delete').click({ctrlKey: true, force: true});   
+    };
+
+    if (fleetCheck === true) {
         cy.contains(new RegExp(NoAppBundleOrGitRepoPresentMessages.join('|')), { timeout: 20000 }).should('be.visible')
-      } else {
+      }
+      
+    else {
         cy.get('td > span, td.text-center > span', { timeout: 25000 }).invoke('text').should('be.oneOf', noRowsMessages)
       }
-    };
   });
 });
 

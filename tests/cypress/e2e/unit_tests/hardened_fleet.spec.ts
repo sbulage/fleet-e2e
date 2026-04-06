@@ -30,7 +30,7 @@ beforeEach(() => {
 Cypress.config();
 describe('Test Hardened Fleet deployment on PUBLIC repos',  { tags: '@hardening-tests' }, () => {
   qase(128,
-    it('FLEET-128: Deploy application to LOCAL cluster is NOT possible', { tags: '@fleet-62' }, () => {
+    it('FLEET-128: Deploy application to LOCAL cluster is NOT possible', { tags: '@fleet-128' }, () => {
 
       const repoName = "local-cluster-error"
       const branch = "master"
