@@ -20,7 +20,7 @@ export const supported_versions_212_and_above = [
 ];
 
 Cypress.config();
-describe('First login on Rancher', { tags: '@login' }, () => {
+describe('First login on Rancher', { tags: ['@login', '@pr-tests'] }, () => {
   qase(120,
     it('Log in and accept terms and conditions', { tags: '@fleet-120' },  () => {
       cypressLib.firstLogin();

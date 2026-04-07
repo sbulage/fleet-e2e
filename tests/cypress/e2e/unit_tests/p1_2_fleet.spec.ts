@@ -13,7 +13,6 @@ limitations under the License.
 */
 
 import 'cypress/support/commands';
-import { qase } from 'cypress-qase-reporter/dist/mocha';
 
 export const appName = "nginx-keep"
 export const branch = "master"
@@ -42,7 +41,7 @@ beforeEach(() => {
 
 
 Cypress.config();
-describe('Test GitRepo Bundle name validation and max character trimming behavior in bundle', { tags: '@p1_2'}, () => {
+describe('Test GitRepo Bundle name validation and max character trimming behavior in bundle', { tags: ['@p1_2', '@pr-tests'] }, () => {
   const repoTestData: testData[] = [
     { qase_id: 103,
       repoName: "test-test-test-test-test-test-test-test-test-t",
@@ -107,7 +106,7 @@ describe('Test GitRepo Bundle name validation and max character trimming behavio
   )
 });
 
-describe('Test application deployment based on clusterGroup', { tags: '@p1_2'}, () => {
+describe('Test application deployment based on clusterGroup', { tags: ['@p1_2', '@pr-tests'] }, () => {
   const value = 'value_prod'
   let repoName
 
@@ -860,7 +859,7 @@ describe("Test Application deployment based on 'clusterGroupSelector'", { tags: 
   })
 });
 
-describe('Test namespace deletion when bundle is deleted', { tags: '@p1_2'}, () => {
+describe('Test namespace deletion when bundle is deleted', { tags: ['@p1_2', '@pr-tests'] }, () => {
 
   qase(131,
     it("Fleet-131: Test NAMESPACE will be DELETED after GitRepo is deleted.", { tags: '@fleet-131' }, () => {
@@ -962,7 +961,7 @@ describe('Test Fleet Resource Count', { tags: '@p1_2'}, () => {
 });
 
 if (!/\/2\.11/.test(Cypress.expose('rancher_version'))) {
-  describe('Test HelmOps', { tags: '@p1_2' }, () => {
+  describe('Test HelmOps', { tags: ['@p1_2'] }, () => {
 
     qase(165, 
       it('FLEET-165: Test basic HelmOps creation', { tags: '@fleet-165' }, () => {

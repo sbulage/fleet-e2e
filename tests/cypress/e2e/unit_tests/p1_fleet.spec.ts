@@ -29,7 +29,7 @@ beforeEach(() => {
 });
 
 
-describe('Test resource behavior after deleting GitRepo using keepResources option using YAML', { tags: '@p1' }, () => {
+describe('Test resource behavior after deleting GitRepo using keepResources option using YAML', { tags: ['@p1', '@pr-tests'] }, () => {
   qase(68, 
     it('Fleet-68: Test RESOURCES will be KEPT and NOT be DELETED after GitRepo is deleted when keepResources: true used in the GitRepo yaml file.', { tags: '@fleet-68' }, () => {
       cy.continuousDeliveryMenuSelection();
@@ -84,7 +84,7 @@ describe('Test resource behavior after deleting GitRepo using keepResources opti
   )
 });
 
-describe('Test Self-Healing of resource modification when correctDrift option used', { tags: '@p1'}, () => {
+describe('Test Self-Healing of resource modification when correctDrift option used', { tags: ['@p1', '@pr-tests'] }, () => {
   const correctDriftData: testData[] = [
     { qase_id: 76,
       correctDrift: 'yes',
@@ -165,7 +165,7 @@ describe('Test Self-Healing of resource modification when correctDrift option us
   )
 });
 
-describe('Test resource behavior after deleting GitRepo using keepResources option for exisiting GitRepo', { tags: '@p1'}, () => {
+describe('Test resource behavior after deleting GitRepo using keepResources option for exisiting GitRepo', { tags: ['@p1', '@pr-tests'] }, () => {
   qase(71,
     it("Fleet-71: Test RESOURCES will be KEPT and NOT be DELETED after GitRepo is deleted when keepResources is set to true in existing GitRepo.", { tags: '@fleet-71' }, () => {
       const repoName = "local-cluster-keep-71"
@@ -224,7 +224,7 @@ describe('Test resource behavior after deleting GitRepo using keepResources opti
     )
   });
 
-  describe('Private Helm Repository tests (helmRepoURLRegex)', { tags: '@p1'}, () => {
+  describe('Private Helm Repository tests (helmRepoURLRegex)', { tags: ['@p1', '@pr-tests'] }, () => {
 
     const repoUrl = 'https://github.com/fleetqa/fleet-qa-examples-public.git'
     const branch = 'main'
@@ -285,7 +285,7 @@ describe('Test resource behavior after deleting GitRepo using keepResources opti
       })
   });
 
-  describe('Test OCI support', { tags: '@p1'}, () => {
+  describe('Test OCI support', { tags: ['@p1', '@pr-tests'] }, () => {
     qase(60,
       it("Fleet-60: Test OCI helm chart support on Github Container Registry", { tags: '@fleet-60' }, () => {;
         const repoName = 'default-oci-60'
@@ -331,7 +331,7 @@ describe('Test resource behavior after deleting GitRepo using keepResources opti
     )  
   });
 
-  describe('Test Self-Healing on IMMUTABLE resources when correctDrift is enabled', { tags: '@p1'}, () => {
+  describe('Test Self-Healing on IMMUTABLE resources when correctDrift is enabled', { tags: ['@p1', '@pr-tests'] }, () => {
     const correctDriftTestData: testData[] = [
       { qase_id: 80,
         repoName: "ds-cluster-correct-80",
@@ -621,7 +621,7 @@ describe('Test GitRepo Bundle do not show hash mismatch error.', { tags: '@p1'},
 
 if (!/\/2\.11/.test(Cypress.expose('rancher_version')) && !/\/2\.12/.test(Cypress.expose('rancher_version')) && !/\/2\.13/.test(Cypress.expose('rancher_version'))) {
 
-  describe('Test `dependsON` functionality in Fleet GitRepo', { tags: '@p1'}, () => {
+  describe('Test `dependsON` functionality in Fleet GitRepo', { tags: ['@p1', '@pr-tests'] }, () => {
 
     qase(207,
       it("Fleet-207: Test GitRepo with `dependsOn` works as expected.", { tags: '@fleet-207' }, () => {

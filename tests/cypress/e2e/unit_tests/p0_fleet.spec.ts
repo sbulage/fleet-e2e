@@ -28,7 +28,7 @@ beforeEach(() => {
 });
 
 Cypress.config();
-describe('Test Fleet deployment on PUBLIC repos',  { tags: '@p0' }, () => {
+describe('Test Fleet deployment on PUBLIC repos',  { tags: ['@p0', '@pr-tests'] }, () => {
   qase(62,
     it('FLEET-62: Deploy application to local cluster', { tags: '@fleet-62' }, () => {
 
@@ -51,7 +51,7 @@ describe('Test Fleet deployment on PUBLIC repos',  { tags: '@p0' }, () => {
   );
 });
 
-describe('Test Fleet deployment on PRIVATE repos with HTTP auth', { tags: '@p0' }, () => {
+describe('Test Fleet deployment on PRIVATE repos with HTTP auth', { tags: ['@p0', '@pr-tests'] }, () => {
   //TODO: Commented Azure tests due to token expired, once restored uncomment it.
   const gitAuthType = "http"
   const repoTestData: testData[] = [
@@ -400,7 +400,7 @@ describe('Test gitrepos with cabundle', { tags: '@p0' }, () => {
 
 });
 
-  describe('Test Fleet with Webhook', { tags: '@p0' }, () => {
+  describe('Test Fleet with Webhook', { tags: ['@p0', '@pr-tests'] }, () => {
 
     const gh_private_pwd = Cypress.expose('gh_private_pwd');
 
@@ -594,7 +594,7 @@ describe('Test gitrepos with cabundle', { tags: '@p0' }, () => {
   })
 
   // New tests for jobs cleanup
-describe('Test Fleet job cleanup', { tags: '@p0' }, () => {
+describe('Test Fleet job cleanup', { tags: ['@p0', '@pr-tests'] }, () => {
   
   const repoUrl = 'https://github.com/rancher/fleet-test-data/';
   const branch = 'master';
@@ -698,7 +698,7 @@ describe('Test Fleet job cleanup', { tags: '@p0' }, () => {
   )
 });
 
-  describe('Test GitJob security context',  { tags: '@p0' }, () => {
+  describe('Test GitJob security context',  { tags: ['@p0', '@pr-tests'] }, () => {
     qase(160,
       it('FLEET-160: Test GitJob pod security context', { tags: '@fleet-160' }, () => {
         // Check the GitJob pod for Security Context.
