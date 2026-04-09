@@ -18,7 +18,7 @@ import 'cypress-file-upload';
 import * as cypressLib from '@rancher-ecp-qa/cypress-library';
 
 export const noRowsMessages = ['There are no rows to show.', 'There are no rows which match your search query.']
-export const NoAppBundleOrGitRepoPresentMessages = ['No repositories have been added', 'No App Bundles have been created']
+export const NoAppBundleOrGitRepoPresentMessages = ['No Git Repos have been added', 'No repositories have been added', 'No App Bundles have been created']
 export const rancherVersion = Cypress.expose('rancher_version');
 export const supported_versions_212_and_above = [
   /^(prime|prime-optimus|prime-optimus-alpha|prime-alpha|prime-rc|alpha)\/2\.(1[2-9]|[2-9]\d+)(\..*)?$/,
@@ -494,12 +494,16 @@ Cypress.Commands.add('deleteAll', (fleetCheck=true) => {
             .should('exist')
             .click({ctrlKey: true, force: true});
       });
+      // Forcefully adding some wait to TRY to ensure that bundle deletion happens after gitrepo deletion.
+      cy.wait(2500);
     };
 
     if ($body.text().includes('Delete')) {
       cy.wait(250) // Add small wait to give time for things to settle
       cy.get('[width="30"] > .checkbox-outer-container.check', { timeout: 50000 }).click();
       cy.get('.btn').contains('Delete').click({ctrlKey: true, force: true});   
+      // Forcefully adding some wait to TRY to ensure that bundle deletion happens after gitrepo deletion.
+      cy.wait(2500);
     };
 
     if (fleetCheck === true) {
@@ -514,7 +518,9 @@ Cypress.Commands.add('deleteAll', (fleetCheck=true) => {
 
 // Command to delete all repos pressent in Fleet local and default
 Cypress.Commands.add('deleteAllFleetRepos', (namespaceName) => {
+
   cy.continuousDeliveryMenuSelection();
+
   cy.fleetNamespaceToggle('fleet-local')
   cy.deleteAll();
   cy.fleetNamespaceToggle('fleet-default')
