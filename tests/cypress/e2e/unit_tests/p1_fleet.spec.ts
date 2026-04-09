@@ -262,6 +262,12 @@ describe('Test resource behavior after deleting GitRepo using keepResources opti
       ({qase_id, repoName, path, helmUrlRegex_matching, test_explanation}) => {
         qase(qase_id,
           it(`Fleet-${qase_id}: Test private helm registries for \"helmRepoURLRegex\" matches with \"${test_explanation}\" URL specified in fleet.yaml file`, { tags: `@fleet-${qase_id}` }, () => {;
+            
+            // Adding wait for mitigation of intermittent failures due to slow communication with helm registry 
+            // and also to make sure previous test's resources are deleted and not interfering with current test.
+            
+            cy.wait(5000);
+
             // Positive test using matching regex
             helmUrlRegex = helmUrlRegex_matching
             cy.addFleetGitRepo({ repoName, repoUrl, branch, path, gitOrHelmAuth, gitAuthType, userOrPublicKey, pwdOrPrivateKey, helmUrlRegex, local: true });
