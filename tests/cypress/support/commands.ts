@@ -540,11 +540,13 @@ Cypress.Commands.add('checkGitRepoStatus', (repoName, bundles, resources, { time
   cy.get('.primaryheader > h1, h1 > span.resource-name.masthead-resource-title').contains(repoName).should('be.visible')
   cy.log(`Checking ${bundles} Bundles and Resources`)
   if (bundles) {
+    cy.contains('Bundles ready', { timeout: timeout }).should('be.visible');
     cy.get('div.fleet-status', { timeout: timeout }).eq(0).contains(` ${bundles} Bundles ready `, { timeout: timeout }).should('be.visible')
   }
   // Ensure this check is performed only for tests in 'fleet-local' namespace.
   if (resources) {
-      cy.get('div.fleet-status', { timeout: timeout }).eq(1).contains(` ${resources} Resources ready `, { timeout: timeout }).should('be.visible')
+    cy.contains('Resources ready', { timeout: timeout }).should('be.visible');
+    cy.get('div.fleet-status', { timeout: timeout }).eq(1).contains(` ${resources} Resources ready `, { timeout: timeout }).should('be.visible')
   } else {
     // On downstream clusters (v2.9+), resources are affected by cluster count.
     // Avoid specifying 'resources' for tests in 'fleet-default' to allow automatic verification.
