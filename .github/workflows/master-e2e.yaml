@@ -267,14 +267,13 @@ jobs:
     steps:
       - name: Adding /usr/local/bin into PATH
         run: echo "/usr/local/bin/" >> ${GITHUB_PATH}
-      - name: Install latest helm-4 on runner
-        run: |
-          echo "::group::Install git and helm-4"
-          sudo zypper -n install --no-recommends git
-          curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-4 | bash
-          echo "::endgroup::"
       - name: Checkout
         uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
+      - name: Install latest helm-4 on runner
+        run: |
+          pwd
+          ls -a
+          ./.github/scripts/install-git-helm-4.sh
       - name: Install Go
         uses: actions/setup-go@4a3601121dd01d1626a1e23e37211e3254c1c06c # v6.4.0
         with:
