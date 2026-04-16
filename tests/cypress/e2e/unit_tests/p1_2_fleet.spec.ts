@@ -34,7 +34,11 @@ export const supported_versions_212_and_above = [
 ];
 
 beforeEach(() => {
-  cy.login();
+  cy.session('admin', () => {
+    cy.login();
+    cy.visit('/');
+  });
+
   cy.visit('/');
   cy.deleteAllFleetRepos();
 });

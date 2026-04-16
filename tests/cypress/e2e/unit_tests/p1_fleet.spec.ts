@@ -422,7 +422,7 @@ describe('Test resource behavior after deleting GitRepo using keepResources opti
               cy.filterInSearchBox(resourceName);
               cy.wait(500);
               if (resourceType === 'ConfigMaps') {
-                cy.deleteConfigMap(resourceName);
+                cy.deleteConfigMap(resourceName, dsCluster);
               }
               else {
                 cy.get('body').then(($body) => {

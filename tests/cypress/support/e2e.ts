@@ -69,7 +69,7 @@ declare global {
       restoreClusterToDefaultWorkspace(clusterName: string, timeout: number, defaultWorkspaceName?: string, restore?: boolean): Chainable<Element>;
       createNewFleetWorkspace(newWorkspaceName: string): Chainable<Element>;
       createConfigMap(configMapName: string): Chainable<Element>;
-      deleteConfigMap(configMapName: string): Chainable<Element>;
+      deleteConfigMap(configMapName: string, clusterName?: string): Chainable<Element>;
       closePopWindow(windowMessage: string): Chainable<Element>;
       k8sUpgradeInRancher(clusterName: string): Chainable<Element>;
       continuousDeliveryMenuSelection(navToAppBundles?: boolean): Chainable<Element>;

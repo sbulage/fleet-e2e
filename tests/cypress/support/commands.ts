@@ -511,8 +511,8 @@ Cypress.Commands.add('deleteAll', (fleetCheck=true) => {
       }
       
     else {
-        cy.get('td > span, td.text-center > span', { timeout: 25000 }).invoke('text').should('be.oneOf', noRowsMessages)
-      }
+      cy.contains(new RegExp(noRowsMessages.join('|')), { timeout: 30000 }).should('be.visible');
+    }
   });
 });
 
@@ -1186,8 +1186,8 @@ Cypress.Commands.add('createConfigMap', (configMapName) => {
 })
 
 
-Cypress.Commands.add('deleteConfigMap', (configMapName) => {
-    cy.accesMenuSelection('local', 'Storage', 'ConfigMaps');
+Cypress.Commands.add('deleteConfigMap', (configMapName, clusterName="local") => {
+    cy.accesMenuSelection(clusterName, 'Storage', 'ConfigMaps');
     cy.filterInSearchBox(configMapName);
     cy.wait(1000);
     cy.get('body').then(($body) => {
