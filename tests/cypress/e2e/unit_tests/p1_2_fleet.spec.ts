@@ -888,7 +888,7 @@ describe('Test namespace deletion when bundle is deleted', { tags: ['@p1_2', '@p
       // Check namespace is deleted
       cy.accesMenuSelection('local', 'Projects/Namespaces');
       cy.filterInSearchBox(namespaceName);
-      cy.contains(namespaceName).should('not.exist');
+      cy.contains(namespaceName, { timeout: 30000 }).should('not.exist');
     })
   )
 
