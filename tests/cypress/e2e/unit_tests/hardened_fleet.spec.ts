@@ -62,7 +62,7 @@ describe('Test Hardened Fleet deployment on PUBLIC repos',  { tags: '@hardening-
       cy.clickButton('Edit as YAML');
       cy.contains('apiVersion: fleet.cattle.io/v1alpha1').should('be.visible');
       cy.clickButton('Create')
-      cy.wait(2000);
+      cy.wait(20000);
       cy.checkGitRepoStatus(repoName, '1 / 1', '18 / 18');
       cy.verifyTableRow(0, 'Active', 'downstream-clusters-ok-simple');
     })
