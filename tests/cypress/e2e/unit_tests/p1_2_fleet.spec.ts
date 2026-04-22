@@ -1062,10 +1062,8 @@ describe('Test Helm app with Custom Values', { tags: '@p1_2' }, () => {
         cy.addFleetGitRepo({ repoName, repoUrl, branch, path, local: true });
         cy.clickButton('Create');
         cy.verifyTableRow(0, 'Active', repoName);
+        cy.wait(1000);
         cy.checkGitRepoStatus(repoName, '1 / 1', '1 / 1');
-
-        // Delete GitRepo
-        cy.deleteAllFleetRepos();
       })
     );
   });
