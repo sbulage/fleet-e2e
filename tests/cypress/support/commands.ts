@@ -284,10 +284,10 @@ Cypress.Commands.add('deployToClusterOrClusterGroup', (deployToTarget) => {
 
 Cypress.Commands.add('clickCreateGitRepo', (local) => {
   if (supported_versions_212_and_above.some(r => r.test(rancherVersion))) {
-    cy.clickButton('Create App Bundle');
     if (local){
       cy.fleetNamespaceToggle('fleet-local');
     }
+    cy.clickButton('Create App Bundle');
     cy.contains('App Bundle: Create').should('be.visible');
     cy.contains('Git Repos').should('be.visible').click();
     cy.wait(1000);
