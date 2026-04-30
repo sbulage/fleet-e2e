@@ -5,10 +5,15 @@ run-name: ${{ github.event_name == 'workflow_dispatch' && format('Upgrade from `
 on:
   workflow_dispatch:
     inputs:
+      qase_report:
+        description: Report to QASE
+        default: true
+        type: boolean
       qase_run_id:
-        description: Qase run ID where the results will be reported
-        default: auto
+        description: Existing QASE run ID (leave empty to create a new one)
+        required: false
         type: string
+        default: ''
       destroy_runner:
         description: Destroy the auto-generated self-hosted runner
         default: true
@@ -76,5 +81,6 @@ jobs:
       rancher_version: ${{ inputs.rancher_version }}
       rancher_upgrade: ${{ inputs.rancher_upgrade }}
       upgrade: ${{ inputs.upgrade }}
-      qase_run_id: ${{ inputs.qase_run_id }}
+      qase_report: ${{ inputs.qase_report == true || (github.event_name == 'schedule' && true) }}
+      qase_run_id: ${{ inputs.qase_run_id || '' }}
       grep_test_by_tag: ${{ inputs.grep_test_by_tag }}

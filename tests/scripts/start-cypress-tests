@@ -9,8 +9,10 @@ npm install
 docker run --init -v $PWD:/workdir -w /workdir              \
     -e CYPRESS_TAGS=$CYPRESS_TAGS                           \
     -e QASE_API_TOKEN=$QASE_API_TOKEN                       \
-    -e QASE_REPORT=$QASE_REPORT                             \
-    -e QASE_RUN_ID=$QASE_RUN_ID                             \
+    -e QASE_MODE=$QASE_MODE                                 \
+    -e QASE_TESTOPS_RUN_TITLE="$QASE_TESTOPS_RUN_TITLE"     \
+    -e QASE_TESTOPS_RUN_DESCRIPTION="$QASE_TESTOPS_RUN_DESCRIPTION" \
+    -e QASE_TESTOPS_RUN_ID=$QASE_TESTOPS_RUN_ID             \
     -e RANCHER_VERSION=$RANCHER_VERSION                     \
     -e RANCHER_PASSWORD=$RANCHER_PASSWORD                   \
     -e RANCHER_URL=$RANCHER_URL                             \

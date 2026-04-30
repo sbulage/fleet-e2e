@@ -14,7 +14,6 @@ limitations under the License.
 
 import 'cypress/support/commands';
 import * as cypressLib from '@rancher-ecp-qa/cypress-library';
-import { qase } from 'cypress-qase-reporter/dist/mocha';
 
 // General constants
 export const uiPassword    = "rancherpassword"
@@ -50,8 +49,7 @@ beforeEach(() => {
 Cypress.config();
 describe('Test Fleet access with RBAC with custom roles using all verbs for User-Base and Standard User.', { tags: '@rbac' }, () => {
 
-  qase(5,
-    it('Test "User-Base" role user with custom role to "fleetworkspaces", "gitrepos" and "bundles" and  ALL verbs access CAN access "Workspaces", "Bundles" and "Git Repos" but NOT "Clusters" NOR "Clusters Groups"', { tags: '@fleet-5' }, () => {
+  it(qase(5, 'Test "User-Base" role user with custom role to "fleetworkspaces", "gitrepos" and "bundles" and  ALL verbs access CAN access "Workspaces", "Bundles" and "Git Repos" but NOT "Clusters" NOR "Clusters Groups"'), { tags: '@fleet-5' }, () => {
 
       const baseUser      = "base-user"
       const customRoleName = "fleetworkspaces-bundles-gitrepos-all-verbs-role"
@@ -88,13 +86,10 @@ describe('Test Fleet access with RBAC with custom roles using all verbs for User
       cy.contains('Clusters').should('not.exist');
       cy.contains('Clusters Groups').should('not.exist');
     })
-  )
-
 });
 
 describe('Test Fleet access with RBAC with custom roles using Standard User', { tags: '@rbac' }, () => {
-  qase(43,
-    it('Test "Standard Base" role user with "list" and "create" verbs for "fleetworkspaces" resource. User can NOT "edit" nor "delete" them', { tags: '@fleet-43' }, () => {
+  it(qase(43, 'Test "Standard Base" role user with "list" and "create" verbs for "fleetworkspaces" resource. User can NOT "edit" nor "delete" them'), { tags: '@fleet-43' }, () => {
       
       const stduser = "std-user-43"
       const customRoleName = "fleetworkspaces-list-and-create-role"
@@ -133,11 +128,10 @@ describe('Test Fleet access with RBAC with custom roles using Standard User', { 
       // Ensuring the user is not able to "edit" or "delete" workspaces.
       cy.open3dotsMenu('fleet-default', 'Delete', true);
       cy.open3dotsMenu('fleet-default', 'Edit Config', true);
-    })
+    }
   )
 
-  qase(44,
-    it('Test "Standard Base" role with custom role to "fleetworkspaces" with all verbs except "delete" can "edit" but can NOT "delete" them', { tags: '@fleet-44' }, () => {
+  it(qase(44, 'Test "Standard Base" role with custom role to "fleetworkspaces" with all verbs except "delete" can "edit" but can NOT "delete" them'), { tags: '@fleet-44' }, () => {
       
       const stduser = "std-user-44"
       const customRoleName = "fleetworskspaces-all-but-delete-role"
@@ -177,11 +171,10 @@ describe('Test Fleet access with RBAC with custom roles using Standard User', { 
       // Ensuring the user is not able to "delete" workspaces. 
       cy.continuousDeliveryWorkspacesMenu();
       cy.open3dotsMenu('fleet-default', 'Delete', true);
-    })
+    }
   )
 
-  qase(45,
-    it('Test "Standard-Base" role user with RESOURCE "fleetworkspaces" with ACTIONS "List", "Delete" can "list and delete" but can NOT "edit" them', { tags: '@fleet-45' }, () => {
+  it(qase(45, 'Test "Standard-Base" role user with RESOURCE "fleetworkspaces" with ACTIONS "List", "Delete" can "list and delete" but can NOT "edit" them'), { tags: '@fleet-45' }, () => {
       
       const stduser = "std-user-45"
       const customRoleName = "fleetworkspaces-list-and-delete-role"
@@ -217,11 +210,10 @@ describe('Test Fleet access with RBAC with custom roles using Standard User', { 
       // Ensuring the user is NOT able to "edit" workspaces. 
       cy.continuousDeliveryWorkspacesMenu();
       cy.open3dotsMenu('fleet-default', 'Edit Config', true);
-    })
+    }
   )
 
-  qase(42,
-    it('Test "Standard User" role user with custom role to "fleetworkspaces", "gitrepos" and "bundles" and  ALL verbs access CAN access "Workspaces", "Bundles" and "Git Repos" but NOT "Cluster Registration Tokens" "BundleNamespaceMappings" and "GitRepoRestrictions"', { tags: '@fleet-42' }, () => {
+  it(qase(42, 'Test "Standard User" role user with custom role to "fleetworkspaces", "gitrepos" and "bundles" and  ALL verbs access CAN access "Workspaces", "Bundles" and "Git Repos" but NOT "Cluster Registration Tokens" "BundleNamespaceMappings" and "GitRepoRestrictions"'), { tags: '@fleet-42' }, () => {
 
       const baseUser      = "base-user"
       const customRoleName = "fleetworkspaces-bundles-gitrepos-all-verbs-role"
@@ -266,7 +258,6 @@ describe('Test Fleet access with RBAC with custom roles using Standard User', { 
       cy.contains('GitRepoRestrictions').should('not.exist');
       cy.contains('BundleNamespaceMappings').should('not.exist');
     })
-  )
 });
   
   describe('Test Fleet access with RBAC with "CUSTOM ROLES" and "GITREPOS" using "STANDARD USER"', { tags: '@rbac' }, () => {
@@ -289,8 +280,7 @@ describe('Test Fleet access with RBAC with custom roles using Standard User', { 
       cy.checkGitRepoStatus(repoNameDefault, '1 / 1');
     })
     
-  qase(46,
-    it('Fleet-46: Test "Standard-user" | Custom Role | Fleetworkspaces, Bundles = [ALL] | GitRepos = [List]', { tags: '@fleet-46' }, () => {
+  it(qase(46, 'Fleet-46: Test "Standard-user" | Custom Role | Fleetworkspaces), Bundles = [ALL] | GitRepos = [List]'), { tags: '@fleet-46' }, () => {
       
       const stduser = "std-user-46"
       
@@ -336,11 +326,10 @@ describe('Test Fleet access with RBAC with custom roles using Standard User', { 
       cy.fleetNamespaceToggle('fleet-local');
       cy.open3dotsMenu(repoName, 'Edit Config', true);
       cy.open3dotsMenu(repoName, 'Delete', true);
-    })
+    }
   )
 
-  qase(47,
-    it('Fleet-47: Test "Standard-user" | Custom Role | Fleetworkspaces, Bundles = [ALL] | GitRepos = [List, Create]', { tags: '@fleet-47' }, () => {
+  it(qase(47, 'Fleet-47: Test "Standard-user" | Custom Role | Fleetworkspaces), Bundles = [ALL] | GitRepos = [List, Create]'), { tags: '@fleet-47' }, () => {
       
       const stduser = "std-user-47"     
       
@@ -387,11 +376,10 @@ describe('Test Fleet access with RBAC with custom roles using Standard User', { 
       cy.fleetNamespaceToggle('fleet-local');
       cy.open3dotsMenu(repoName, 'Edit Config', true);
       cy.open3dotsMenu(repoName, 'Delete', true);
-    })
+    }
   )
 
-  qase(48,
-    it('Fleet-48: Test "Standard-user" | Custom Role | Fleetworkspaces, Bundles = [ALL] | GitRepos = [List, Create, Update, Get]', { tags: '@fleet-48' }, () => {
+  it(qase(48, 'Fleet-48: Test "Standard-user" | Custom Role | Fleetworkspaces), Bundles = [ALL] | GitRepos = [List, Create, Update, Get]'), { tags: '@fleet-48' }, () => {
       
       const stduser = "std-user-48"
       
@@ -441,11 +429,10 @@ describe('Test Fleet access with RBAC with custom roles using Standard User', { 
       cy.clickButton('Cancel');
       // Can't "Delete"
       cy.open3dotsMenu(repoName, 'Delete', true);
-    })
+    }
   )
 
-  qase(50,
-    it('Fleet-50: Test "Standard-user" | Custom Role | Fleetworkspaces, Bundles = [ALL] | GitRepos = [List, Delete]', { tags: '@fleet-50' }, () => {
+  it(qase(50, 'Fleet-50: Test "Standard-user" | Custom Role | Fleetworkspaces), Bundles = [ALL] | GitRepos = [List, Delete]'), { tags: '@fleet-50' }, () => {
       
       const stduser = "std-user-50"
       
@@ -496,8 +483,6 @@ describe('Test Fleet access with RBAC with custom roles using Standard User', { 
       // Cant't "Edit"
       cy.open3dotsMenu(repoName, 'Edit Config', true);
     })
-  )
-
 });
 
 describe('Test Fleet access with RBAC with "CUSTOM ROLES" and "GITREPOS" using "USER-BASE" user', { tags: '@rbac' }, () => {
@@ -519,8 +504,7 @@ describe('Test Fleet access with RBAC with "CUSTOM ROLES" and "GITREPOS" using "
     cy.checkGitRepoStatus(repoNameDefault, '1 / 1');
   })
 
-  qase(13,
-    it('Fleet-13: Test "Base-user" | Custom Role | Fleetworkspaces, Bundles = [ALL] | GitRepos = [List]', { tags: '@fleet-13' }, () => {
+  it(qase(13, 'Fleet-13: Test "Base-user" | Custom Role | Fleetworkspaces), Bundles = [ALL] | GitRepos = [List]'), { tags: '@fleet-13' }, () => {
       
       const baseUser = "base-user-13"
       
@@ -575,11 +559,10 @@ describe('Test Fleet access with RBAC with "CUSTOM ROLES" and "GITREPOS" using "
       cy.fleetNamespaceToggle('fleet-local');
       cy.open3dotsMenu(repoName, 'Edit Config', true);
       cy.open3dotsMenu(repoName, 'Delete', true);
-    })
+    }
   )
 
-  qase(14,
-    it('Fleet-14: Test "Base-user" | Custom Role | Fleetworkspaces, Bundles = [ALL] | GitRepos = [List, Create]', { tags: '@fleet-14' }, () => {
+  it(qase(14, 'Fleet-14: Test "Base-user" | Custom Role | Fleetworkspaces), Bundles = [ALL] | GitRepos = [List, Create]'), { tags: '@fleet-14' }, () => {
       
       const baseUser = "base-user-14"     
       
@@ -627,11 +610,10 @@ describe('Test Fleet access with RBAC with "CUSTOM ROLES" and "GITREPOS" using "
       cy.fleetNamespaceToggle('fleet-local');
       cy.open3dotsMenu(repoName, 'Edit Config', true);
       cy.open3dotsMenu(repoName, 'Delete', true);
-    })
+    }
   )
 
-  qase(15,
-    it('Fleet-15: Test "Base-user" | Custom Role | Fleetworkspaces, Bundles = [ALL] | GitRepos = [List, Create, Update, Get]', { tags: '@fleet-15' }, () => {
+  it(qase(15, 'Fleet-15: Test "Base-user" | Custom Role | Fleetworkspaces), Bundles = [ALL] | GitRepos = [List, Create, Update, Get]'), { tags: '@fleet-15' }, () => {
       
       const baseUser = "base-user-15"     
       
@@ -682,11 +664,10 @@ describe('Test Fleet access with RBAC with "CUSTOM ROLES" and "GITREPOS" using "
       cy.clickButton('Cancel');
       // Can't "Delete"
       cy.open3dotsMenu(repoName, 'Delete', true);
-    })
+    }
   )
 
-  qase(16,
-    it('Fleet-16: Test "Base-user" | Custom Role | Fleetworkspaces, Bundles = [ALL] | GitRepos = [List, Delete]', { tags: '@fleet-16' }, () => {
+  it(qase(16, 'Fleet-16: Test "Base-user" | Custom Role | Fleetworkspaces), Bundles = [ALL] | GitRepos = [List, Delete]'), { tags: '@fleet-16' }, () => {
       
       const baseUser = "base-user-16"     
       
@@ -738,13 +719,11 @@ describe('Test Fleet access with RBAC with "CUSTOM ROLES" and "GITREPOS" using "
       // Cant't "Edit"
       cy.open3dotsMenu(repoName, 'Edit Config', true);
     })
-  )
 });
 
 describe('Test Fleet access with RBAC with "CUSTOM ROLES" and "GITREPOS" using "USER-BASE" user', { tags: '@rbac' }, () => {
 
-  qase(10,
-    it('Fleet-10: Test "Base-user" | Custom Role | Fleetworkspaces = [List, Create] | Bundles, Gitrepos = [ALL]', { tags: '@fleet-10' }, () => {
+  it(qase(10, 'Fleet-10: Test "Base-user" | Custom Role | Fleetworkspaces = [List), Create] | Bundles, Gitrepos = [ALL]'), { tags: '@fleet-10' }, () => {
       
       const baseUser = "base-user-10"     
       
@@ -782,11 +761,10 @@ describe('Test Fleet access with RBAC with "CUSTOM ROLES" and "GITREPOS" using "
       // Ensuring the user is not able to "edit" or "delete" workspaces.
       cy.open3dotsMenu('fleet-default', 'Delete', true);
       cy.open3dotsMenu('fleet-default', 'Edit Config', true);
-    })
+    }
   )
 
-  qase(11,
-    it('Fleet-11: Test "Base-user" | Custom Role | Fleetworkspaces = [All except Delete] | Bundles, Gitrepos = [ALL]', { tags: '@fleet-11' }, () => {
+  it(qase(11, 'Fleet-11: Test "Base-user" | Custom Role | Fleetworkspaces = [All except Delete] | Bundles), Gitrepos = [ALL]'), { tags: '@fleet-11' }, () => {
       
       const baseUser = "base-user-11"     
       
@@ -825,11 +803,10 @@ describe('Test Fleet access with RBAC with "CUSTOM ROLES" and "GITREPOS" using "
       // Ensuring the user is not able to "delete" workspaces. 
       cy.continuousDeliveryWorkspacesMenu();
       cy.open3dotsMenu('fleet-default', 'Delete', true);
-    })
+    }
   )
 
-  qase(12,
-    it('Fleet-12: Test "Base-user" | Custom Role | Fleetworkspaces = [List, Delete] | Bundles, Gitrepos = [ALL]', { tags: '@fleet-12' }, () => {
+  it(qase(12, 'Fleet-12: Test "Base-user" | Custom Role | Fleetworkspaces = [List), Delete] | Bundles, Gitrepos = [ALL]'), { tags: '@fleet-12' }, () => {
       
       const baseUser = "base-user-12"
       
@@ -865,7 +842,6 @@ describe('Test Fleet access with RBAC with "CUSTOM ROLES" and "GITREPOS" using "
       cy.continuousDeliveryWorkspacesMenu();
       cy.open3dotsMenu('fleet-default', 'Edit Config', true);
     })
-  )
 });
 
 

@@ -13,7 +13,6 @@ limitations under the License.
 */
 
 import 'cypress/support/commands';
-import { qase } from 'cypress-qase-reporter/dist/mocha';
 
 export const appName = "nginx-keep"
 export const branch = "master"
@@ -30,8 +29,7 @@ beforeEach(() => {
 
 
 describe('Test resource behavior after deleting GitRepo using keepResources option using YAML', { tags: ['@p1', '@pr-tests'] }, () => {
-  qase(68, 
-    it('Fleet-68: Test RESOURCES will be KEPT and NOT be DELETED after GitRepo is deleted when keepResources: true used in the GitRepo yaml file.', { tags: '@fleet-68' }, () => {
+  it(qase(68, 'Fleet-68: Test RESOURCES will be KEPT and NOT be DELETED after GitRepo is deleted when keepResources: true used in the GitRepo yaml file.'), { tags: '@fleet-68' }, () => {
       cy.continuousDeliveryMenuSelection();
       cy.fleetNamespaceToggle('fleet-local')
       cy.clickCreateGitRepo();
@@ -50,7 +48,6 @@ describe('Test resource behavior after deleting GitRepo using keepResources opti
       cy.checkApplicationStatus(appName);
       cy.deleteApplicationDeployment();
     })
-  )
 })
 
 describe('Test resource behavior after deleting GitRepo using keepResources option', { tags: '@p1'}, () => {
@@ -66,8 +63,7 @@ describe('Test resource behavior after deleting GitRepo using keepResources opti
   ]
   keepResourceData.forEach(
     ({ qase_id, keepResources, test_explanation}) => {
-      qase(qase_id,
-        it(`Fleet-${qase_id}: Test ${test_explanation}`, { tags: `@fleet-${qase_id}` }, () => {
+      it(qase(qase_id, `Fleet-${qase_id}: Test ${test_explanation}`), { tags: `@fleet-${qase_id}` }, () => {
           const repoName = `local-cluster-fleet-${qase_id}`
           cy.addFleetGitRepo({ repoName, repoUrl, branch, path, keepResources, local: true });
           cy.clickButton('Create');
@@ -79,10 +75,8 @@ describe('Test resource behavior after deleting GitRepo using keepResources opti
             cy.deleteApplicationDeployment();
           }
         })
-      )
-    }
-  )
-});
+    });
+  });
 
 describe('Test Self-Healing of resource modification when correctDrift option used', { tags: ['@p1', '@pr-tests'] }, () => {
   const correctDriftData: testData[] = [
@@ -97,8 +91,7 @@ describe('Test Self-Healing of resource modification when correctDrift option us
   ]
   correctDriftData.forEach(
     ({ qase_id, correctDrift, test_explanation}) => {
-      qase(qase_id,
-        it(`Fleet-${qase_id}: Test ${test_explanation}`, { tags: `@fleet-${qase_id}` }, () => {
+      it(qase(qase_id, `Fleet-${qase_id}: Test ${test_explanation}`), { tags: `@fleet-${qase_id}` }, () => {
           const repoName = `local-cluster-correct-${qase_id}`
           cy.addFleetGitRepo({ repoName, repoUrl, branch, path, correctDrift, local: true });
           cy.clickButton('Create');
@@ -119,14 +112,11 @@ describe('Test Self-Healing of resource modification when correctDrift option us
           }
           cy.deleteAllFleetRepos();
         })
-      )
-    }
-  )
-});
+    });
+  });
 
 describe('Test Self-Healing of resource modification when correctDrift option used for exisiting GitRepo', { tags: '@p1'}, () => {
-  qase(77,
-    it("Fleet-77: Test MODIFICATION to resources will be self-healed when correctDrift is set to true in existing GitRepo.", { tags: '@fleet-77', retries: 1 }, () => {
+  it(qase(77, "Fleet-77: Test MODIFICATION to resources will be self-healed when correctDrift is set to true in existing GitRepo."), { tags: '@fleet-77', retries: 1 }, () => {
       const repoName = "local-cluster-correct-77"
       cy.addFleetGitRepo({ repoName, repoUrl, branch, path, local: true });
       cy.clickButton('Create');
@@ -162,12 +152,10 @@ describe('Test Self-Healing of resource modification when correctDrift option us
 
       cy.deleteAllFleetRepos();
     })
-  )
 });
 
 describe('Test resource behavior after deleting GitRepo using keepResources option for exisiting GitRepo', { tags: ['@p1', '@pr-tests'] }, () => {
-  qase(71,
-    it("Fleet-71: Test RESOURCES will be KEPT and NOT be DELETED after GitRepo is deleted when keepResources is set to true in existing GitRepo.", { tags: '@fleet-71' }, () => {
+  it(qase(71, "Fleet-71: Test RESOURCES will be KEPT and NOT be DELETED after GitRepo is deleted when keepResources is set to true in existing GitRepo."), { tags: '@fleet-71' }, () => {
       const repoName = "local-cluster-keep-71"
       cy.addFleetGitRepo({ repoName, repoUrl, branch, path, local: true });
       cy.clickButton('Create');
@@ -187,17 +175,14 @@ describe('Test resource behavior after deleting GitRepo using keepResources opti
       cy.checkApplicationStatus(appName);
       cy.deleteApplicationDeployment();
     })
-  )
 });
 
   describe('Test local cluster behavior with New workspace', { tags: '@p1'}, () => {
-    qase(107,
-      it("Fleet-107: Test LOCAL CLUSTER cannot be moved to another workspace as no 'Change workspace' option available..", { tags: '@fleet-107' }, () => {
+    it(qase(107, "Fleet-107: Test LOCAL CLUSTER cannot be moved to another workspace as no 'Change workspace' option available.."), { tags: '@fleet-107' }, () => {
         cy.accesMenuSelection('Continuous Delivery', 'Clusters');
         cy.fleetNamespaceToggle('fleet-local');
         cy.open3dotsMenu('local', 'Change workspace', true);
       })
-    )
   });
 
   // Imagescan are disabled by default after: https://github.com/rancher/fleet-product-docs/pull/175/changes
@@ -205,8 +190,7 @@ describe('Test resource behavior after deleting GitRepo using keepResources opti
   // This is currently tricky via yaml, hence skipping for now. 
   // We can re-enable and improve the test later when we have better way to enable imagescan for testing.
   describe.skip('Imagescan tests', { tags: '@p1'}, () => {
-    qase(112,
-      it("Fleet-112: Test imagescan app without expected semver range does not break fleet controller", { tags: '@fleet-112' }, () => {;
+    it(qase(112, "Fleet-112: Test imagescan app without expected semver range does not break fleet controller"), { tags: '@fleet-112' }, () => {;
         const repoName = 'local-cluster-imagescan-112'
         const repoUrl = 'https://github.com/rancher/fleet-test-data'
         const branch = 'master'
@@ -221,7 +205,6 @@ describe('Test resource behavior after deleting GitRepo using keepResources opti
         cy.verifyTableRow(0, /Running|Active/, 'fleet-controller')
         cy.deleteAllFleetRepos();
       })
-    )
   });
 
   describe('Private Helm Repository tests (helmRepoURLRegex)', { tags: ['@p1', '@pr-tests'] }, () => {
@@ -260,8 +243,7 @@ describe('Test resource behavior after deleting GitRepo using keepResources opti
 
     privateHelmData.forEach(
       ({qase_id, repoName, path, helmUrlRegex_matching, test_explanation}) => {
-        qase(qase_id,
-          it(`Fleet-${qase_id}: Test private helm registries for \"helmRepoURLRegex\" matches with \"${test_explanation}\" URL specified in fleet.yaml file`, { tags: `@fleet-${qase_id}` }, () => {;
+        it(qase(qase_id, `Fleet-${qase_id}: Test private helm registries for \"helmRepoURLRegex\" matches with \"${test_explanation}\" URL specified in fleet.yaml file`), { tags: `@fleet-${qase_id}` }, () => {;
             
             // Adding wait for mitigation of intermittent failures due to slow communication with helm registry 
             // and also to make sure previous test's resources are deleted and not interfering with current test.
@@ -287,13 +269,11 @@ describe('Test resource behavior after deleting GitRepo using keepResources opti
             cy.get('.text-error', { timeout: 120000 }).should('contain', 'code: 401');
             cy.deleteAllFleetRepos();
           })
-        )
       })
   });
 
   describe('Test OCI support', { tags: ['@p1', '@pr-tests'] }, () => {
-    qase(60,
-      it("Fleet-60: Test OCI helm chart support on Github Container Registry", { tags: '@fleet-60' }, () => {;
+    it(qase(60, "Fleet-60: Test OCI helm chart support on Github Container Registry"), { tags: '@fleet-60' }, () => {;
         const repoName = 'default-oci-60'
         const repoUrl = 'https://github.com/rancher/fleet-test-data'
         const branch = 'master'
@@ -309,10 +289,8 @@ describe('Test resource behavior after deleting GitRepo using keepResources opti
         cy.get('.col-link-detail').contains('fleet-test-configmap').should('be.visible').click({ force: true });
         cy.get('section#data').should('contain', 'default-name').and('contain', 'value');
       })
-    )
   
-    qase(127,
-      it("Fleet-127: Test PRIVATE OCI helm chart support on Github Container Registry", { tags: '@fleet-127' }, () => {;
+    it(qase(127, "Fleet-127: Test PRIVATE OCI helm chart support on Github Container Registry"), { tags: '@fleet-127' }, () => {;
         const repoName = 'default-oci-127'
         const repoUrl = 'https://github.com/fleetqa/fleet-qa-examples-public'
         const branch = 'main'
@@ -332,7 +310,6 @@ describe('Test resource behavior after deleting GitRepo using keepResources opti
         cy.get('.col-link-detail').contains('fleet-test-configmap').should('be.visible').click({ force: true });
         cy.get('section#data').should('contain', 'default-name').and('contain', 'value');
       })
-    )  
   });
 
   describe('Test Self-Healing on IMMUTABLE resources when correctDrift is enabled', { tags: ['@p1', '@pr-tests'] }, () => {
@@ -357,8 +334,7 @@ describe('Test resource behavior after deleting GitRepo using keepResources opti
   
     correctDriftTestData.forEach(
       ({qase_id, repoName, resourceType, resourceName, resourceLocation, resourceNamespace, dataToAssert}) => {
-        qase(qase_id,
-          it(`Fleet-${qase_id}: Test IMMUTABLE resource "${resourceType}" will NOT be self-healed when correctDrift is set to true.`, { tags: `@fleet-${qase_id}` }, () => {
+        it(qase(qase_id, `Fleet-${qase_id}: Test IMMUTABLE resource "${resourceType}" will NOT be self-healed when correctDrift is set to true.`), { tags: `@fleet-${qase_id}` }, () => {
             const path = "multiple-paths"
   
             // Add GitRepo by enabling 'correctDrift'
@@ -441,10 +417,8 @@ describe('Test resource behavior after deleting GitRepo using keepResources opti
               cy.deleteAll(false);
             })
           })
-        )
-      }
-    )
   });
+})
 
   describe('Tests with disablePolling', { tags: '@p1' }, () => {
   
@@ -472,9 +446,8 @@ describe('Test resource behavior after deleting GitRepo using keepResources opti
 
     }
 
-    qase(126,
-      it(
-        'Fleet-126: Test when `disablePolling=true` and forcing update Gitrepo will sync latest changes from Github',
+    it(qase(126, 
+        'Fleet-126: Test when `disablePolling=true` and forcing update Gitrepo will sync latest changes from Github'),
         { tags: '@fleet-126', retries: 1 }, // TODO: Retry added to avoid intermittent failures. Remove once fixed.
         () => {
 
@@ -514,13 +487,10 @@ describe('Test resource behavior after deleting GitRepo using keepResources opti
           cy.accesMenuSelection('local', 'Workloads', 'Deployments');
           cy.filterInSearchBox('nginx-test-polling');
           cy.verifyTableRow(0, 'Active', '5/5');
-        }
-      )
-    );
+        });
 
-    qase(124,
-      it(
-        'Fleet-124: Test when `disablePolling=true` Gitrepo will not sync latest changes from Github',
+    it(qase(124, 
+        'Fleet-124: Test when `disablePolling=true` Gitrepo will not sync latest changes from Github'),
         { tags: '@fleet-124' },
         () => {
 
@@ -539,13 +509,10 @@ describe('Test resource behavior after deleting GitRepo using keepResources opti
           cy.accesMenuSelection('local', 'Workloads', 'Deployments');
           cy.filterInSearchBox('nginx-test-polling');
           cy.verifyTableRow(0, 'Active', '2/2');
-        }
-      )
-    );
+        });
 
-    qase(125,
-      it(
-        'Fleet-125: Test when `disablePolling=true` and pausing / unpausing Gitrepo will sync latest changes from Github',
+    it(qase(125, 
+        'Fleet-125: Test when `disablePolling=true` and pausing / unpausing Gitrepo will sync latest changes from Github'),
         { tags: '@fleet-125' },
         () => {
 
@@ -592,15 +559,12 @@ describe('Test resource behavior after deleting GitRepo using keepResources opti
           cy.accesMenuSelection('local', 'Workloads', 'Deployments');
           cy.filterInSearchBox('nginx-test-polling');
           cy.verifyTableRow(0, 'Active', '5/5');
-        }
-      )
-    );
-  });
+        });
+    });
 
 describe('Test GitRepo Bundle do not show hash mismatch error.', { tags: '@p1'}, () => {
 
-  qase(195,
-    it("Fleet-195: Test GitRepo bundle hash is not mismatch.", { tags: '@fleet-195' }, () => {
+  it(qase(195, "Fleet-195: Test GitRepo bundle hash is not mismatch."), { tags: '@fleet-195' }, () => {
 
       const repoName = "test-bundle-hash-mistmatch"
       const path = "qa-test-apps/bundle-hash-test"
@@ -620,15 +584,13 @@ describe('Test GitRepo Bundle do not show hash mismatch error.', { tags: '@p1'},
       cy.verifyTableRow(0, 'Active', repoName);
 
     })
-  )
 });
 
 if (!/\/2\.11/.test(Cypress.expose('rancher_version')) && !/\/2\.12/.test(Cypress.expose('rancher_version')) && !/\/2\.13/.test(Cypress.expose('rancher_version'))) {
 
   describe('Test `dependsON` functionality in Fleet GitRepo', { tags: ['@p1', '@pr-tests'] }, () => {
 
-    qase(207,
-      it("Fleet-207: Test GitRepo with `dependsOn` works as expected.", { tags: '@fleet-207' }, () => {
+    it(qase(207, "Fleet-207: Test GitRepo with `dependsOn` works as expected."), { tags: '@fleet-207' }, () => {
     
         cy.addFleetGitRepo({
           repoName: "root",
@@ -666,12 +628,10 @@ if (!/\/2\.11/.test(Cypress.expose('rancher_version')) && !/\/2\.12/.test(Cypres
         // Clicking "Unpause" to ensure button Delete is visible to later delete both repos
         cy.open3dotsMenu('root', 'Unpause');
         cy.wait(1000);
-        cy.deleteAllFleetRepos();      
-      }
-    ));
+        cy.deleteAllFleetRepos();     
+    });
 
-    qase(208,
-      it("Fleet-208: Verify GitRepo with `dependsOn` with invalid states display invalid error.", { tags: '@fleet-208' }, () => {
+    it(qase(208, "Fleet-208: Verify GitRepo with `dependsOn` with invalid states display invalid error."), { tags: '@fleet-208' }, () => {
     
         cy.addFleetGitRepo({
           repoName: "root",
@@ -699,7 +659,7 @@ if (!/\/2\.11/.test(Cypress.expose('rancher_version')) && !/\/2\.12/.test(Cypres
         cy.verifyTableRow(0, 'Git Updating', 'leaf-error-state');
         cy.verifyTableRow(0, 'leaf-error-state', '0/0');
         cy.contains('Failed to process bundle: validating fleet.yaml: dependsOn[0].acceptedStates[0]: invalid state "BadState", valid values are: [Ready NotReady Pending OutOfSync Modified WaitApplied ErrApplied]').should('be.visible');
-      }
-    ));
+    });
   });
-}
+  }
+

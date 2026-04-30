@@ -21,14 +21,11 @@ export const supported_versions_212_and_above = [
 
 Cypress.config();
 describe('First login on Rancher', { tags: ['@login', '@pr-tests'] }, () => {
-  qase(120,
-    it('Log in and accept terms and conditions', { tags: '@fleet-120' },  () => {
+    it(qase(120,'Log in and accept terms and conditions'), { tags: '@fleet-120' }, () => {
       cypressLib.firstLogin();
-    })
-  );
+    });
 
-  qase(114,
-    it('Check ready state of local cluster after Rancher login', { tags: '@fleet-114' }, () => {
+  it(qase(114,'Check ready state of local cluster after Rancher login'), { tags: '@fleet-114' }, () => {
       cy.login();
       cy.visit('/');
       cypressLib.burgerMenuToggle();
@@ -46,17 +43,14 @@ describe('First login on Rancher', { tags: ['@login', '@pr-tests'] }, () => {
         cy.get("td[data-testid='sortable-cell-0-2']", { timeout: 300000 }).should("not.contain", '0');
       }
     })
-  );
 });
 
 // Upgrade Fleet from chart to latest when this is not the default one.
 describe('Upgrade Fleet via UI', { tags: '@upgrade-fleet-chart' }, () => {
-  qase(189,
-    it('Upgrade Fleet chart to latest', () => {
+    it(qase(189, 'Upgrade Fleet chart to latest'), () => {
       cy.login();
       cy.visit('/');
       cy.allowRancherPreReleaseVersions();
       cy.upgradeFleet();
     })
-  );
 })

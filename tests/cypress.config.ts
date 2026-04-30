@@ -1,7 +1,10 @@
 import { defineConfig } from 'cypress'
 import { plugin as cypressGrepPlugin } from '@cypress/grep/plugin'
+import { afterSpecHook } from 'cypress-qase-reporter/hooks';
+import { writeFileSync } from 'fs';
 
 const qaseAPIToken = process.env.QASE_API_TOKEN
+const qaseMode = (process.env.QASE_MODE === 'testops' && qaseAPIToken) ? 'testops' : 'off'
 
 export default defineConfig({
   viewportWidth: 1596,
@@ -20,13 +23,26 @@ export default defineConfig({
       charts: true,
     },
     cypressQaseReporterReporterOptions: {
-      apiToken: qaseAPIToken,
-      projectCode: 'FLEET',
-      logging: false,
-      basePath: 'https://api.qase.io/v1',
-      // Screenshots are not supported in cypress-qase-reporter@1.4.1 and broken in @1.4.3
-      // screenshotFolder: 'screenshots',
-      // sendScreenshot: true,
+      mode: qaseMode,
+        debug: false,
+        logging: {
+          console: false,
+        },
+        testops: {
+          api: {
+           token: qaseAPIToken,
+          },
+          project: 'FLEET',
+          uploadAttachments: true,
+          run: {
+            complete: true,
+          },
+        },
+      framework: {
+        cypress: {
+          screenshotsFolder: './screenshots',
+        },
+      },
     },
   },
   expose: {
@@ -38,7 +54,8 @@ export default defineConfig({
     setupNodeEvents(on, config) {
       // Adding task logger
       on('task', {
-        log(message) {
+        // Register the 'suiteLog' task
+        suiteLog(message) {
           console.log(message)
           return null
         },
@@ -48,6 +65,7 @@ export default defineConfig({
       on("before:browser:launch", (browser, launchOptions) => {
         
         if (["chrome", "edge"].includes(browser.name)) {
+          
           if (browser.isHeadless) {
             launchOptions.args.push("--no-sandbox");
             launchOptions.args.push("--disable-gl-drawing-for-tests");
@@ -60,6 +78,22 @@ export default defineConfig({
       // eslint-disable-next-line @typescript-eslint/no-var-requires
       require('cypress/plugins/index.ts')(on, config)
       cypressGrepPlugin(config)
+      require('cypress-qase-reporter/plugin')(on, config);
+      require('cypress-qase-reporter/metadata')(on);
+      on('after:spec', async (spec, results) => {
+        await afterSpecHook(spec, config);
+      });
+      on('before:spec', () => {
+        // Writes QASE_TESTOPS_RUN_ID to a file before running each spec.
+        // Used in .github/workflows/master-e2e.yaml for:
+        // 1) Marking cancelled test run in Qase TestOps as Completed
+        // 2) Linking the run in the summary
+        const qaseRunId = process.env.QASE_TESTOPS_RUN_ID;
+
+        if (qaseRunId) {
+          writeFileSync('./cypress/e2e/unit_tests/QASE_TESTOPS_RUN_ID.txt', qaseRunId, { encoding: 'utf8' });
+        } 
+      });
       
       return config;
     },

@@ -5,10 +5,15 @@ run-name: ${{ github.event_name == 'workflow_dispatch' && format('`{0}` on `{1}`
 on:
   workflow_dispatch:
     inputs:
+      qase_report:
+        description: Report to QASE
+        default: true
+        type: boolean
       qase_run_id:
-        description: Qase run ID where the results will be reported
-        default: auto
+        description: Existing QASE run ID (leave empty to create a new one)
+        required: false
         type: string
+        default: ''
       destroy_runner:
         description: Destroy the auto-generated self-hosted runner
         default: true
@@ -61,5 +66,6 @@ jobs:
       destroy_runner: ${{ github.event_name == 'schedule' && true || inputs.destroy_runner }}
       upstream_cluster_version: ${{ inputs.upstream_cluster_version || 'v1.35.2+k3s1' }}
       rancher_version: ${{ inputs.rancher_version || 'head/2.14' }}
-      qase_run_id: ${{ inputs.qase_run_id || 'auto' }}
+      qase_report: ${{ inputs.qase_report == true || (github.event_name == 'schedule' && true) }}
+      qase_run_id: ${{ inputs.qase_run_id || '' }}
       grep_test_by_tag: ${{ inputs.grep_test_by_tag || '@login @p0 @p1 @p1_2 @rbac @special_tests' }}

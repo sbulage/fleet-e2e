@@ -12,7 +12,6 @@ limitations under the License.
 */
 
 import 'cypress/support/commands';
-import { qase } from 'cypress-qase-reporter/dist/mocha';
 
 export const appName = "nginx-keep";
 export const clusterName = "imported-0";
@@ -35,9 +34,8 @@ beforeEach(() => {
 
 describe('Test Fleet on AWS EC2 imported cluster', { tags: '@cloud_ds' }, () => {
 
-    qase(186,
-        // Cloud downstream cluster provisioning
-        it('Import EC2 cluster into Rancher', () => {
+    // Cloud downstream cluster provisioning
+    it(qase(186, 'Import EC2 cluster into Rancher'), () => {
 
             const cloudProvider = 'Amazon';
             const credentialName = 'qa-fleet-ec2-cloud-cred';
@@ -51,11 +49,8 @@ describe('Test Fleet on AWS EC2 imported cluster', { tags: '@cloud_ds' }, () => 
             cy.createCloudCredential(cloudProvider, credentialName, accessKey, secretKey, region);
             cy.createCloudCluster(cloudInstance, clusterName, subnetId);
         })
-    );
 
-    qase(187,
-
-        it('Add gitrepo and deploy app to EC2 cluster', () => {
+    it(qase(187, 'Add gitrepo and deploy app to EC2 cluster'), () => {
             
             const repoName = 'nginx-app';
             const repoUrl = 'https://github.com/rancher/fleet-test-data/';
@@ -67,24 +62,19 @@ describe('Test Fleet on AWS EC2 imported cluster', { tags: '@cloud_ds' }, () => 
             cy.wait(45000); // Adding 45 seconds due to slow comunication and size of ec2 cluster
             cy.verifyTableRow(0, 'Active', '4/4');    // 4 clusters means gitrepo was deployed to ec2 cluster
         })
-    );
 
-    qase(188,
-
-        it('Delete EC2 cluster', () => {
+    it(qase(188, 'Delete EC2 cluster'), () => {
 
             const clusterName = 'qa-fleet-ec2-cluster';
 
             cy.deleteDownstreamCluster(clusterName, false);
         })
-    );
 });
 
 if (!/\/2\.11/.test(Cypress.expose('rancher_version')) && !/\/2\.12/.test(Cypress.expose('rancher_version'))) {
 
 describe('Agent Scheduling Customization', { tags: '@special_tests' }, () => {
-  qase(200,
-    it('FLEET-200: Test agent scheduling customization for PDB and PriorityClass', { tags: '@fleet-200' }, () => {
+  it(qase(200, 'FLEET-200: Test agent scheduling customization for PDB and PriorityClass'), { tags: '@fleet-200' }, () => {
       // Go to the cluster and edit it as YAML
       cy.accesMenuSelection('Continuous Delivery', 'Clusters ');
       cy.fleetNamespaceToggle('fleet-local');
@@ -117,13 +107,12 @@ describe('Agent Scheduling Customization', { tags: '@special_tests' }, () => {
       cy.accesMenuSelection('local', 'More Resources', 'Scheduling');
       cy.contains('PriorityClasses').click();
       cy.verifyTableRow(0, 'fleet-agent', '888');
-    }))
+    })
   });
 };
 
 describe('Test move cluster to newly created workspace and deploy application to it.', { tags: '@special_tests'}, () => {
-  qase(51,
-    it("Fleet-51: Test move cluster to newly created workspace and deploy application to it.", { tags: '@fleet-51' }, () => {
+  it(qase(51, "Fleet-51: Test move cluster to newly created workspace and deploy application to it."), { tags: '@fleet-51' }, () => {
       const dsFirstClusterName = 'imported-0'
       const repoName = 'default-cluster-new-workspace-51'
       const branch = "master"
@@ -174,7 +163,6 @@ describe('Test move cluster to newly created workspace and deploy application to
       cy.filterInSearchBox(newWorkspaceName)
       cy.deleteAll(false);
     })
-  )
 });
 
 // Note: to be executed after the above test cases
@@ -182,8 +170,7 @@ describe('Test move cluster to newly created workspace and deploy application to
 // To be replaced into other spec file when required.
 describe("Global settings related tests", { tags: '@special_tests'}, () => {
   
-    qase(156,
-      it("Fleet-156: Test gitrepoJobsCleanup is disabled when continuous-delivery feature is off", { tags: '@fleet-156' }, () => {
+    it(qase(156, "Fleet-156: Test gitrepoJobsCleanup is disabled when continuous-delivery feature is off"), { tags: '@fleet-156' }, () => {
 
         // Verify is gitrepoJobsCleanup is enabled by default.
         cy.accesMenuSelection('local', 'Workloads', 'CronJobs');
@@ -217,5 +204,4 @@ describe("Global settings related tests", { tags: '@special_tests'}, () => {
         cy.verifyTableRow(0, 'Active', 'fleet-cleanup-gitrepo-jobs');
 
       })
-    )
 });

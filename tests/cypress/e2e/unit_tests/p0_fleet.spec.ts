@@ -13,7 +13,6 @@ limitations under the License.
 */
 
 import 'cypress/support/commands';
-import { qase } from 'cypress-qase-reporter/dist/mocha';
 
 export const appName = "nginx-keep";
 export const clusterName = "imported-0";
@@ -29,8 +28,7 @@ beforeEach(() => {
 
 Cypress.config();
 describe('Test Fleet deployment on PUBLIC repos',  { tags: ['@p0', '@pr-tests'] }, () => {
-  qase(62,
-    it('FLEET-62: Deploy application to local cluster', { tags: '@fleet-62' }, () => {
+  it(qase(62, 'FLEET-62: Deploy application to local cluster'), { tags: '@fleet-62' }, () => {
 
       const repoName = "local-cluster-fleet-62"
       const branch = "master"
@@ -48,7 +46,7 @@ describe('Test Fleet deployment on PUBLIC repos',  { tags: ['@p0', '@pr-tests'] 
       cy.verifyTableRow(5, 'Service', 'redis-slave');
       cy.deleteAllFleetRepos();
     })
-  );
+
 });
 
 describe('Test Fleet deployment on PRIVATE repos with HTTP auth', { tags: ['@p0', '@pr-tests'] }, () => {
@@ -62,8 +60,7 @@ describe('Test Fleet deployment on PRIVATE repos with HTTP auth', { tags: ['@p0'
   ]
 
   repoTestData.forEach(({ qase_id, provider, repoUrl }) => {
-    qase(qase_id,
-      it(`FLEET-${qase_id}: Test to install "NGINX" app using "HTTP" auth on "${provider}" PRIVATE repository`, { tags: `@fleet-${qase_id}`, retries: 1 }, () => {
+    it(qase(qase_id, `FLEET-${qase_id}: Test to install "NGINX" app using "HTTP" auth on "${provider}" PRIVATE repository`), { tags: `@fleet-${qase_id}`, retries: 1 }, () => {
 
         const repoName = `default-cluster-fleet-${qase_id}`
         const userOrPublicKey = Cypress.expose(`${provider.toLowerCase()}_private_user`)
@@ -76,12 +73,11 @@ describe('Test Fleet deployment on PRIVATE repos with HTTP auth', { tags: ['@p0'
         cy.checkApplicationStatus(appName, clusterName);
         cy.deleteAllFleetRepos();
       })
-    );
+  
   });
 
   if (!/\/2\.11/.test(Cypress.expose('rancher_version'))) {
-  qase(191, 
-    it('FLEET-191: Test Fleet can be deployed in private Github repo using solely private token', {tags : `@fleet-191` }, () => {
+  it(qase(191, 'FLEET-191: Test Fleet can be deployed in private Github repo using solely private token'), {tags : `@fleet-191` }, () => {
 
       const repoName = '191-test-private-gh-only-token'  
       const repoUrl = 'https://github.com/fleetqa/fleet-qa-examples.git'
@@ -92,7 +88,7 @@ describe('Test Fleet deployment on PRIVATE repos with HTTP auth', { tags: ['@p0'
         cy.checkGitRepoStatus(repoName, '1 / 1');
         cy.deleteAllFleetRepos();
     })
-  )}
+  }
 
 });
 
@@ -109,8 +105,7 @@ describe('Test Fleet deployment on PRIVATE repos with SSH auth', { tags: '@p0' }
   ]
   
   repoTestData.forEach(({ qase_id, provider, repoUrl }) => {
-    qase(qase_id,
-      it(`FLEET-${qase_id}: Test to install "NGINX" app using "SSH" auth on "${provider}" PRIVATE repository`, { tags: `@fleet-${qase_id}`, retries: 1 }, () => {
+    it(qase(qase_id, `FLEET-${qase_id}: Test to install "NGINX" app using "SSH" auth on "${provider}" PRIVATE repository`), { tags: `@fleet-${qase_id}`, retries: 1 }, () => {
         
         const repoName = `default-cluster-fleet-${qase_id}`
 
@@ -122,13 +117,11 @@ describe('Test Fleet deployment on PRIVATE repos with SSH auth', { tags: '@p0' }
         cy.checkGitRepoStatus(repoName, '1 / 1');
         cy.checkApplicationStatus(appName, clusterName);
         cy.deleteAllFleetRepos();
-      })
-    );
+      })    
   });
 });
 
-  describe('Test Fleet deployment on PRIVATE repos using KNOWN HOSTS', 
-    { tags: '@p0' }, () => {
+  describe('Test Fleet deployment on PRIVATE repos using KNOWN HOSTS', { tags: '@p0' }, () => {
 
     const repoUrl = 'git@github.com:fleetqa/fleet-qa-examples.git';
     const secretKnownHostsKeys = ['assets/known-host.yaml', 'assets/known-host-missmatch.yaml'];
@@ -182,8 +175,7 @@ describe('Test Fleet deployment on PRIVATE repos with SSH auth', { tags: '@p0' }
     });
 
     // Custom / no default
-    qase(141,
-      it('FLEET-141  Test to install "NGINX" app using "KNOWN HOSTS" auth on PRIVATE repository', 
+    it(qase(141, 'FLEET-141  Test to install "NGINX" app using "KNOWN HOSTS" auth on PRIVATE repository'), 
         { tags: '@fleet-141' }, () => {
 
         const repoName = 'local-cluster-fleet-141';
@@ -196,12 +188,11 @@ describe('Test Fleet deployment on PRIVATE repos with SSH auth', { tags: '@p0' }
         cy.clickButton('Create');
         cy.verifyTableRow(0, 'Active', '1/1');
         cy.checkGitRepoStatus(repoName, '1 / 1');
-      })
+      }
     );
 
     // Custom error / no default
-    qase(143,
-      it('FLEET-143  Test apps cannot be installed when using missmatched "KNOWN HOSTS" auth on PRIVATE repository',
+    it(qase(143, 'FLEET-143  Test apps cannot be installed when using missmatched "KNOWN HOSTS" auth on PRIVATE repository'),
         { tags: '@fleet-143' }, () => {
 
           const repoName = 'local-cluster-fleet-143';
@@ -214,12 +205,11 @@ describe('Test Fleet deployment on PRIVATE repos with SSH auth', { tags: '@p0' }
           // Enrure that apps cannot be installed && error appears
           cy.verifyTableRow(0, /Error|Git Updating/, '0/0');
           cy.contains('Ssh: handshake failed: knownhosts: key mismatch').should('be.visible');
-      })
+      }
     );
 
     // Default verify
-    qase(168,
-      it('FLEET-168 Verify Fleet default known-host is set on configmap',
+    it(qase(168, 'FLEET-168 Verify Fleet default known-host is set on configmap'),
         { tags: '@fleet-168' }, () => {
 
           // Create private repo using known host
@@ -228,12 +218,11 @@ describe('Test Fleet deployment on PRIVATE repos with SSH auth', { tags: '@p0' }
           cy.filterInSearchBox('known-hosts');
           cy.open3dotsMenu('known-hosts', 'Edit YAML');
           cy.contains('ssh-rsa').its(length).should('be.visible')
-      })
+      }
     );
 
     // No custom / yes default
-    qase(169,
-      it('FLEET-169 Verify that without custom known-host, fleet uses default custom ones from defined in configmap',
+    it(qase(169, 'FLEET-169 Verify that without custom known-host, fleet uses default custom ones from defined in configmap'),
         { tags: '@fleet-169' }, () => {
 
           const repoName = 'local-cluster-fleet-169';
@@ -252,11 +241,9 @@ describe('Test Fleet deployment on PRIVATE repos with SSH auth', { tags: '@p0' }
           cy.clickButton('Create');
           cy.checkGitRepoStatus(repoName, '1 / 1');
       })
-    );  
 
     // No ssh , then no default
-    qase(170,
-      it('FLEET-170 Verify that without ssh-key on private repo, custom known-host does not apply',
+    it(qase(170, 'FLEET-170 Verify that without ssh-key on private repo, custom known-host does not apply'),
         { tags: '@fleet-170' }, () => {
 
           const repoName = 'local-cluster-fleet-170';
@@ -271,11 +258,9 @@ describe('Test Fleet deployment on PRIVATE repos with SSH auth', { tags: '@p0' }
           cy.wait(15000) 
           cy.verifyTableRow(0, /Error|Git Updating/, '0/0');
       })
-    );  
 
     // No custom + no default -> nothing gets deployed
-    qase(171,
-      it('FLEET-171 Verify that without custom nor default known-host a gitrepo that needs this validation cannot be installed',
+    it(qase(171, 'FLEET-171 Verify that without custom nor default known-host a gitrepo that needs this validation cannot be installed'),
         { tags: '@fleet-171' }, () => {
 
           const repoName = 'local-cluster-fleet-171';
@@ -323,10 +308,8 @@ describe('Test Fleet deployment on PRIVATE repos with SSH auth', { tags: '@p0' }
           cy.wait(500); // Wait to avoid initial 'updating'
           cy.verifyTableRow(0, /Error|Git Updating/, '0/0');
           cy.contains('Strict host key checks are enforced, but no known_hosts data was found').should('be.visible')
-      })
-    ); 
-  }
-  );
+      }) 
+  });
 
 describe('Test gitrepos with cabundle', { tags: '@p0' }, () => {
 
@@ -351,8 +334,7 @@ describe('Test gitrepos with cabundle', { tags: '@p0' }, () => {
     cy.log('"known_host" values returned')
   })
 
-  qase(142,
-    it("Fleet-142: Test Fleet can create cabundle secrets", { tags: '@fleet-142' }, () => {;
+  it(qase(142, "Fleet-142: Test Fleet can create cabundle secrets"), { tags: '@fleet-142' }, () => {;
       
       const repoName = 'local-142-test-bundle-secrets'
       const repoUrl = 'https://github.com/rancher/fleet-examples'
@@ -375,11 +357,10 @@ describe('Test gitrepos with cabundle', { tags: '@p0' }, () => {
       cy.deleteAllFleetRepos();
       cy.accesMenuSelection('local', 'Storage', 'Secrets');
       cy.contains('-cabundle').should('not.exist');
-    })
+    }
   );  
 
-  qase(144,
-    it("Fleet-144 Test cabundle secrets are not created without TLS certificate", { tags: '@fleet-144' }, () => {;
+  it(qase(144, "Fleet-144 Test cabundle secrets are not created without TLS certificate"), { tags: '@fleet-144' }, () => {;
       
       const repoName = 'local-144-test-cabundle-secrets-not-created'
       const repoUrl = 'https://github.com/rancher/fleet-examples'
@@ -395,7 +376,7 @@ describe('Test gitrepos with cabundle', { tags: '@p0' }, () => {
       cy.nameSpaceMenuToggle('All Namespaces');
       cy.filterInSearchBox(repoName+'-cabundle');
       cy.contains('There are no rows which match your search query.').should('be.visible');
-    })
+    }
   );  
 
 });
@@ -426,9 +407,7 @@ describe('Test gitrepos with cabundle', { tags: '@p0' }, () => {
 
     });
 
-    qase(152,
-
-      it('Fleet-152: Test Fleet with Webhook and disable polling ', { tags: '@fleet-152' }, () => {
+    it(qase(152, 'Fleet-152: Test Fleet with Webhook and disable polling '), { tags: '@fleet-152' }, () => {
 
         const repoName = 'webhook-test-disable-polling';
 
@@ -475,14 +454,12 @@ describe('Test gitrepos with cabundle', { tags: '@p0' }, () => {
 
         // Verify deployments has 5 replicas
         cy.verifyTableRow(0, 'Active', '5/5');
-      })
+      }
     );
     
     if (!/\/2\.11/.test(Cypress.expose('rancher_version'))) {
   
-    qase(178,
-
-      it('Fleet-178: Test Fleet with Webhook and secret on gitrepo directly ', { tags: '@fleet-178' }, () => {
+    it(qase(178, 'Fleet-178: Test Fleet with Webhook and secret on gitrepo directly '), { tags: '@fleet-178' }, () => {
 
         const repoName = 'test-disable-polling';
 
@@ -533,12 +510,10 @@ describe('Test gitrepos with cabundle', { tags: '@p0' }, () => {
         cy.filterInSearchBox('gitjob')
         cy.open3dotsMenu('gitjob', 'View Logs')
         cy.contains('"Webhook processing failed"').should('exist');
-      })
+      }
     )
 
-    qase(177,
-
-      it('Fleet-177: Test Fleet with Webhook and secret using "gitjob-webhhook" on "cattle-fleet-system" ', { tags: '@fleet-177' }, () => {
+    it(qase(177, 'Fleet-177: Test Fleet with Webhook and secret using "gitjob-webhhook" on "cattle-fleet-system" '), { tags: '@fleet-177' }, () => {
 
         const repoName = 'test-disable-polling';
 
@@ -590,7 +565,7 @@ describe('Test gitrepos with cabundle', { tags: '@p0' }, () => {
         cy.open3dotsMenu('gitjob', 'View Logs')
         cy.contains('HMAC verification failed').should('exist');
       })
-    )}
+    }
   })
 
   // New tests for jobs cleanup
@@ -600,8 +575,7 @@ describe('Test Fleet job cleanup', { tags: ['@p0', '@pr-tests'] }, () => {
   const branch = 'master';
   const path = 'qa-test-apps/nginx-app';
 
-  qase(145,
-    it('Fleet-145: Test Fleet job cleanup', { tags: '@fleet-145' }, () => {
+  it(qase(145, 'Fleet-145: Test Fleet job cleanup'), { tags: '@fleet-145' }, () => {
 
       const repoName = 'local-145-test-job-cleanup';
 
@@ -612,11 +586,10 @@ describe('Test Fleet job cleanup', { tags: ['@p0', '@pr-tests'] }, () => {
       // Check jobs on recent events tab
       cy.checkGitRepoStatus(repoName, '1 / 1', '1 / 1');
       cy.verifyJobDeleted(repoName); 
-    })
+    }
   );
 
-  qase(146,
-    it('Fleet-146: Test Fleet job clean-up works with Force Update', { tags: '@fleet-146' }, () => {
+  it(qase(146, 'Fleet-146: Test Fleet job clean-up works with Force Update'), { tags: '@fleet-146' }, () => {
 
       const repoName = 'local-146-test-job-cleanup';
 
@@ -633,11 +606,10 @@ describe('Test Fleet job cleanup', { tags: ['@p0', '@pr-tests'] }, () => {
       cy.checkGitRepoStatus(repoName, '1 / 1', '1 / 1');
       cy.verifyJobDeleted(repoName);
 
-    })
+    }
   );
 
-  qase(147,
-    it('Fleet-147: Test Fleet job clean-up works upon commit change', { tags: '@fleet-147' }, () => {
+  it(qase(147, 'Fleet-147: Test Fleet job clean-up works upon commit change'), { tags: '@fleet-147' }, () => {
 
       const gh_private_pwd = Cypress.expose('gh_private_pwd');
       const repoName = 'test-disable-polling';
@@ -667,11 +639,10 @@ describe('Test Fleet job cleanup', { tags: ['@p0', '@pr-tests'] }, () => {
 
       // Verify event deletion on recent events tab and job deletion
       cy.verifyJobDeleted(repoName);
-    })
+    }
   );
 
-  qase(148,
-    it('Fleet-148: Test Fleet job clean-up with unsuccessful job is not deleted', { tags: '@fleet-148' }, () => {
+  it(qase(148, 'Fleet-148: Test Fleet job clean-up with unsuccessful job is not deleted'), { tags: '@fleet-148' }, () => {
   
       const repoName = 'local-148-test-unsuscessful-job-is-not-deleted';
       const path = 'qa-test-apps/nginx-app-bad-path';
@@ -694,13 +665,12 @@ describe('Test Fleet job cleanup', { tags: ['@p0', '@pr-tests'] }, () => {
       cy.nameSpaceMenuToggle('All Namespaces');
       cy.filterInSearchBox(repoName);
       cy.get('table > tbody > tr').contains(repoName).should('be.visible');
-    })
+    }
   )
 });
 
   describe('Test GitJob security context',  { tags: ['@p0', '@pr-tests'] }, () => {
-    qase(160,
-      it('FLEET-160: Test GitJob pod security context', { tags: '@fleet-160' }, () => {
+    it(qase(160, 'FLEET-160: Test GitJob pod security context'), { tags: '@fleet-160' }, () => {
         // Check the GitJob pod for Security Context.
         cy.accesMenuSelection('local', 'Workloads', 'Pods');
         cy.filterInSearchBox('gitjob');
@@ -746,7 +716,6 @@ describe('Test Fleet job cleanup', { tags: ['@p0', '@pr-tests'] }, () => {
           .contains('ALL')
           .should('be.visible')
       })
-    );
   }
 );
 
@@ -756,8 +725,7 @@ describe('Test Fleet job cleanup', { tags: ['@p0', '@pr-tests'] }, () => {
     const branch = 'master';
     const path = 'simple-chart';
 
-    qase(172,
-      it('Fleet-172 Test gitjob can store helm values in secret', { tags: '@fleet-172' }, () => {
+    it(qase(172, 'Fleet-172 Test gitjob can store helm values in secret'), { tags: '@fleet-172' }, () => {
 
         const repoName = 'simple-chart-secret';
   
@@ -784,5 +752,4 @@ describe('Test Fleet job cleanup', { tags: ['@p0', '@pr-tests'] }, () => {
         cy.clickButton('Cancel');
         
       })
-    )
   })

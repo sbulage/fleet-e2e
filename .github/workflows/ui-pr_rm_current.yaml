@@ -43,5 +43,5 @@ jobs:
       upstream_cluster_version: 'v1.34.3+k3s1'
       rancher_version: 'head/2.13'
       # If qase_run_id is none the run is getting deleted in QASE
-      qase_run_id: 'none'
+      qase_run_id: ${{ inputs.qase_run_id || '' }}
       grep_test_by_tag: '@login @pr-tests'
