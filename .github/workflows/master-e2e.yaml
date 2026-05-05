@@ -321,7 +321,7 @@ jobs:
           fi
           cd tests && make start-cypress-tests
       - name: Upload Cypress screenshots (Basics)
-        if: failure()
+        if: ${{ failure() || cancelled() }}
         uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
         with:
           name: cypress-screenshots-basics-${{ inputs.cluster_name }}
@@ -330,7 +330,7 @@ jobs:
           if-no-files-found: ignore
       - name: Upload Cypress videos (Basics)
         # Test run video is always captured, so this action uses "always()" condition
-        if: always()
+        if: ${{ failure() || cancelled() }}
         uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
         with:
           name: cypress-videos-basics-${{ inputs.cluster_name }}
@@ -465,10 +465,10 @@ jobs:
           echo "### Kubernetes" >> ${GITHUB_STEP_SUMMARY}
           echo "K3s version for Rancher Manager: ${{ env.INSTALL_K3S_VERSION }}" >> ${GITHUB_STEP_SUMMARY}
           echo "K3d version for downstream cluster: ${{ env.INSTALL_K3S_VERSION }}" >> ${GITHUB_STEP_SUMMARY}
-          if ${{ inputs.hardening != '' }}; then
+          if [[ -n "${{ inputs.hardening }}" ]]; then
             echo "Version for HARDENING upstream cluster: ${{ env.INSTALL_HARDENED_VERSION }}" >> ${GITHUB_STEP_SUMMARY}
           fi
-          if ${{ inputs.rancher_upgrade != '' }}; then
+          if [[ -n "${{ inputs.rancher_upgrade }}" ]]; then
             echo "### Rancher Manager Upgrade Information" >> ${GITHUB_STEP_SUMMARY}
             echo "Rancher Manager Installed Version: ${{ steps.component.outputs.rm_version }}" >> ${GITHUB_STEP_SUMMARY}
             echo "Rancher Manager Upgraded Version: ${{ steps.upgraded_component.outputs.rm_upgraded_version }}" >> ${GITHUB_STEP_SUMMARY}
@@ -524,6 +524,8 @@ jobs:
               --url https://api.qase.io/v1/run/FLEET/${RUN_ID}/complete \
               -H "Token: ${{ secrets.qase_api_token }}" \
               -H 'accept: application/json'
+            echo -e "\n### QASE Report" >> ${GITHUB_STEP_SUMMARY}
+            echo "View the detailed report [here](https://app.qase.io/run/FLEET/dashboard/${RUN_ID})" >> ${GITHUB_STEP_SUMMARY}
           fi
           echo "QASE run $RUN_ID marked as Completed" >> ${GITHUB_STEP_SUMMARY}
           
