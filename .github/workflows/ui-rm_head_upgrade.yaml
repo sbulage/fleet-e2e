@@ -1,6 +1,6 @@
 # This workflow calls the master E2E workflow with custom variables
 name: UI-RM_head_upgrade
-run-name: ${{ github.event_name == 'workflow_dispatch' && format('Upgrade from `{0}` to `{1}` on `{2}` - `{3}` destroy={4}', inputs.rancher_version, inputs.rancher_upgrade, inputs.upstream_cluster_version, inputs.grep_test_by_tag, inputs.destroy_runner) || github.workflow }}
+run-name: ${{ github.event_name == 'workflow_dispatch' && format('`{0}` on `{1}` - `{2}` destroy={3}{4}', inputs.rancher_version, inputs.upstream_cluster_version, inputs.grep_test_by_tag, inputs.destroy_runner, contains(inputs.runner_template, 'dedicated') && ' (runner=dedicated)' || '') || github.workflow }}
 
 on:
   workflow_dispatch:
@@ -14,6 +14,13 @@ on:
         required: false
         type: string
         default: ''
+      runner_template:
+        description: Runner template to use (spot or dedicated)
+        default: fleet-e2e-ci-runner-spot-x86-64-template-v3
+        type: choice
+        options:
+          - fleet-e2e-ci-runner-spot-x86-64-template-v3
+          - fleet-e2e-ci-runner-spot-x86-64-template-v3-dedicated
       destroy_runner:
         description: Destroy the auto-generated self-hosted runner
         default: true
@@ -84,3 +91,4 @@ jobs:
       qase_report: ${{ inputs.qase_report == true || (github.event_name == 'schedule' && true) }}
       qase_run_id: ${{ inputs.qase_run_id || '' }}
       grep_test_by_tag: ${{ inputs.grep_test_by_tag }}
+      runner_template: ${{ inputs.runner_template || 'fleet-e2e-ci-runner-spot-x86-64-template-v3' }}
