@@ -1,9 +1,7 @@
-GINKGO_VERSION = v2.19.0
-GOMEGA_VERSION = v1.33.1
+GINKGO_VERSION:=$(shell go list -m -f '{{.Version}}' github.com/onsi/ginkgo/v2)
 
 deps:
 	@go install github.com/onsi/ginkgo/v2/ginkgo@$(GINKGO_VERSION)
-	@go get github.com/onsi/gomega@$(GOMEGA_VERSION)
 	@go mod tidy
 
 e2e-install-rancher: deps
