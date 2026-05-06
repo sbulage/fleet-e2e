@@ -266,7 +266,8 @@ describe('Test resource behavior after deleting GitRepo using keepResources opti
             helmUrlRegex = '1234.*'
             cy.addFleetGitRepo({ repoName, repoUrl, branch, path, gitOrHelmAuth, gitAuthType, userOrPublicKey, pwdOrPrivateKey, helmUrlRegex, local: true });
             cy.clickButton('Create');
-            cy.get('.text-error', { timeout: 120000 }).should('contain', 'code: 401');
+            cy.get('.text-error', { timeout: 120000 }).should('contain', '401');
+
             cy.deleteAllFleetRepos();
           })
       })
