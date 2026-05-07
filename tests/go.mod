@@ -6,7 +6,7 @@ replace go.qase.io/client => github.com/rancher/qase-go/client v0.0.0-2023111420
 
 require (
 	github.com/onsi/ginkgo/v2 v2.28.2
-	github.com/onsi/gomega v1.39.0
+	github.com/onsi/gomega v1.40.0
 	github.com/rancher-sandbox/ele-testhelpers v0.0.0-20260121133442-5e31628d3dc7
 	github.com/rancher-sandbox/qase-ginkgo v1.0.1
 )
