@@ -6,7 +6,15 @@ set -evx
 npm install
 
 # Start Cypress tests with docker
-docker run --init -v $PWD:/workdir -w /workdir              \
+# Mount gh CLI from host if available for webhook tests
+GH_MOUNT=""
+if command -v gh &> /dev/null; then
+  GH_PATH=$(command -v gh)
+  GH_MOUNT="-v ${GH_PATH}:/usr/local/bin/gh:ro"
+  echo "Mounting gh CLI from host: ${GH_PATH}"
+fi
+
+docker run --init -v $PWD:/workdir -w /workdir ${GH_MOUNT} \
     -e CYPRESS_TAGS=$CYPRESS_TAGS                           \
     -e QASE_API_TOKEN=$QASE_API_TOKEN                       \
     -e QASE_MODE=$QASE_MODE                                 \

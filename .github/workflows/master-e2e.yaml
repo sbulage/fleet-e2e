@@ -223,7 +223,7 @@ jobs:
         run: echo "/usr/local/bin/" >> ${GITHUB_PATH}
       - name: Checkout
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-      - name: Install latest helm-4 on runner
+      - name: Install git, helm-4, and gh CLI on runner
         run: |
           pwd
           ls -a
