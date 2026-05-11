@@ -322,7 +322,7 @@ jobs:
           cd tests && make start-cypress-tests
       - name: Upload Cypress screenshots (Basics)
         if: ${{ failure() || cancelled() }}
-        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: cypress-screenshots-basics-${{ inputs.cluster_name }}
           path: tests/cypress/screenshots
@@ -331,7 +331,7 @@ jobs:
       - name: Upload Cypress videos (Basics)
         # Test run video is always captured, so this action uses "always()" condition
         if: ${{ failure() || cancelled() }}
-        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: cypress-videos-basics-${{ inputs.cluster_name }}
           path: tests/cypress/videos
@@ -429,7 +429,7 @@ jobs:
           cd tests && make start-cypress-tests
       - name: Upload Cypress screenshots (after-upgrade)
         if: ${{ failure() && inputs.rancher_upgrade != '' }}
-        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: cypress-screenshots-after-upgrade-${{ inputs.cluster_name }}
           path: tests/cypress/screenshots
@@ -437,14 +437,14 @@ jobs:
           if-no-files-found: ignore
       - name: Upload Cypress videos (after-upgrade)
         if: ${{ inputs.rancher_upgrade != '' }}
-        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: cypress-videos-after-upgrade-${{ inputs.cluster_name }}
           path: tests/cypress/videos
           retention-days: 7
       - name: Upload webhook setup log
         if: failure()
-        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: webhook-setup-log-${{ inputs.cluster_name }}
           path: tests/assets/webhook-tests/webhook_setup.log
