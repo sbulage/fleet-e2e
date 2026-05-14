@@ -419,20 +419,8 @@ Cypress.Commands.add('verifyTableRow', (rowNumber, expectedText1, expectedText2,
 // Namespace Toggle
 Cypress.Commands.add('nameSpaceMenuToggle', (namespaceName) => {
   cy.get('.top > .ns-filter').should('be.visible');
-
-  // For some reason I don't understand, click force doesn't work
-  // in 2.10 an onwards, but it is mandatory for earlier versions
-  // To be improved in the future
-  const old_versions = ["latest/devel/2.7", "latest/devel/2.8", "latest/devel/2.9"];
-
-  if (old_versions.includes(rancherVersion)) {
-    cy.log('Rancher version is: ' + rancherVersion , 'Clicking WITH force:true');
-    cy.get('.top > .ns-filter').click({ force: true });
-  }
-  else  {
-    cy.log('Rancher version is: ' + rancherVersion, 'Clicking WITHOUT force:true');
-    cy.get('.top > .ns-filter').click();
-  }
+  cy.log('Rancher version is: ' + rancherVersion, 'Clicking WITHOUT force:true');
+  cy.get('.top > .ns-filter').click();
   cy.get('div.ns-item').contains(namespaceName).scrollIntoView()
   cy.get('div.ns-item').contains(namespaceName).click()
   cy.get('div.ns-dropdown.ns-open > i.icon.icon-chevron-up').click({ force: true });
@@ -1339,5 +1327,20 @@ Cypress.Commands.add('deleteDownstreamCluster', (clusterName, deleteOption=false
   cy.filterInSearchBox(clusterName);
   cy.deleteAll(deleteOption);
 
+  }
+);
+
+Cypress.Commands.add('executeKubectlCommand', (labelCommand, clusterName='local') => {
+  // Open local terminal in Rancher UI
+  cy.accesMenuSelection(clusterName);
+  cy.get('#btn-kubectl').click();
+  cy.contains('Connected').should('be.visible');
+
+  // Simulate typing the kubectl command to assign label to the cluster in the terminal
+  cy.typeIntoCanvasTermnal(labelCommand);
+  cy.wait(500);
+
+  // Close local terminal
+  cy.get('i.closer.icon').click();
   }
 );
