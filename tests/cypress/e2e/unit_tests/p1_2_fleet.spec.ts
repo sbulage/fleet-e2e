@@ -1568,9 +1568,9 @@ describe('Test helm chart dependency download with `disableDependencyUpdate: tru
     })
 });
 
-describe('Test GitRepo shows Active state for missing resources when `diff` used in `fleet.yaml`', { tags: '@p1_2' }, () => {
+describe('Test GitRepo state for missing resources with and without `diff` used in `fleet.yaml`', { tags: '@p1_2' }, () => {
 
-  it(qase(179, `FLEET-179: Test GitRepo shows Active state for missing resources when 'diff' used in 'fleet.yaml'`), { tags: '@fleet-179'}, () => {
+  it(qase(179, `FLEET-179: Test GitRepo shows 'Modified' state for missing resources without using 'diff' in 'fleet.yaml'`), { tags: '@fleet-179'}, () => {
       const repoName = 'ds-cluster-fleet-179'
       const pathWithoutDiff = 'qa-test-apps/ignore-missing-resources/without-diff'
 
@@ -1582,18 +1582,21 @@ describe('Test GitRepo shows Active state for missing resources when `diff` used
       cy.verifyTableRow(0, 'Modified', repoName);
       cy.checkGitRepoStatus(repoName, '0 / 1', '3 / 6', { repoStatus: 'Modified' });
 
-      // Update Path which has diff mentioned in the fleet.yaml
-      // On both Path data is same the only difference is diff part.
+})
+
+  it(qase(339, `FLEET-339: Test GitRepo shows 'Active' state for missing resources when using 'diff' in 'fleet.yaml'`), { tags: '@fleet-339'}, () => {
+      const repoName = 'ds-cluster-fleet-339'
       const pathWithDiff = 'qa-test-apps/ignore-missing-resources/with-diff'
 
-      cy.addFleetGitRepo({ repoName, path: pathWithDiff, fleetNamespace: 'fleet-default', editConfig: true });
-      cy.clickButton('Save');
+      // Create GitRepo with diff which will ignore missing resources.
+      cy.fleetNamespaceToggle('fleet-default');
+      cy.continuousDeliveryMenuSelection()
+      cy.addFleetGitRepo({ repoName, repoUrl, branch, path: pathWithDiff });
+      cy.clickButton('Create');
       cy.verifyTableRow(0, 'Active', repoName);
       cy.checkGitRepoStatus(repoName, '1 / 1', '6 / 6');
 
-      // Delete GitRepo
-      cy.deleteAllFleetRepos();
-    })
+  })
 })
 
 describe('Test bundle deploy with overrideTargets by label availability on clusters.', { tags: '@p1_2'}, () => {
