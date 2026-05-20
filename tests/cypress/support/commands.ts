@@ -35,14 +35,14 @@ Cypress.Commands.add('addPathOnGitRepoCreate', (path, index=0) => {
   cy.get(`[data-testid="array-list-box${ index }"] input[placeholder="e.g. /directory/in/your/repo"], [data-testid="array-list-box${ index }"] input[placeholder="e.g. /directory/in/your/repo"]`).clear().type(path);
 })
 
-Cypress.Commands.add('gitRepoAuth', (gitOrHelmAuth='Git', gitAuthType, userOrPublicKey, pwdOrPrivateKey, helmUrlRegex ) => {
+Cypress.Commands.add('gitRepoAuth', (gitOrHelmAuth='Git', gitAuthType, userOrPublicKey, pwdOrPrivateKey, helmRepoURLRegex ) => {
   cy.contains(`${gitOrHelmAuth} Authentication`).click()
 
   // Select the Git auth method
   cy.get('ul.vs__dropdown-menu > li > div', { timeout: 15000 }).contains(gitAuthType, { matchCase: false }).should('be.visible').click();
-  
-  if (helmUrlRegex) {
-    cy.typeValue('Helm Repos', helmUrlRegex, false,  false ); //not adding (URL Regex) after new regexp in "typeValue" function
+
+  if (helmRepoURLRegex) {
+    cy.typeValue('Helm Repos', helmRepoURLRegex, false,  false ); //not adding (URL Regex) after new regexp in "typeValue" function
   }
 
   if (gitAuthType === 'http') {
@@ -149,7 +149,7 @@ Cypress.Commands.add('addFleetRepoFromYaml', (yamlFilePath, fleetNamespace='flee
 
 // Command add and edit Fleet Git Repository
 // TODO: Rename this command name to 'addEditFleetGitRepo'
-Cypress.Commands.add('addFleetGitRepo', ({ repoName, repoUrl, branch, path, path2, gitOrHelmAuth, gitAuthType, userOrPublicKey, pwdOrPrivateKey, tlsOption, tlsCertificate, keepResources, correctDrift, fleetNamespace='fleet-local', editConfig=false, helmUrlRegex, deployToTarget, allowedTargetNamespace="", local=false }) => {
+Cypress.Commands.add('addFleetGitRepo', ({ repoName, repoUrl, branch, path, path2, gitOrHelmAuth, gitAuthType, userOrPublicKey, pwdOrPrivateKey, tlsOption, tlsCertificate, keepResources, correctDrift, fleetNamespace='fleet-local', editConfig=false, helmRepoURLRegex, deployToTarget, allowedTargetNamespace="", local=false }) => {
 
   cy.continuousDeliveryMenuSelection();
 
@@ -192,7 +192,7 @@ Cypress.Commands.add('addFleetGitRepo', ({ repoName, repoUrl, branch, path, path
   cy.clickButton('Next');
 
   if (gitAuthType) {
-    cy.gitRepoAuth(gitOrHelmAuth, gitAuthType, userOrPublicKey, pwdOrPrivateKey, helmUrlRegex);
+    cy.gitRepoAuth(gitOrHelmAuth, gitAuthType, userOrPublicKey, pwdOrPrivateKey, helmRepoURLRegex);
   }
 
   if (tlsOption) {

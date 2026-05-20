@@ -215,20 +215,20 @@ describe('Test resource behavior after deleting GitRepo using keepResources opti
     const pwdOrPrivateKey = 'password'
     const gitOrHelmAuth = 'Helm'
     const gitAuthType = "http"
-    let helmUrlRegex
+    let helmRepoURLRegex
 
     const privateHelmData: testData[] = [
       { qase_id: 64,
         repoName: "local-private-helm-repo-64",
         path: 'helm-urlregex-repo',
         test_explanation: 'repo',
-        helmUrlRegex_matching: '^http.*',
+        helmRepoURLRegex_matching: '^http.*',
       },
       { qase_id: 65,
         repoName: "local-private-helm-chart-65",
         path: 'helm-urlregex-chart',
         test_explanation: 'chart',
-        helmUrlRegex_matching: '^http.*app.*tgz$',
+        helmRepoURLRegex_matching: '^http.*app.*tgz$',
       },
     ]
 
@@ -242,17 +242,17 @@ describe('Test resource behavior after deleting GitRepo using keepResources opti
     });
 
     privateHelmData.forEach(
-      ({qase_id, repoName, path, helmUrlRegex_matching, test_explanation}) => {
+      ({qase_id, repoName, path, helmRepoURLRegex_matching, test_explanation}) => {
         it(qase(qase_id, `Fleet-${qase_id}: Test private helm registries for \"helmRepoURLRegex\" matches with \"${test_explanation}\" URL specified in fleet.yaml file`), { tags: `@fleet-${qase_id}` }, () => {;
-            
-            // Adding wait for mitigation of intermittent failures due to slow communication with helm registry 
+
+            // Adding wait for mitigation of intermittent failures due to slow communication with helm registry
             // and also to make sure previous test's resources are deleted and not interfering with current test.
-            
+
             cy.wait(5000);
 
             // Positive test using matching regex
-            helmUrlRegex = helmUrlRegex_matching
-            cy.addFleetGitRepo({ repoName, repoUrl, branch, path, gitOrHelmAuth, gitAuthType, userOrPublicKey, pwdOrPrivateKey, helmUrlRegex, local: true });
+            helmRepoURLRegex = helmRepoURLRegex_matching
+            cy.addFleetGitRepo({ repoName, repoUrl, branch, path, gitOrHelmAuth, gitAuthType, userOrPublicKey, pwdOrPrivateKey, helmRepoURLRegex, local: true });
             cy.clickButton('Create');
             cy.verifyTableRow(0, 'Active', /([1-9]\d*)\/\1/);
             cy.accesMenuSelection('local', 'Storage', 'ConfigMaps');
@@ -263,8 +263,8 @@ describe('Test resource behavior after deleting GitRepo using keepResources opti
             cy.get('section#data').should('contain', 'sample-cm').and('contain', 'sample-data-inside');
             cy.deleteAllFleetRepos();
             // Negative test using non-matching regex 1234.*
-            helmUrlRegex = '1234.*'
-            cy.addFleetGitRepo({ repoName, repoUrl, branch, path, gitOrHelmAuth, gitAuthType, userOrPublicKey, pwdOrPrivateKey, helmUrlRegex, local: true });
+            helmRepoURLRegex = '1234.*'
+            cy.addFleetGitRepo({ repoName, repoUrl, branch, path, gitOrHelmAuth, gitAuthType, userOrPublicKey, pwdOrPrivateKey, helmRepoURLRegex, local: true });
             cy.clickButton('Create');
             cy.get('.text-error', { timeout: 120000 }).should('contain', '401');
 
@@ -300,9 +300,10 @@ describe('Test resource behavior after deleting GitRepo using keepResources opti
         const gitAuthType = "http"
         const userOrPublicKey = Cypress.expose("gh_private_user")
         const pwdOrPrivateKey = Cypress.expose("gh_private_pwd")
-    
+        const helmRepoURLRegex = '^oci://ghcr\\.io/.*'
+
         cy.fleetNamespaceToggle('fleet-default');
-        cy.addFleetGitRepo({ repoName, repoUrl, branch, path, gitOrHelmAuth, gitAuthType, userOrPublicKey, pwdOrPrivateKey});
+        cy.addFleetGitRepo({ repoName, repoUrl, branch, path, gitOrHelmAuth, gitAuthType, userOrPublicKey, pwdOrPrivateKey, helmRepoURLRegex});
         cy.clickButton('Create');
         cy.verifyTableRow(0, 'Active', /([1-9]\d*)\/\1/);
         cy.accesMenuSelection(dsFirstClusterName, 'Storage', 'ConfigMaps');

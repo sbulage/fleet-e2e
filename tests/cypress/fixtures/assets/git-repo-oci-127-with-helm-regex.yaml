@@ -1,0 +1,24 @@
+apiVersion: fleet.cattle.io/v1alpha1
+kind: GitRepo
+metadata:
+  name: default-oci-127
+  namespace: fleet-local
+spec:
+  repo: https://github.com/fleetqa/fleet-qa-examples-public
+  branch: main
+  paths:
+  - helm-oci-auth
+  targets:
+  - clusterSelector: {}
+  helmSecretNameForPaths: fleet-helm-secret-127
+  helmRepoURLRegex: '^oci://ghcr\.io/.*'
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: fleet-helm-secret-127
+  namespace: fleet-local
+type: kubernetes.io/basic-auth
+stringData:
+  username: ${GH_PRIVATE_USER}
+  password: ${GH_PRIVATE_PWD}
