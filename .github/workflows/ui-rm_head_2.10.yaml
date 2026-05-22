@@ -16,7 +16,6 @@ on:
         description: "`Uncheck` when appending test runs. `Check` on final run to close QASE. For daily runs, keep it checked."
         default: true
         type: boolean
-        type: string
       destroy_runner:
         description: Destroy the auto-generated self-hosted runner
         default: true
