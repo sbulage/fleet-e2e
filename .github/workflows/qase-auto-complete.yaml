@@ -2,9 +2,14 @@ name: Qase Auto-Complete Old Runs
 
 on:
   schedule:
-    # Run every 6 hours
-    - cron: '0 */6 * * *'
+    # Run every 10 days - completes ALL active runs
+    - cron: '0 0 */10 * *'
   workflow_dispatch:
+    inputs:
+      qase_run_id:
+        description: 'Specific QASE run ID to complete (leaving it empty will not do anything on manual dispatch, but will complete ALL active runs on scheduled dispatch)'
+        type: string
+        default: ''
 
 jobs:
   auto-complete:
@@ -15,7 +20,31 @@ jobs:
           QASE_API_TOKEN: ${{ secrets.QASE_API_TOKEN }}
         run: |
           # jq is pre-installed on GitHub-hosted ubuntu-latest runners
-          echo "Checking for Qase runs older than 10 hours..."
+          SPECIFIC_RUN="${{ inputs.qase_run_id }}"
+          EVENT_NAME="${{ github.event_name }}"
+
+          # If specific run ID provided, complete only that run
+          if [ -n "$SPECIFIC_RUN" ]; then
+            echo "Completing specific run $SPECIFIC_RUN..."
+
+            curl -X POST \
+              --url "https://api.qase.io/v1/run/FLEET/${SPECIFIC_RUN}/complete" \
+              -H "Token: ${QASE_API_TOKEN}" \
+              -H 'accept: application/json'
+
+            echo "✓ Run $SPECIFIC_RUN marked as completed"
+            exit 0
+          fi
+
+          # If manual dispatch without run ID, do nothing
+          if [ "$EVENT_NAME" = "workflow_dispatch" ]; then
+            echo "ℹ️  Manual dispatch without run ID - doing nothing"
+            echo "To complete a specific run, provide a run ID in the input field"
+            exit 0
+          fi
+
+          # Scheduled run (cron) - complete ALL active runs
+          echo "⚠️  SCHEDULED RUN: Completing ALL active runs (runs every 10 days)"
 
           # Get all active runs from Qase
           RUNS=$(curl -s -X GET \
@@ -23,27 +52,16 @@ jobs:
             -H "Token: ${QASE_API_TOKEN}" \
             -H 'accept: application/json')
 
-          # Current timestamp
-          NOW=$(date +%s)
-          TEN_HOURS_AGO=$((NOW - 36000))
+          # Parse and complete ALL runs (scheduled cleanup)
+          echo "$RUNS" | jq -r '.result.entities[] | .id' | while read -r RUN_ID; do
+            echo "Completing run $RUN_ID (scheduled cleanup - all active runs)"
 
-          # Parse and complete old runs
-          echo "$RUNS" | jq -r '.result.entities[] | "\(.id),\(.created)"' | while IFS=, read -r RUN_ID CREATED_TIME; do
-            # Convert Qase timestamp to Unix timestamp
-            CREATED_TS=$(date -d "$CREATED_TIME" +%s 2>/dev/null || echo "0")
+            curl -X POST \
+              --url "https://api.qase.io/v1/run/FLEET/${RUN_ID}/complete" \
+              -H "Token: ${QASE_API_TOKEN}" \
+              -H 'accept: application/json'
 
-            if [ "$CREATED_TS" -lt "$TEN_HOURS_AGO" ]; then
-              echo "Completing run $RUN_ID (created at $CREATED_TIME, older than 10 hours)"
-
-              curl -X POST \
-                --url "https://api.qase.io/v1/run/FLEET/${RUN_ID}/complete" \
-                -H "Token: ${QASE_API_TOKEN}" \
-                -H 'accept: application/json'
-
-              echo "✓ Run $RUN_ID marked as completed"
-            else
-              echo "Run $RUN_ID is recent, skipping"
-            fi
+            echo "✓ Run $RUN_ID marked as completed"
           done
 
-          echo "Auto-complete check finished"
+          echo "Scheduled cleanup finished - all active runs completed"
