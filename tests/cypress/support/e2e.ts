@@ -13,12 +13,16 @@ limitations under the License.
 */
 
 import './commands';
+import { qase } from 'cypress-qase-reporter/mocha';
 
-// This ensures the qase() function exists globally before ANY spec file loads
-(window as any).qase = (id: any, fn: any) => fn;
-console.log('Qase global initialized');
+// Make qase available globally
+(window as any).qase = qase;
 
 declare global {
+  // Qase function for linking tests to test case IDs
+  function qase(id: number, title: string): string;
+  function qase(id: number[], title: string): string;
+
   // In Cypress functions should be declared with 'namespace'
   // eslint-disable-next-line @typescript-eslint/no-namespace
   namespace Cypress {

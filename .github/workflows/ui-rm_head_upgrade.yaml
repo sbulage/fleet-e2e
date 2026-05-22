@@ -14,6 +14,10 @@ on:
         required: false
         type: string
         default: ''
+      qase_complete_run:
+        description: "`Uncheck` when appending test runs. `Check` on final run to close QASE. For daily runs, keep it checked."
+        default: true
+        type: boolean
       runner_template:
         description: Runner template to use (spot or dedicated)
         default: fleet-e2e-ci-runner-spot-x86-64-template-v3
@@ -90,5 +94,6 @@ jobs:
       upgrade: ${{ inputs.upgrade }}
       qase_report: ${{ inputs.qase_report == true || (github.event_name == 'schedule' && true) }}
       qase_run_id: ${{ inputs.qase_run_id || '' }}
+      qase_complete_run: ${{ inputs.qase_complete_run != false }}
       grep_test_by_tag: ${{ inputs.grep_test_by_tag }}
       runner_template: ${{ inputs.runner_template || 'fleet-e2e-ci-runner-spot-x86-64-template-v3' }}

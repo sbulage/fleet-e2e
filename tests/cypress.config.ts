@@ -5,6 +5,7 @@ import { writeFileSync } from 'fs';
 
 const qaseAPIToken = process.env.QASE_API_TOKEN
 const qaseMode = (process.env.QASE_MODE === 'testops' && qaseAPIToken) ? 'testops' : 'off'
+const qaseCompleteRun = process.env.QASE_TESTOPS_COMPLETE_RUN !== 'false'
 
 export default defineConfig({
   viewportWidth: 1596,
@@ -35,7 +36,7 @@ export default defineConfig({
           project: 'FLEET',
           uploadAttachments: true,
           run: {
-            complete: true,
+            complete: qaseCompleteRun,
           },
         },
       framework: {

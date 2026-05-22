@@ -12,6 +12,10 @@ on:
       qase_run_id:
         description: Qase run ID where the results will be reported
         default: auto
+      qase_complete_run:
+        description: "`Uncheck` when appending test runs. `Check` on final run to close QASE. For daily runs, keep it checked."
+        default: true
+        type: boolean
         type: string
       destroy_runner:
         description: Destroy the auto-generated self-hosted runner
@@ -59,5 +63,6 @@ jobs:
       upstream_cluster_version: ${{ inputs.upstream_cluster_version || 'v1.29.12+k3s1' }}
       rancher_version: ${{ inputs.rancher_version || 'latest/devel/2.9' }}
       qase_run_id: ${{ inputs.qase_run_id || 'auto' }}
+      qase_complete_run: ${{ inputs.qase_complete_run != false }}
       grep_test_by_tag: ${{ inputs.grep_test_by_tag || '@login @p0 @p1 @p1_2 @rbac' }}
       branch: ${{ inputs.branch || '2.10-stable' }}

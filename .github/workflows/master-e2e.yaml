@@ -90,6 +90,11 @@ on:
         required: false
         type: string
         default: ''
+      qase_complete_run:
+        description: Complete the QASE run after tests finish (set false when appending multiple test suites to same run)
+        required: false
+        type: boolean
+        default: true
       rancher_version:
         description: Rancher Manager channel/version/head_version to use for installation
         default: stable/latest/none
@@ -215,7 +220,7 @@ jobs:
 
       QASE_TESTOPS_RUN_DESCRIPTION: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
       QASE_TESTOPS_RUN_ID: ${{ inputs.qase_run_id }}
-      QASE_TESTOPS_COMPLETE_RUN: true
+      QASE_TESTOPS_COMPLETE_RUN: ${{ inputs.qase_complete_run }}
       QASE_LOGGING_CONSOLE: false
 
     steps:

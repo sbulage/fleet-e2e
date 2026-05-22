@@ -1,0 +1,49 @@
+name: Qase Auto-Complete Old Runs
+
+on:
+  schedule:
+    # Run every 6 hours
+    - cron: '0 */6 * * *'
+  workflow_dispatch:
+
+jobs:
+  auto-complete:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Auto-complete stale Qase runs
+        env:
+          QASE_API_TOKEN: ${{ secrets.QASE_API_TOKEN }}
+        run: |
+          # jq is pre-installed on GitHub-hosted ubuntu-latest runners
+          echo "Checking for Qase runs older than 10 hours..."
+
+          # Get all active runs from Qase
+          RUNS=$(curl -s -X GET \
+            --url "https://api.qase.io/v1/run/FLEET?status=in_progress&limit=100" \
+            -H "Token: ${QASE_API_TOKEN}" \
+            -H 'accept: application/json')
+
+          # Current timestamp
+          NOW=$(date +%s)
+          TEN_HOURS_AGO=$((NOW - 36000))
+
+          # Parse and complete old runs
+          echo "$RUNS" | jq -r '.result.entities[] | "\(.id),\(.created)"' | while IFS=, read -r RUN_ID CREATED_TIME; do
+            # Convert Qase timestamp to Unix timestamp
+            CREATED_TS=$(date -d "$CREATED_TIME" +%s 2>/dev/null || echo "0")
+
+            if [ "$CREATED_TS" -lt "$TEN_HOURS_AGO" ]; then
+              echo "Completing run $RUN_ID (created at $CREATED_TIME, older than 10 hours)"
+
+              curl -X POST \
+                --url "https://api.qase.io/v1/run/FLEET/${RUN_ID}/complete" \
+                -H "Token: ${QASE_API_TOKEN}" \
+                -H 'accept: application/json'
+
+              echo "✓ Run $RUN_ID marked as completed"
+            else
+              echo "Run $RUN_ID is recent, skipping"
+            fi
+          done
+
+          echo "Auto-complete check finished"
