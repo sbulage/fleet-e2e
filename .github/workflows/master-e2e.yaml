@@ -247,6 +247,7 @@ jobs:
           PUBLIC_DNS: ${{ needs.create-runner.outputs.public_dns }}
           PUBLIC_DOMAIN: bc.googleusercontent.com
           RANCHER_PASSWORD: ${{ secrets.rancher_password }}
+          HARDENING_CLUSTER_VERSION: ${{ inputs.hardening_cluster_version }}
         run: |
           if ${{ inputs.hardening != '' }}; then
             cd tests && make e2e-install-rke2-hardened-cluster && make e2e-install-only-certs-and-rancher
