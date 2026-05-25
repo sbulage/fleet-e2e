@@ -1119,6 +1119,7 @@ describe('Test GitRepoRestrictions scenarios for GitRepo application deployment.
       cy.get('.col-link-detail').contains(appName).should('be.visible');
 
       // Deleting GitRepoRestrictions from the fleet-local namespace
+      cy.continuousDeliveryMenuSelection();
       cy.continuousDeliveryGitRepoRestrictionsMenu();
       cy.fleetNamespaceToggle('fleet-local');
       cy.deleteAll(false);
@@ -1157,6 +1158,7 @@ describe('Test GitRepoRestrictions scenarios for GitRepo application deployment.
       cy.get('.col-link-detail').contains(appName).should('be.visible');
 
       // Deleting GitRepoRestrictions from the fleet-local namespace
+      cy.continuousDeliveryMenuSelection();
       cy.continuousDeliveryGitRepoRestrictionsMenu();
       cy.fleetNamespaceToggle('fleet-local');
       cy.deleteAll(false);
